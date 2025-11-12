@@ -148,12 +148,65 @@ Then open http://localhost:5173 in your browser.
 
 ---
 
+### ✅ Task 1.4: Set up React Native mobile app with basic navigation
+
+**Completed:** November 12, 2025
+
+**What was implemented:**
+- Created React Native mobile app using Expo and TypeScript
+- Installed React Navigation for screen navigation
+- Installed Axios for API communication
+- Created HomeScreen component with backend health check
+- Set up navigation stack with header styling
+- Added pull-to-refresh functionality
+- Created API utility with proper configuration for different platforms
+- Added comprehensive documentation
+
+**Files created:**
+- `mobile/` - Complete React Native Expo application
+- `mobile/src/screens/HomeScreen.tsx` - Main home screen
+- `mobile/src/utils/api.ts` - API configuration utility
+- `mobile/App.tsx` - App component with navigation
+- `mobile/README.md` - Mobile app documentation
+- `mobile/.env.example` - Environment configuration example
+
+**Features:**
+- ✅ React Native with Expo
+- ✅ TypeScript support
+- ✅ React Navigation configured
+- ✅ Axios for API calls
+- ✅ Backend health check integration
+- ✅ Pull-to-refresh functionality
+- ✅ Platform-specific API URLs (Android/iOS/Physical device)
+- ✅ Responsive UI with styled components
+
+**Platform Support:**
+- Android Emulator (uses http://10.0.2.2:3000)
+- iOS Simulator (uses http://localhost:3000)
+- Physical Device (configure with computer's IP)
+
+**How to test:**
+```bash
+cd mobile
+npm install
+npm start
+```
+
+Then:
+- Press 'a' for Android emulator
+- Press 'i' for iOS simulator (Mac only)
+- Scan QR code with Expo Go app on physical device
+
+**Next task:** 1.5 Configure environment variables and shared utilities
+
+---
+
 ## Current Status
 
 **Backend:** ✅ Running on http://localhost:3000
 **Database:** ✅ Connected (PostgreSQL, MongoDB, Redis)
 **Web Frontend:** ✅ Running on http://localhost:5173
-**Mobile:** ⏳ Not yet created
+**Mobile App:** ✅ Created (ready to run with Expo)
 
 ## To Start Development
 
