@@ -1,156 +1,276 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { logout } from '../store/authSlice';
+import { colors, shadows, neuStyles } from '../styles/neumorphic';
 
 export default function HomeScreen() {
   const navigation = useNavigation();
   const dispatch = useAppDispatch();
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
 
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>🏋️ GYMFU</Text>
-      <Text style={styles.subtitle}>Your Fitness, Your Way</Text>
+    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.title}>🏋️ GYMFU</Text>
+        <Text style={styles.subtitle}>Your Fitness, Your Way</Text>
+      </View>
 
       {isAuthenticated && user ? (
+        /* Authenticated View */
         <View style={styles.card}>
-          <Text style={styles.welcome}>Welcome, {user.name}! 👋</Text>
-          <Text style={styles.info}>
+          <View style={styles.avatarContainer}>
+            <View style={styles.avatar}>
+              <Text style={styles.avatarText}>{getInitials(user.name)}</Text>
+            </View>
+          </View>
+          
+          <Text style={styles.welcomeTitle}>Welcome, {user.name}! 👋</Text>
+          <Text style={styles.welcomeInfo}>
             {user.phoneNumber || user.email}
           </Text>
-          <View style={styles.buttonContainer}>
+
+          <View style={styles.buttonGroup}>
             <TouchableOpacity
-              style={styles.button}
+              style={styles.buttonPrimary}
               onPress={() => navigation.navigate('Profile' as never)}
+              activeOpacity={0.8}
             >
-              <Text style={styles.buttonText}>View Profile</Text>
+              <Text style={styles.buttonTextPrimary}>View Profile</Text>
             </TouchableOpacity>
+
             <TouchableOpacity
-              style={styles.logoutButton}
+              style={styles.buttonDanger}
               onPress={() => dispatch(logout())}
+              activeOpacity={0.8}
             >
-              <Text style={styles.logoutButtonText}>Logout</Text>
+              <Text style={styles.buttonTextPrimary}>Logout</Text>
             </TouchableOpacity>
           </View>
         </View>
       ) : (
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Get Started</Text>
-          <Text style={styles.cardText}>
-            Create an account to start booking gym sessions
-          </Text>
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              style={styles.button}
-              onPress={() => navigation.navigate('Register' as never)}
-            >
-              <Text style={styles.buttonText}>Register</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.buttonSecondary}
-              onPress={() => navigation.navigate('Login' as never)}
-            >
-              <Text style={styles.buttonSecondaryText}>Login</Text>
-            </TouchableOpacity>
+        /* Unauthenticated View */
+        <>
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Get Started</Text>
+            <Text style={styles.cardText}>
+              Create an account to start booking gym sessions and unlock your fitness potential
+            </Text>
+
+            <View style={styles.buttonGroup}>
+              <TouchableOpacity
+                style={styles.buttonPrimary}
+                onPress={() => navigation.navigate('Register' as never)}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.buttonTextPrimary}>Register</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.button}
+                onPress={() => navigation.navigate('Login' as never)}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.buttonText}>Login</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
+
+          {/* Features Grid */}
+          <View style={styles.featuresGrid}>
+            <View style={styles.featureCard}>
+              <Text style={styles.featureIcon}>🏋️</Text>
+              <Text style={styles.featureTitle}>Find Gyms</Text>
+              <Text style={styles.featureDescription}>
+                Discover gyms near you with advanced filters
+              </Text>
+            </View>
+
+            <View style={styles.featureCard}>
+              <Text style={styles.featureIcon}>📅</Text>
+              <Text style={styles.featureTitle}>Book Sessions</Text>
+              <Text style={styles.featureDescription}>
+                Easy booking with instant confirmation
+              </Text>
+            </View>
+
+            <View style={styles.featureCard}>
+              <Text style={styles.featureIcon}>💪</Text>
+              <Text style={styles.featureTitle}>AI Coach</Text>
+              <Text style={styles.featureDescription}>
+                Personalized workout and nutrition plans
+              </Text>
+            </View>
+
+            <View style={styles.featureCard}>
+              <Text style={styles.featureIcon}>🛒</Text>
+              <Text style={styles.featureTitle}>Marketplace</Text>
+              <Text style={styles.featureDescription}>
+                Shop fitness gear and supplements
+              </Text>
+            </View>
+          </View>
+        </>
       )}
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: colors.bgPrimary,
+  },
+  contentContainer: {
     padding: 20,
-    backgroundColor: '#f7fafc',
-    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  header: {
+    alignItems: 'center',
+    marginBottom: 32,
+    marginTop: 20,
   },
   title: {
-    fontSize: 48,
-    textAlign: 'center',
+    fontSize: 56,
+    fontWeight: 'bold',
+    color: colors.accentPrimary,
     marginBottom: 8,
+    textShadowColor: 'rgba(0, 0, 0, 0.1)',
+    textShadowOffset: { width: 2, height: 2 },
+    textShadowRadius: 4,
   },
   subtitle: {
     fontSize: 18,
-    color: '#718096',
-    textAlign: 'center',
-    marginBottom: 32,
+    color: colors.textSecondary,
+    fontWeight: '500',
   },
   card: {
-    backgroundColor: '#fff',
-    padding: 24,
-    borderRadius: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
+    backgroundColor: colors.bgPrimary,
+    borderRadius: 30,
+    padding: 32,
+    width: '100%',
+    maxWidth: 400,
+    ...shadows.large,
+    marginBottom: 24,
   },
-  welcome: {
+  avatarContainer: {
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  avatar: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: colors.accentPrimary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...shadows.large,
+  },
+  avatarText: {
+    fontSize: 48,
+    fontWeight: 'bold',
+    color: '#ffffff',
+  },
+  welcomeTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#1a202c',
+    color: colors.textPrimary,
     textAlign: 'center',
     marginBottom: 8,
   },
-  info: {
+  welcomeInfo: {
     fontSize: 16,
-    color: '#718096',
+    color: colors.textSecondary,
     textAlign: 'center',
+    marginBottom: 24,
   },
   cardTitle: {
-    fontSize: 20,
+    fontSize: 28,
     fontWeight: 'bold',
-    color: '#1a202c',
-    marginBottom: 8,
+    color: colors.textPrimary,
     textAlign: 'center',
+    marginBottom: 12,
   },
   cardText: {
-    fontSize: 14,
-    color: '#718096',
-    marginBottom: 20,
+    fontSize: 16,
+    color: colors.textSecondary,
     textAlign: 'center',
+    lineHeight: 24,
+    marginBottom: 24,
   },
-  buttonContainer: {
-    gap: 12,
+  buttonGroup: {
+    gap: 16,
   },
   button: {
-    backgroundColor: '#667eea',
-    padding: 16,
-    borderRadius: 8,
+    backgroundColor: colors.bgPrimary,
+    borderRadius: 16,
+    paddingVertical: 16,
+    paddingHorizontal: 32,
     alignItems: 'center',
+    ...shadows.medium,
+  },
+  buttonPrimary: {
+    backgroundColor: colors.accentPrimary,
+    borderRadius: 16,
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    alignItems: 'center',
+    ...shadows.medium,
+  },
+  buttonDanger: {
+    backgroundColor: colors.error,
+    borderRadius: 16,
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    alignItems: 'center',
+    ...shadows.medium,
   },
   buttonText: {
-    color: '#fff',
-    fontSize: 16,
+    color: colors.textPrimary,
+    fontSize: 18,
     fontWeight: '600',
   },
-  buttonSecondary: {
-    backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 8,
+  buttonTextPrimary: {
+    color: '#ffffff',
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  featuresGrid: {
+    width: '100%',
+    gap: 16,
+  },
+  featureCard: {
+    backgroundColor: colors.bgPrimary,
+    borderRadius: 20,
+    padding: 24,
     alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#667eea',
+    ...shadows.medium,
   },
-  buttonSecondaryText: {
-    color: '#667eea',
-    fontSize: 16,
+  featureIcon: {
+    fontSize: 48,
+    marginBottom: 12,
+  },
+  featureTitle: {
+    fontSize: 20,
     fontWeight: '600',
+    color: colors.textPrimary,
+    marginBottom: 8,
   },
-  logoutButton: {
-    backgroundColor: '#ef4444',
-    padding: 14,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 16,
-  },
-  logoutButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
+  featureDescription: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 20,
   },
 });

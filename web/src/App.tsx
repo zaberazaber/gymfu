@@ -7,6 +7,7 @@ import OTPVerificationPage from './pages/OTPVerificationPage';
 import ProfilePage from './pages/ProfilePage';
 import EditProfilePage from './pages/EditProfilePage';
 import './App.css';
+import './styles/neumorphic.css';
 
 function App() {
   return (
