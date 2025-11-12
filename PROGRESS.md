@@ -947,7 +947,88 @@ To test the registration flow:
 
 ---
 
-## Current Status - Web Authentication UI Complete! 🎉
+### ✅ Task 2.7: Build registration UI for mobile
+
+**Completed:** November 13, 2025
+
+**What was implemented:**
+- Installed Redux Toolkit and AsyncStorage for mobile
+- Created Redux store with auth slice (matching web implementation)
+- Built RegisterScreen with phone/email toggle
+- Built LoginScreen with phone/email toggle
+- Built OTPVerificationScreen with 6-digit input
+- Implemented complete API integration using Axios
+- JWT token storage in AsyncStorage
+- Navigation after successful registration/login
+- Updated HomeScreen to show user info when logged in
+- Added logout functionality
+
+**Files created:**
+- `mobile/src/store/index.ts` - Redux store configuration
+- `mobile/src/store/authSlice.ts` - Auth state management with login support
+- `mobile/src/store/hooks.ts` - Typed Redux hooks
+- `mobile/src/screens/RegisterScreen.tsx` - Registration screen with validation
+- `mobile/src/screens/LoginScreen.tsx` - Login screen
+- `mobile/src/screens/OTPVerificationScreen.tsx` - OTP verification screen
+
+**Files modified:**
+- `mobile/App.tsx` - Added Redux Provider and all auth screens
+- `mobile/src/screens/HomeScreen.tsx` - Added auth state display and logout
+- `mobile/src/utils/api.ts` - Updated to include /api/v1 path
+- `mobile/package.json` - Added Redux dependencies
+
+**Features (Matching Web Implementation):**
+- ✅ Redux Toolkit state management
+- ✅ Registration with phone OR email (toggle)
+- ✅ Login with phone OR email (toggle)
+- ✅ Comprehensive form validation
+  - Name: 2-100 characters
+  - Phone: Indian format (10 digits, starts with 6-9)
+  - Email: Valid email format
+  - Password: Min 8 chars, uppercase, lowercase, number
+  - Confirm password matching
+- ✅ OTP verification with 6-digit input
+- ✅ Auto-focus on OTP inputs
+- ✅ JWT token storage in AsyncStorage
+- ✅ Automatic navigation after success
+- ✅ Error handling with native alerts
+- ✅ Loading states with ActivityIndicator
+- ✅ Native mobile UI components
+- ✅ User info display on home screen
+- ✅ Logout functionality
+- ✅ Register/Login navigation links
+
+**User Flow:**
+1. User opens app → sees HomeScreen
+2. Taps "Register" button
+3. Fills registration form (name, phone, password)
+4. Submits → OTP sent
+5. Navigates to OTP verification screen
+6. Enters 6-digit OTP
+7. Submits → JWT token stored in AsyncStorage
+8. Navigates back to HomeScreen
+9. HomeScreen shows "Welcome, [User Name]!"
+
+**Mobile-Specific Features:**
+- AsyncStorage for persistent token storage
+- Native navigation with React Navigation
+- Native TextInput components
+- Alert dialogs for errors
+- ActivityIndicator for loading states
+- Platform-specific API URL detection
+
+**Testing:**
+```bash
+cd mobile
+npm start
+# Then press 'a' for Android or 'i' for iOS
+```
+
+**Next task:** 2.8 Implement profile management endpoints
+
+---
+
+## Current Status - Mobile & Web Authentication Complete! 🎉
 
 **Backend:** ✅ Running on http://localhost:3000 (with logging, error handling, and tests)
 **Database:** ✅ Connected (PostgreSQL, MongoDB, Redis)
