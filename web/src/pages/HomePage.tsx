@@ -54,30 +54,30 @@ function HomePage() {
         </p>
       </header>
 
-      <div style={{ 
-        background: '#F9FAFB', 
-        padding: '2rem', 
+      <div style={{
+        background: '#F9FAFB',
+        padding: '2rem',
         borderRadius: '0.5rem',
         marginBottom: '2rem'
       }}>
         <h2 style={{ marginBottom: '1rem' }}>Backend API Status</h2>
         {loading && <p>Checking backend connection...</p>}
         {error && (
-          <div style={{ 
-            background: '#FEE2E2', 
-            color: '#991B1B', 
-            padding: '1rem', 
-            borderRadius: '0.375rem' 
+          <div style={{
+            background: '#FEE2E2',
+            color: '#991B1B',
+            padding: '1rem',
+            borderRadius: '0.375rem'
           }}>
             ❌ {error}
           </div>
         )}
         {health && (
-          <div style={{ 
-            background: '#D1FAE5', 
-            color: '#065F46', 
-            padding: '1rem', 
-            borderRadius: '0.375rem' 
+          <div style={{
+            background: '#D1FAE5',
+            color: '#065F46',
+            padding: '1rem',
+            borderRadius: '0.375rem'
           }}>
             ✅ {health.message}
             <br />
@@ -86,15 +86,15 @@ function HomePage() {
         )}
       </div>
 
-      <div style={{ 
-        display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', 
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
         gap: '1.5rem',
         marginBottom: '2rem'
       }}>
-        <div style={{ 
-          background: 'white', 
-          padding: '1.5rem', 
+        <div style={{
+          background: 'white',
+          padding: '1.5rem',
           borderRadius: '0.5rem',
           boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
         }}>
@@ -104,9 +104,9 @@ function HomePage() {
           </p>
         </div>
 
-        <div style={{ 
-          background: 'white', 
-          padding: '1.5rem', 
+        <div style={{
+          background: 'white',
+          padding: '1.5rem',
           borderRadius: '0.5rem',
           boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
         }}>
@@ -116,9 +116,9 @@ function HomePage() {
           </p>
         </div>
 
-        <div style={{ 
-          background: 'white', 
-          padding: '1.5rem', 
+        <div style={{
+          background: 'white',
+          padding: '1.5rem',
           borderRadius: '0.5rem',
           boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
         }}>
@@ -128,9 +128,9 @@ function HomePage() {
           </p>
         </div>
 
-        <div style={{ 
-          background: 'white', 
-          padding: '1.5rem', 
+        <div style={{
+          background: 'white',
+          padding: '1.5rem',
           borderRadius: '0.5rem',
           boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
         }}>
@@ -142,9 +142,9 @@ function HomePage() {
       </div>
 
       {isAuthenticated && user ? (
-        <div style={{ 
-          background: 'white', 
-          padding: '2rem', 
+        <div style={{
+          background: 'white',
+          padding: '2rem',
           borderRadius: '0.5rem',
           boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
           textAlign: 'center'
@@ -154,24 +154,41 @@ function HomePage() {
             {user.phoneNumber && `Phone: ${user.phoneNumber}`}
             {user.email && `Email: ${user.email}`}
           </p>
-          <button
-            onClick={() => dispatch(logout())}
-            style={{
-              padding: '0.75rem 2rem',
-              background: '#EF4444',
-              color: 'white',
-              border: 'none',
-              borderRadius: '0.5rem',
-              fontSize: '1rem',
-              fontWeight: '600',
-              cursor: 'pointer',
-            }}
-          >
-            Logout
-          </button>
+          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+            <button
+              onClick={() => navigate('/profile')}
+              style={{
+                padding: '0.75rem 2rem',
+                background: '#667eea',
+                color: 'white',
+                border: 'none',
+                borderRadius: '0.5rem',
+                fontSize: '1rem',
+                fontWeight: '600',
+                cursor: 'pointer',
+              }}
+            >
+              View Profile
+            </button>
+            <button
+              onClick={() => dispatch(logout())}
+              style={{
+                padding: '0.75rem 2rem',
+                background: '#EF4444',
+                color: 'white',
+                border: 'none',
+                borderRadius: '0.5rem',
+                fontSize: '1rem',
+                fontWeight: '600',
+                cursor: 'pointer',
+              }}
+            >
+              Logout
+            </button>
+          </div>
         </div>
       ) : (
-        <div style={{ 
+        <div style={{
           textAlign: 'center',
           background: 'white',
           padding: '2rem',

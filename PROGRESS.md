@@ -1118,7 +1118,81 @@ curl -X PUT http://localhost:3000/api/v1/users/profile \
 
 ---
 
-## Current Status - Profile Management Backend Complete! 🎉
+### ✅ Task 2.9: Build profile screens (web and mobile)
+
+**Completed:** November 13, 2025
+
+**What was implemented:**
+
+#### Web Profile UI (Complete)
+- ✅ ProfilePage - View user profile with all information
+- ✅ EditProfilePage - Edit profile with form validation
+- ✅ Redux actions (getProfile, updateProfile)
+- ✅ Profile routes added to App.tsx
+- ✅ "View Profile" button on HomePage
+- ✅ Beautiful responsive UI matching design system
+
+#### Mobile Profile UI (Complete)
+- ✅ ProfileScreen - Native profile viewing screen
+- ✅ EditProfileScreen - Native profile editing screen
+- ✅ Redux actions (getProfile, updateProfile)
+- ✅ Profile screens added to navigation
+- ✅ "View Profile" button on HomeScreen
+- ✅ Native mobile components and styling
+
+**Files created:**
+- `web/src/pages/ProfilePage.tsx` - Profile viewing page
+- `web/src/pages/ProfilePage.css` - Profile page styles
+- `web/src/pages/EditProfilePage.tsx` - Profile editing page
+- `web/src/pages/EditProfilePage.css` - Edit profile styles
+- `mobile/src/screens/ProfileScreen.tsx` - Mobile profile viewing screen
+- `mobile/src/screens/EditProfileScreen.tsx` - Mobile profile editing screen
+
+**Files modified:**
+- `web/src/store/authSlice.ts` - Added profile actions and User interface with profile fields
+- `web/src/App.tsx` - Added /profile and /edit-profile routes
+- `web/src/pages/HomePage.tsx` - Added "View Profile" button
+- `mobile/src/store/authSlice.ts` - Added profile actions and User interface
+- `mobile/App.tsx` - Added Profile and EditProfile screens
+- `mobile/src/screens/HomeScreen.tsx` - Added "View Profile" button
+
+**Features (Web & Mobile):**
+- ✅ View profile with avatar, personal info, location, fitness goals
+- ✅ Edit all profile fields (name, age, gender, location, fitness goals)
+- ✅ Gender selection (male, female, other, prefer not to say)
+- ✅ Location input (city, state, country, 6-digit pincode)
+- ✅ Fitness goals multi-select (7 predefined goals)
+- ✅ Form validation with error messages
+- ✅ Loading states with activity indicators
+- ✅ Error handling with retry functionality
+- ✅ Navigation between screens
+- ✅ Avatar placeholder with user initials
+- ✅ Beautiful native styling
+
+**Profile Fields:**
+- Personal: Name, Age, Gender
+- Location: City, State, Country, Pincode
+- Fitness Goals: Weight Loss, Muscle Gain, General Fitness, Strength, Endurance, Flexibility, Sports Training
+
+**User Flow:**
+1. User logs in → HomeScreen shows "View Profile" button
+2. Tap "View Profile" → ProfileScreen shows complete profile
+3. Tap "Edit Profile" → EditProfileScreen with form
+4. Fill/update fields → Save → Profile updated
+5. Navigate back to ProfileScreen with updated data
+
+**Testing:**
+- All Redux actions working
+- Form validation working
+- Navigation working
+- Error handling working
+- Loading states working
+
+**Next task:** 3.1 Implement gym discovery system
+
+---
+
+## Current Status - Complete Profile Management System! 🎉
 
 **Backend:** ✅ Running on http://localhost:3000 (with logging, error handling, and tests)
 **Database:** ✅ Connected (PostgreSQL, MongoDB, Redis)

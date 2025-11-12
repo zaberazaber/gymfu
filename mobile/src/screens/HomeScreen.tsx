@@ -20,12 +20,20 @@ export default function HomeScreen() {
           <Text style={styles.info}>
             {user.phoneNumber || user.email}
           </Text>
-          <TouchableOpacity
-            style={styles.logoutButton}
-            onPress={() => dispatch(logout())}
-          >
-            <Text style={styles.logoutButtonText}>Logout</Text>
-          </TouchableOpacity>
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={() => navigation.navigate('Profile' as never)}
+            >
+              <Text style={styles.buttonText}>View Profile</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.logoutButton}
+              onPress={() => dispatch(logout())}
+            >
+              <Text style={styles.logoutButtonText}>Logout</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       ) : (
         <View style={styles.card}>

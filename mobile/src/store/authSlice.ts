@@ -3,12 +3,25 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { API_BASE_URL } from '../utils/api';
 
+interface Location {
+  city?: string;
+  state?: string;
+  country?: string;
+  pincode?: string;
+}
+
 interface User {
   id: number;
   phoneNumber?: string;
   email?: string;
   name: string;
+  age?: number;
+  gender?: string;
+  location?: Location;
+  fitnessGoals?: string[];
+  profileImage?: string;
   createdAt: string;
+  updatedAt?: string;
 }
 
 interface AuthState {
@@ -91,6 +104,45 @@ export const login = createAsyncThunk(
   }
 );
 
+// Get user profile
+export const getProfile = createAsyncThunk('auth/getProfile', async (_, { rejectWithValue }) => {
+  try {
+    const token = await AsyncStorage.getItem('token');
+    const response = await axios.get(`${API_BASE_URL}/users/profile`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return response.data.data;
+  } catch (error: any) {
+    return rejectWithValue(error.response?.data?.error?.message || 'Failed to get profile');
+  }
+});
+
+// Update user profile
+export const updateProfile = createAsyncThunk(
+  'auth/updateProfile',
+  async (
+    profileData: {
+      name?: string;
+      age?: number;
+      gender?: string;
+      location?: Location;
+      fitnessGoals?: string[];
+      profileImage?: string;
+    },
+    { rejectWithValue }
+  ) => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      const response = await axios.put(`${API_BASE_URL}/users/profile`, profileData, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      return response.data.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.error?.message || 'Failed to update profile');
+    }
+  }
+);
+
 // Load token from storage
 export const loadToken = createAsyncThunk('auth/loadToken', async () => {
   const token = await AsyncStorage.getItem('token');
@@ -150,6 +202,30 @@ const authSlice = createSlice({
         state.registrationIdentifier = action.payload.identifier;
       })
       .addCase(login.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(getProfile.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getProfile.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload;
+      })
+      .addCase(getProfile.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(updateProfile.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateProfile.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload;
+      })
+      .addCase(updateProfile.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })
