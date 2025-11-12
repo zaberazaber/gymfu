@@ -1188,7 +1188,97 @@ curl -X PUT http://localhost:3000/api/v1/users/profile \
 - Error handling working
 - Loading states working
 
-**Next task:** 3.3 Implement nearby gyms search with geospatial queries
+**Next task:** 3.4 Add gym filtering and search
+
+---
+
+### ✅ Task 3.3: Implement nearby gyms search with geospatial queries
+
+**Completed:** November 13, 2025
+
+**What was implemented:**
+
+#### Geospatial Search
+- ✅ Implemented Haversine formula for distance calculation
+- ✅ No PostGIS dependency (pure PostgreSQL solution)
+- ✅ Accurate distance calculation in kilometers
+- ✅ Sorted results by distance (nearest first)
+
+#### API Endpoint
+- ✅ `GET /api/v1/gyms/nearby` - Find gyms within radius
+
+#### Query Parameters
+- `lat` - Latitude (required, -90 to 90)
+- `lng` - Longitude (required, -180 to 180)
+- `radius` - Search radius in km (optional, default: 5km, max: 100km)
+- `limit` - Results per page (optional, default: 10, max: 100)
+- `offset` - Pagination offset (optional, default: 0)
+
+#### Features
+- ✅ Haversine formula for accurate distance
+- ✅ Distance included in response (in km)
+- ✅ Results sorted by distance
+- ✅ Pagination support
+- ✅ Total count of nearby gyms
+- ✅ Comprehensive validation
+- ✅ Error handling
+
+#### Response Format
+```json
+{
+  "success": true,
+  "data": [
+    {
+      ...gym fields,
+      "distance": 2.5
+    }
+  ],
+  "search": {
+    "latitude": 19.0760,
+    "longitude": 72.8777,
+    "radius": 5
+  },
+  "pagination": {
+    "limit": 10,
+    "offset": 0,
+    "total": 15,
+    "hasMore": true
+  }
+}
+```
+
+**Files created:**
+- `backend/src/scripts/enablePostGIS.ts` - PostGIS setup (not used, kept for reference)
+
+**Files modified:**
+- `backend/src/models/Gym.ts` - Added findNearby() and countNearby() methods
+- `backend/src/controllers/gymController.ts` - Added getNearbyGyms controller
+- `backend/src/routes/gyms.ts` - Added GET /nearby route
+
+**Testing:**
+- ✅ Backend restarted successfully
+- ✅ No TypeScript errors
+- ✅ Route registered at GET /api/v1/gyms/nearby
+
+**Example Usage:**
+```bash
+# Find gyms within 5km of Mumbai coordinates
+curl "http://localhost:3000/api/v1/gyms/nearby?lat=19.0760&lng=72.8777"
+
+# Find gyms within 10km
+curl "http://localhost:3000/api/v1/gyms/nearby?lat=19.0760&lng=72.8777&radius=10"
+
+# With pagination
+curl "http://localhost:3000/api/v1/gyms/nearby?lat=19.0760&lng=72.8777&limit=20&offset=0"
+```
+
+**Technical Details:**
+- Uses Haversine formula: `distance = 6371 * acos(cos(lat1) * cos(lat2) * cos(lng2 - lng1) + sin(lat1) * sin(lat2))`
+- Earth radius: 6371 km
+- Accurate for distances up to ~100km
+- No external dependencies required
+
+**Next task:** 3.4 Add gym filtering and search
 
 ---
 

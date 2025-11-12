@@ -215,3 +215,60 @@ export const getAllGyms = async (req: Request, res: Response) => {
     throw error;
   }
 };
+
+export const getNearbyGyms = async (req: Request, res: Response) => {
+  try {
+    const latitude = parseFloat(req.query.lat as string);
+    const longitude = parseFloat(req.query.lng as string);
+    const radius = parseFloat(req.query.radius as string) || 5; // Default 5km
+    const limit = parseInt(req.query.limit as string) || 10;
+    const offset = parseInt(req.query.offset as string) || 0;
+
+    // Validate coordinates
+    if (isNaN(latitude) || latitude < -90 || latitude > 90) {
+      throw new AppError('Invalid latitude. Must be between -90 and 90', 400, 'INVALID_LATITUDE');
+    }
+
+    if (isNaN(longitude) || longitude < -180 || longitude > 180) {
+      throw new AppError('Invalid longitude. Must be between -180 and 180', 400, 'INVALID_LONGITUDE');
+    }
+
+    // Validate radius
+    if (radius < 0.1 || radius > 100) {
+      throw new AppError('Radius must be between 0.1 and 100 km', 400, 'INVALID_RADIUS');
+    }
+
+    // Validate pagination
+    if (limit < 1 || limit > 100) {
+      throw new AppError('Limit must be between 1 and 100', 400, 'INVALID_LIMIT');
+    }
+
+    if (offset < 0) {
+      throw new AppError('Offset must be non-negative', 400, 'INVALID_OFFSET');
+    }
+
+    const gyms = await GymModel.findNearby(latitude, longitude, radius, limit, offset);
+    const totalCount = await GymModel.countNearby(latitude, longitude, radius);
+
+    logger.info(`Nearby gyms search: lat=${latitude}, lng=${longitude}, radius=${radius}km, found=${gyms.length}`);
+
+    res.json({
+      success: true,
+      data: gyms,
+      search: {
+        latitude,
+        longitude,
+        radius,
+      },
+      pagination: {
+        limit,
+        offset,
+        total: totalCount,
+        hasMore: offset + gyms.length < totalCount,
+      },
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    throw error;
+  }
+};

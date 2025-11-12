@@ -105,6 +105,11 @@ router.get(
 );
 
 router.get(
+  '/nearby',
+  asyncHandler(gymController.getNearbyGyms)
+);
+
+router.get(
   '/',
   asyncHandler(gymController.getAllGyms)
 );
