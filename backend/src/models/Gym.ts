@@ -1,5 +1,15 @@
 import { pgPool } from '../config/database';
 
+export interface OperatingHours {
+    monday?: { open: string; close: string };
+    tuesday?: { open: string; close: string };
+    wednesday?: { open: string; close: string };
+    thursday?: { open: string; close: string };
+    friday?: { open: string; close: string };
+    saturday?: { open: string; close: string };
+    sunday?: { open: string; close: string };
+}
+
 export interface Gym {
     id: number;
     name: string;
@@ -14,6 +24,7 @@ export interface Gym {
     capacity: number;
     rating: number;
     isVerified: boolean;
+    operatingHours?: OperatingHours;
     createdAt: Date;
     updatedAt?: Date;
 }
@@ -70,8 +81,8 @@ export class GymModel {
       SELECT 
         id, name, owner_id as "ownerId", address, latitude, longitude,
         city, pincode, amenities, base_price as "basePrice", capacity,
-        rating, is_verified as "isVerified", created_at as "createdAt",
-        updated_at as "updatedAt"
+        rating, is_verified as "isVerified", operating_hours as "operatingHours",
+        created_at as "createdAt", updated_at as "updatedAt"
       FROM gyms
       WHERE id = $1
     `;
@@ -210,14 +221,56 @@ export class GymModel {
         return parseInt(result.rows[0].count);
     }
 
-    // Find nearby gyms using Haversine formula
+    // Find nearby gyms using Haversine formula with filters
     static async findNearby(
         latitude: number,
         longitude: number,
         radiusKm: number = 5,
         limit: number = 10,
-        offset: number = 0
+        offset: number = 0,
+        filters?: {
+            amenities?: string[];
+            minPrice?: number;
+            maxPrice?: number;
+        }
     ): Promise<(Gym & { distance: number })[]> {
+        const params: any[] = [latitude, longitude, radiusKm];
+        let paramCount = 3;
+
+        // Build WHERE conditions
+        const conditions: string[] = [`
+      (
+        6371 * acos(
+          cos(radians($1)) * cos(radians(latitude)) *
+          cos(radians(longitude) - radians($2)) +
+          sin(radians($1)) * sin(radians(latitude))
+        )
+      ) <= $3
+    `];
+
+        // Add amenities filter
+        if (filters?.amenities && filters.amenities.length > 0) {
+            paramCount++;
+            conditions.push(`amenities @> $${paramCount}::text[]`);
+            params.push(filters.amenities);
+        }
+
+        // Add price range filter
+        if (filters?.minPrice !== undefined) {
+            paramCount++;
+            conditions.push(`base_price >= $${paramCount}`);
+            params.push(filters.minPrice);
+        }
+
+        if (filters?.maxPrice !== undefined) {
+            paramCount++;
+            conditions.push(`base_price <= $${paramCount}`);
+            params.push(filters.maxPrice);
+        }
+
+        // Add limit and offset
+        params.push(limit, offset);
+
         // Haversine formula to calculate distance
         const query = `
       SELECT 
@@ -233,40 +286,67 @@ export class GymModel {
           )
         ) as distance
       FROM gyms
-      WHERE (
-        6371 * acos(
-          cos(radians($1)) * cos(radians(latitude)) *
-          cos(radians(longitude) - radians($2)) +
-          sin(radians($1)) * sin(radians(latitude))
-        )
-      ) <= $3
+      WHERE ${conditions.join(' AND ')}
       ORDER BY distance ASC
-      LIMIT $4 OFFSET $5
+      LIMIT $${paramCount + 1} OFFSET $${paramCount + 2}
     `;
 
-        const result = await pgPool.query(query, [latitude, longitude, radiusKm, limit, offset]);
+        const result = await pgPool.query(query, params);
         return result.rows;
     }
 
-    // Count nearby gyms
+    // Count nearby gyms with filters
     static async countNearby(
         latitude: number,
         longitude: number,
-        radiusKm: number = 5
+        radiusKm: number = 5,
+        filters?: {
+            amenities?: string[];
+            minPrice?: number;
+            maxPrice?: number;
+        }
     ): Promise<number> {
-        const query = `
-      SELECT COUNT(*) as count
-      FROM gyms
-      WHERE (
+        const params: any[] = [latitude, longitude, radiusKm];
+        let paramCount = 3;
+
+        // Build WHERE conditions
+        const conditions: string[] = [`
+      (
         6371 * acos(
           cos(radians($1)) * cos(radians(latitude)) *
           cos(radians(longitude) - radians($2)) +
           sin(radians($1)) * sin(radians(latitude))
         )
       ) <= $3
+    `];
+
+        // Add amenities filter
+        if (filters?.amenities && filters.amenities.length > 0) {
+            paramCount++;
+            conditions.push(`amenities @> $${paramCount}::text[]`);
+            params.push(filters.amenities);
+        }
+
+        // Add price range filter
+        if (filters?.minPrice !== undefined) {
+            paramCount++;
+            conditions.push(`base_price >= $${paramCount}`);
+            params.push(filters.minPrice);
+        }
+
+        if (filters?.maxPrice !== undefined) {
+            paramCount++;
+            conditions.push(`base_price <= $${paramCount}`);
+            params.push(filters.maxPrice);
+        }
+
+        const query = `
+      SELECT COUNT(*) as count
+      FROM gyms
+      WHERE ${conditions.join(' AND ')}
     `;
 
-        const result = await pgPool.query(query, [latitude, longitude, radiusKm]);
+        const result = await pgPool.query(query, params);
         return parseInt(result.rows[0].count);
     }
 }

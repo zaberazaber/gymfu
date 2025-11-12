@@ -224,6 +224,13 @@ export const getNearbyGyms = async (req: Request, res: Response) => {
     const limit = parseInt(req.query.limit as string) || 10;
     const offset = parseInt(req.query.offset as string) || 0;
 
+    // Parse filter parameters
+    const amenities = req.query.amenities
+      ? (req.query.amenities as string).split(',').map((a) => a.trim())
+      : undefined;
+    const minPrice = req.query.minPrice ? parseFloat(req.query.minPrice as string) : undefined;
+    const maxPrice = req.query.maxPrice ? parseFloat(req.query.maxPrice as string) : undefined;
+
     // Validate coordinates
     if (isNaN(latitude) || latitude < -90 || latitude > 90) {
       throw new AppError('Invalid latitude. Must be between -90 and 90', 400, 'INVALID_LATITUDE');
@@ -247,10 +254,33 @@ export const getNearbyGyms = async (req: Request, res: Response) => {
       throw new AppError('Offset must be non-negative', 400, 'INVALID_OFFSET');
     }
 
-    const gyms = await GymModel.findNearby(latitude, longitude, radius, limit, offset);
-    const totalCount = await GymModel.countNearby(latitude, longitude, radius);
+    // Validate price range
+    if (minPrice !== undefined && minPrice < 0) {
+      throw new AppError('Minimum price must be non-negative', 400, 'INVALID_MIN_PRICE');
+    }
 
-    logger.info(`Nearby gyms search: lat=${latitude}, lng=${longitude}, radius=${radius}km, found=${gyms.length}`);
+    if (maxPrice !== undefined && maxPrice < 0) {
+      throw new AppError('Maximum price must be non-negative', 400, 'INVALID_MAX_PRICE');
+    }
+
+    if (minPrice !== undefined && maxPrice !== undefined && minPrice > maxPrice) {
+      throw new AppError('Minimum price cannot be greater than maximum price', 400, 'INVALID_PRICE_RANGE');
+    }
+
+    // Build filters object
+    const filters = {
+      amenities,
+      minPrice,
+      maxPrice,
+    };
+
+    const gyms = await GymModel.findNearby(latitude, longitude, radius, limit, offset, filters);
+    const totalCount = await GymModel.countNearby(latitude, longitude, radius, filters);
+
+    logger.info(
+      `Nearby gyms search: lat=${latitude}, lng=${longitude}, radius=${radius}km, ` +
+        `amenities=${amenities?.join(',') || 'none'}, price=${minPrice || 0}-${maxPrice || '∞'}, found=${gyms.length}`
+    );
 
     res.json({
       success: true,
@@ -259,6 +289,11 @@ export const getNearbyGyms = async (req: Request, res: Response) => {
         latitude,
         longitude,
         radius,
+      },
+      filters: {
+        amenities: amenities || [],
+        minPrice: minPrice || null,
+        maxPrice: maxPrice || null,
       },
       pagination: {
         limit,
