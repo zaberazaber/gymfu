@@ -758,6 +758,96 @@ router.get('/public', optionalAuthenticate, asyncHandler(controller.method));
 
 ---
 
+### ✅ Task 2.5: Implement user login endpoint
+
+**Completed:** November 13, 2025
+
+**What was implemented:**
+- Created login endpoint for existing users
+- Implemented OTP generation and sending for login
+- Added validation for login requests
+- Reused existing OTP verification endpoint for login completion
+- Added masked value display for security
+- Created comprehensive integration tests
+- Tested complete login flow
+
+**Files created:**
+- `backend/src/__tests__/login.integration.test.ts` - Login integration tests (7 tests)
+
+**Files modified:**
+- `backend/src/controllers/authController.ts` - Added login method
+- `backend/src/routes/auth.ts` - Added login route with validation
+
+**Features:**
+- ✅ Login with phone number or email
+- ✅ User existence validation
+- ✅ OTP generation and storage in Redis
+- ✅ OTP sent via SMS/Email (mock)
+- ✅ Masked value display for security
+- ✅ Input validation
+- ✅ Reuses verify-otp endpoint for completion
+- ✅ Complete login flow tested
+
+**API Endpoints:**
+```
+POST /api/v1/auth/login      - Login with phone/email, sends OTP
+POST /api/v1/auth/verify-otp - Verify OTP and get JWT token (reused)
+```
+
+**Validation Rules:**
+- Phone: Indian format (10 digits starting with 6-9)
+- Email: Valid email format
+- At least one of phone or email required
+
+**Testing Results:**
+✅ All 67 tests passing (7 new login tests)
+✅ Login with phone number works
+✅ Login with email works
+✅ Non-existent user rejected
+✅ Invalid input rejected
+✅ Complete login flow works
+
+**Login Flow:**
+1. User submits phone/email to `/auth/login`
+2. System checks if user exists
+3. OTP generated and stored in Redis
+4. OTP sent via SMS/Email
+5. User receives OTP (e.g., 123456)
+6. User submits OTP to `/auth/verify-otp`
+7. System verifies OTP and returns JWT token
+8. User can now make authenticated requests
+
+**Example Request:**
+```json
+POST /api/v1/auth/login
+{
+  "phoneNumber": "9876543210"
+}
+```
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "identifier": "phone",
+    "maskedValue": "******3210"
+  },
+  "message": "OTP sent successfully. Please verify to complete login.",
+  "timestamp": "2025-11-13T01:51:50.000Z"
+}
+```
+
+**Security Features:**
+- Phone numbers masked: `******3210`
+- Email addresses masked: `te***@example.com`
+- OTP expires in 10 minutes
+- One-time use OTP (deleted after verification)
+
+**Next task:** 2.6 Build registration UI for web
+
+---
+
 ## Current Status - Authentication Complete! 🎉
 
 **Backend:** ✅ Running on http://localhost:3000 (with logging, error handling, and tests)

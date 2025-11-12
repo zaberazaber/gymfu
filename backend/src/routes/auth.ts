@@ -45,6 +45,28 @@ const registerValidation = [
   }),
 ];
 
+// Validation for login
+const loginValidation = [
+  body('phoneNumber')
+    .optional()
+    .matches(/^[6-9]\d{9}$/)
+    .withMessage('Invalid Indian phone number'),
+  
+  body('email')
+    .optional()
+    .isEmail()
+    .withMessage('Invalid email address')
+    .normalizeEmail(),
+  
+  // At least one of phone or email must be provided
+  body().custom((value, { req }) => {
+    if (!req.body.phoneNumber && !req.body.email) {
+      throw new Error('Either phone number or email is required');
+    }
+    return true;
+  }),
+];
+
 // Validation for OTP verification
 const verifyOTPValidation = [
   body('otp')
@@ -75,6 +97,7 @@ const verifyOTPValidation = [
 
 // Routes
 router.post('/register', registerValidation, asyncHandler(AuthController.register));
+router.post('/login', loginValidation, asyncHandler(AuthController.login));
 router.post('/verify-otp', verifyOTPValidation, asyncHandler(AuthController.verifyOTP));
 
 // Protected routes

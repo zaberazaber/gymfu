@@ -143,6 +143,60 @@ export class AuthController {
     });
   }
 
+  // Login existing user
+  static async login(req: Request, res: Response) {
+    // Check for validation errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      throw new AppError(
+        'Validation failed',
+        400,
+        'VALIDATION_FAILED'
+      );
+    }
+
+    const { phoneNumber, email } = req.body;
+    const identifier = phoneNumber || email;
+
+    // Check if user exists
+    let user;
+    if (phoneNumber) {
+      user = await UserModel.findByPhone(phoneNumber);
+    } else {
+      user = await UserModel.findByEmail(email!);
+    }
+
+    if (!user) {
+      throw new AppError(
+        'User not found. Please register first.',
+        404,
+        'USER_NOT_FOUND'
+      );
+    }
+
+    // Generate and store OTP
+    const otp = OTPService.generateOTP();
+    await OTPService.storeOTP(identifier, otp);
+
+    // Send OTP
+    await NotificationService.sendOTP(identifier, otp);
+
+    logger.info(`Login OTP sent to user: ${user.id}, identifier: ${identifier}`);
+
+    // Return success
+    res.json({
+      success: true,
+      data: {
+        identifier: phoneNumber ? 'phone' : 'email',
+        maskedValue: phoneNumber 
+          ? `******${phoneNumber.slice(-4)}` 
+          : email!.replace(/(.{2})(.*)(@.*)/, '$1***$3'),
+      },
+      message: 'OTP sent successfully. Please verify to complete login.',
+      timestamp: new Date().toISOString(),
+    });
+  }
+
   // Get current user
   static async me(req: Request, res: Response) {
     // User is attached to request by authenticate middleware
