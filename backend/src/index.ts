@@ -83,12 +83,15 @@ app.get('/', (req: Request, res: Response) => {
 const authRoutes = require('./routes/auth').default;
 const usersRoutes = require('./routes/users').default;
 const profileRoutes = require('./routes/profile').default;
+const gymRoutes = require('./routes/gyms').default;
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', usersRoutes);
 app.use('/api/v1/users', profileRoutes);
+app.use('/api/v1/gyms', gymRoutes);
 logger.info('🔐 Auth routes enabled at /api/v1/auth');
 logger.info('👤 Users routes enabled at /api/v1/users');
 logger.info('📝 Profile routes enabled at /api/v1/users/profile');
+logger.info('🏋️ Gym routes enabled at /api/v1/gyms');
 
 // Test routes (only in development)
 if (process.env.NODE_ENV === 'development') {

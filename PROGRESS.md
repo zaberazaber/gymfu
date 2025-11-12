@@ -1188,11 +1188,79 @@ curl -X PUT http://localhost:3000/api/v1/users/profile \
 - Error handling working
 - Loading states working
 
-**Next task:** 3.1 Implement gym discovery system
+**Next task:** 3.2 Implement gym listing endpoint
 
 ---
 
-## Current Status - Complete Profile Management System! 🎉
+### ✅ Task 3.1: Create Gym model and registration endpoint
+
+**Completed:** November 13, 2025
+
+**What was implemented:**
+
+#### Database Schema
+- ✅ Created gyms table in PostgreSQL
+- ✅ Fields: id, name, ownerId, address, latitude, longitude, city, pincode, amenities, basePrice, capacity, rating, isVerified, createdAt, updatedAt
+- ✅ Indexes on: owner_id, city, pincode, is_verified, location (lat/lng)
+- ✅ Foreign key constraint to users table
+
+#### Gym Model (CRUD Operations)
+- ✅ `create()` - Create new gym
+- ✅ `findById()` - Find gym by ID
+- ✅ `findByOwnerId()` - Find all gyms by owner
+- ✅ `findAll()` - Get all gyms with pagination
+- ✅ `update()` - Update gym details
+- ✅ `delete()` - Delete gym
+- ✅ `updateVerificationStatus()` - Admin verification
+- ✅ `count()` - Count total gyms
+
+#### API Endpoints
+- ✅ `POST /api/v1/gyms/register` - Register new gym (protected)
+- ✅ `GET /api/v1/gyms/:id` - Get gym by ID
+- ✅ `GET /api/v1/gyms/my-gyms` - Get user's gyms (protected)
+- ✅ `PUT /api/v1/gyms/:id` - Update gym (protected, owner only)
+- ✅ `DELETE /api/v1/gyms/:id` - Delete gym (protected, owner only)
+
+#### Validation Rules
+- ✅ Name: 2-255 characters
+- ✅ Address: Min 10 characters
+- ✅ Latitude: -90 to 90
+- ✅ Longitude: -180 to 180
+- ✅ City: 2-100 characters
+- ✅ Pincode: 6 digits (Indian format)
+- ✅ Amenities: Array of valid amenities
+- ✅ Base Price: Positive number
+- ✅ Capacity: Min 1
+
+#### Features
+- ✅ Authentication required for registration
+- ✅ Owner-only access for updates/deletes
+- ✅ isVerified defaults to false
+- ✅ Comprehensive error handling
+- ✅ Logging for all operations
+- ✅ TypeScript type safety
+
+**Files created:**
+- `backend/src/scripts/createGymsTable.ts` - Database migration
+- `backend/src/models/Gym.ts` - Gym model with CRUD
+- `backend/src/controllers/gymController.ts` - Gym controllers
+- `backend/src/routes/gyms.ts` - Gym routes with validation
+
+**Files modified:**
+- `backend/src/index.ts` - Registered gym routes
+
+**Testing:**
+- ✅ Gyms table created successfully
+- ✅ All indexes created
+- ✅ Backend restarted with gym routes
+- ✅ No TypeScript errors
+- ✅ Ready for API testing
+
+**Next task:** 3.2 Implement gym listing endpoint
+
+---
+
+## Current Status - Gym Registration System Complete! 🏋️
 
 **Backend:** ✅ Running on http://localhost:3000 (with logging, error handling, and tests)
 **Database:** ✅ Connected (PostgreSQL, MongoDB, Redis)
