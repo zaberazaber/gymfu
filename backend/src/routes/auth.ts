@@ -44,8 +44,37 @@ const registerValidation = [
   }),
 ];
 
+// Validation for OTP verification
+const verifyOTPValidation = [
+  body('otp')
+    .isLength({ min: 6, max: 6 })
+    .withMessage('OTP must be 6 digits')
+    .isNumeric()
+    .withMessage('OTP must contain only numbers'),
+  
+  body('phoneNumber')
+    .optional()
+    .matches(/^[6-9]\d{9}$/)
+    .withMessage('Invalid Indian phone number'),
+  
+  body('email')
+    .optional()
+    .isEmail()
+    .withMessage('Invalid email address')
+    .normalizeEmail(),
+  
+  // At least one of phone or email must be provided
+  body().custom((value, { req }) => {
+    if (!req.body.phoneNumber && !req.body.email) {
+      throw new Error('Either phone number or email is required');
+    }
+    return true;
+  }),
+];
+
 // Routes
 router.post('/register', registerValidation, asyncHandler(AuthController.register));
+router.post('/verify-otp', verifyOTPValidation, asyncHandler(AuthController.verifyOTP));
 router.get('/me', asyncHandler(AuthController.me));
 
 export default router;

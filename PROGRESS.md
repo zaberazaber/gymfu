@@ -553,6 +553,103 @@ Message: Your GYMFU verification code is: 169482. Valid for 10 minutes.
 
 ---
 
+### ✅ Task 2.3: Implement OTP verification and JWT authentication
+
+**Completed:** November 12, 2025
+
+**What was implemented:**
+- Installed jsonwebtoken library
+- Created JWT service for token generation and verification
+- Implemented OTP verification endpoint
+- Added JWT token generation on successful OTP verification
+- Integrated OTP verification into auth flow
+- Added validation for OTP verification requests
+- Tested complete registration and verification flow
+
+**Files created:**
+- `backend/src/services/jwtService.ts` - JWT token management
+
+**Files modified:**
+- `backend/src/controllers/authController.ts` - Added verifyOTP method
+- `backend/src/routes/auth.ts` - Added verify-otp route with validation
+- `backend/.env` - Added JWT_SECRET and JWT_EXPIRY
+
+**Features:**
+- ✅ JWT token generation with user payload
+- ✅ Token expiry configuration (7 days default)
+- ✅ OTP verification with Redis lookup
+- ✅ One-time OTP use (deleted after verification)
+- ✅ Invalid OTP rejection
+- ✅ Expired OTP handling
+- ✅ User data included in token payload
+
+**JWT Service Methods:**
+- `generateToken(user)` - Generate JWT with user data
+- `verifyToken(token)` - Verify and decode JWT
+- `decodeToken(token)` - Decode without verification
+
+**JWT Payload:**
+```typescript
+{
+  userId: number,
+  phoneNumber?: string,
+  email?: string,
+  name: string,
+  iat: number,  // issued at
+  exp: number   // expiry
+}
+```
+
+**API Endpoints:**
+```
+POST /api/v1/auth/register    - Register user and send OTP
+POST /api/v1/auth/verify-otp  - Verify OTP and get JWT token
+```
+
+**Testing Results:**
+✅ OTP verification with valid OTP: SUCCESS
+✅ JWT token generated and returned
+✅ Invalid OTP rejected with proper error
+✅ Expired OTP handled correctly
+✅ Token includes user data
+
+**Complete Registration Flow:**
+1. User registers → OTP sent (169482)
+2. User submits OTP → Verified ✅
+3. JWT token generated and returned
+4. User can now make authenticated requests
+
+**Example Request:**
+```json
+POST /api/v1/auth/verify-otp
+{
+  "phoneNumber": "8765432109",
+  "otp": "169482"
+}
+```
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "user": {
+      "id": 3,
+      "phoneNumber": "8765432109",
+      "name": "OTP Test User",
+      "createdAt": "2025-11-12T21:26:34.000Z"
+    }
+  },
+  "message": "OTP verified successfully",
+  "timestamp": "2025-11-12T21:31:12.000Z"
+}
+```
+
+**Next task:** 2.4 Create JWT authentication middleware
+
+---
+
 ## Current Status - Infrastructure Complete! 🎉
 
 **Backend:** ✅ Running on http://localhost:3000 (with logging, error handling, and tests)
