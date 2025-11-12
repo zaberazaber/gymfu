@@ -93,9 +93,32 @@ docker-compose restart
 - Check container logs: `docker-compose logs`
 - Verify credentials in `.env` file
 
+## Start the Web Application
+
+### 1. Install web dependencies
+```bash
+cd web
+npm install
+```
+
+### 2. Start the web development server
+```bash
+npm run dev
+```
+
+The web app will start on http://localhost:5173
+
+## Access the Application
+
+- **Web App:** http://localhost:5173
+- **Backend API:** http://localhost:3000
+- **API Health Check:** http://localhost:3000/health
+- **Database Health:** http://localhost:3000/health/db
+
 ## Next Steps
 
 Once everything is running:
-1. The backend API is ready at http://localhost:3000
-2. You can test endpoints using Postman or curl
-3. Next task: Set up the React web frontend (Task 1.3)
+1. ✅ Backend API is ready at http://localhost:3000
+2. ✅ Web app is ready at http://localhost:5173
+3. ✅ You can see the GYMFU homepage with backend status
+4. Next task: Set up the React Native mobile app (Task 1.4)
