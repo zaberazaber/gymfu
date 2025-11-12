@@ -81,8 +81,11 @@ app.get('/', (req: Request, res: Response) => {
 
 // API Routes
 const authRoutes = require('./routes/auth').default;
+const usersRoutes = require('./routes/users').default;
 app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/users', usersRoutes);
 logger.info('🔐 Auth routes enabled at /api/v1/auth');
+logger.info('👤 Users routes enabled at /api/v1/users');
 
 // Test routes (only in development)
 if (process.env.NODE_ENV === 'development') {
@@ -128,6 +131,9 @@ process.on('uncaughtException', (error: Error) => {
   process.exit(1);
 });
 
-startServer();
+// Only start server if not in test mode
+if (process.env.NODE_ENV !== 'test') {
+  startServer();
+}
 
 export default app;

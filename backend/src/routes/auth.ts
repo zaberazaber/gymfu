@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { body } from 'express-validator';
 import { AuthController } from '../controllers/authController';
 import { asyncHandler } from '../middleware/errorHandler';
+import { authenticate } from '../middleware/authMiddleware';
 
 const router = Router();
 
@@ -75,6 +76,8 @@ const verifyOTPValidation = [
 // Routes
 router.post('/register', registerValidation, asyncHandler(AuthController.register));
 router.post('/verify-otp', verifyOTPValidation, asyncHandler(AuthController.verifyOTP));
-router.get('/me', asyncHandler(AuthController.me));
+
+// Protected routes
+router.get('/me', authenticate, asyncHandler(AuthController.me));
 
 export default router;

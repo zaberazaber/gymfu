@@ -650,7 +650,115 @@ POST /api/v1/auth/verify-otp
 
 ---
 
-## Current Status - Infrastructure Complete! 🎉
+### ✅ Task 2.4: Create JWT authentication middleware
+
+**Completed:** November 13, 2025
+
+**What was implemented:**
+- Created JWT authentication middleware
+- Implemented token verification from Authorization header
+- Added user attachment to request object
+- Created protected route for getting current user
+- Implemented optional authentication middleware
+- Added comprehensive error handling for token issues
+- Created users routes with authentication
+- Wrote unit tests for authentication middleware
+- Wrote integration tests for protected endpoints
+- Fixed server startup in test mode
+
+**Files created:**
+- `backend/src/middleware/authMiddleware.ts` - JWT authentication middleware
+- `backend/src/routes/users.ts` - Protected user routes
+- `backend/src/__tests__/authMiddleware.test.ts` - Middleware unit tests (9 tests)
+- `backend/src/__tests__/auth.integration.test.ts` - Integration tests (5 tests)
+
+**Files modified:**
+- `backend/src/controllers/authController.ts` - Implemented /users/me endpoint
+- `backend/src/routes/auth.ts` - Added authentication to /me route
+- `backend/src/index.ts` - Added users routes, fixed test mode
+- `backend/src/services/jwtService.ts` - Fixed TypeScript types
+
+**Features:**
+- ✅ JWT token verification from Authorization header
+- ✅ Bearer token format validation
+- ✅ User data attached to request object
+- ✅ Protected routes with authentication
+- ✅ Optional authentication for public routes
+- ✅ Comprehensive error handling (expired, invalid, missing tokens)
+- ✅ TypeScript type safety with Request extension
+- ✅ Proper error codes and messages
+
+**Middleware Functions:**
+- `authenticate` - Required authentication (401 if no token)
+- `optionalAuthenticate` - Optional authentication (continues without token)
+
+**Error Codes:**
+- `NO_TOKEN` - No authorization header provided
+- `INVALID_TOKEN_FORMAT` - Wrong format (not "Bearer <token>")
+- `EMPTY_TOKEN` - Token is empty
+- `TOKEN_EXPIRED` - Token has expired
+- `INVALID_TOKEN` - Token is invalid
+- `TOKEN_VERIFICATION_FAILED` - General verification failure
+
+**API Endpoints:**
+```
+GET /api/v1/users/me - Get current user (protected)
+```
+
+**Testing Results:**
+✅ All 60 tests passing
+✅ 9 middleware unit tests
+✅ 5 integration tests
+✅ Token validation works correctly
+✅ Protected endpoint requires valid token
+✅ Invalid tokens rejected with proper errors
+✅ User data returned successfully
+
+**Example Usage:**
+```bash
+# Without token (fails)
+curl http://localhost:3000/api/v1/users/me
+# Response: 401 NO_TOKEN
+
+# With valid token (success)
+curl http://localhost:3000/api/v1/users/me \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+# Response: User data
+```
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": 1,
+    "phoneNumber": "9876543210",
+    "email": "test@example.com",
+    "name": "Test User",
+    "createdAt": "2025-11-12T21:26:34.000Z",
+    "updatedAt": "2025-11-12T21:26:34.000Z"
+  },
+  "message": "User profile retrieved successfully",
+  "timestamp": "2025-11-13T01:44:11.316Z"
+}
+```
+
+**How to Use in Routes:**
+```typescript
+import { authenticate } from '../middleware/authMiddleware';
+
+// Protected route
+router.get('/protected', authenticate, asyncHandler(controller.method));
+
+// Optional auth
+router.get('/public', optionalAuthenticate, asyncHandler(controller.method));
+```
+
+**Next task:** 2.5 Implement user login endpoint
+
+---
+
+## Current Status - Authentication Complete! 🎉
 
 **Backend:** ✅ Running on http://localhost:3000 (with logging, error handling, and tests)
 **Database:** ✅ Connected (PostgreSQL, MongoDB, Redis)

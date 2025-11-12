@@ -1,8 +1,8 @@
 import jwt from 'jsonwebtoken';
 import { User } from '../models/User';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'default-secret-key';
-const JWT_EXPIRY = process.env.JWT_EXPIRY || '7d';
+const JWT_SECRET: string = process.env.JWT_SECRET || 'default-secret-key';
+const JWT_EXPIRY: string = process.env.JWT_EXPIRY || '7d';
 
 export interface JWTPayload {
   userId: number;
@@ -22,7 +22,7 @@ export class JWTService {
     };
 
     return jwt.sign(payload, JWT_SECRET, {
-      expiresIn: JWT_EXPIRY,
+      expiresIn: JWT_EXPIRY as jwt.SignOptions['expiresIn'],
     });
   }
 

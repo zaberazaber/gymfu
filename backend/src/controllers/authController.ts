@@ -143,12 +143,42 @@ export class AuthController {
     });
   }
 
-  // Get current user (placeholder for now)
+  // Get current user
   static async me(req: Request, res: Response) {
-    // This will be implemented after JWT authentication
+    // User is attached to request by authenticate middleware
+    if (!req.user) {
+      throw new AppError(
+        'User not authenticated',
+        401,
+        'NOT_AUTHENTICATED'
+      );
+    }
+
+    // Find user by ID from JWT payload
+    const user = await UserModel.findById(req.user.userId);
+
+    if (!user) {
+      throw new AppError(
+        'User not found',
+        404,
+        'USER_NOT_FOUND'
+      );
+    }
+
+    logger.info(`User profile retrieved: ${user.id}`);
+
+    // Return user data (without password)
     res.json({
       success: true,
-      message: 'Get current user - to be implemented',
+      data: {
+        id: user.id,
+        phoneNumber: user.phoneNumber,
+        email: user.email,
+        name: user.name,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      },
+      message: 'User profile retrieved successfully',
       timestamp: new Date().toISOString(),
     });
   }
