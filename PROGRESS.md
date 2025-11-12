@@ -1188,7 +1188,69 @@ curl -X PUT http://localhost:3000/api/v1/users/profile \
 - Error handling working
 - Loading states working
 
-**Next task:** 3.2 Implement gym listing endpoint
+**Next task:** 3.3 Implement nearby gyms search with geospatial queries
+
+---
+
+### ✅ Task 3.2: Implement gym listing endpoint
+
+**Completed:** November 13, 2025
+
+**What was implemented:**
+
+#### API Endpoint
+- ✅ `GET /api/v1/gyms` - Get all gyms with pagination
+
+#### Features
+- ✅ Pagination support (limit, offset)
+- ✅ Default limit: 10 gyms per page
+- ✅ Maximum limit: 100 gyms per page
+- ✅ Offset validation (non-negative)
+- ✅ Total count included in response
+- ✅ `hasMore` flag for pagination UI
+- ✅ Comprehensive error handling
+
+#### Response Format
+```json
+{
+  "success": true,
+  "data": [...gyms],
+  "pagination": {
+    "limit": 10,
+    "offset": 0,
+    "total": 25,
+    "hasMore": true
+  },
+  "timestamp": "2025-11-13T..."
+}
+```
+
+#### Query Parameters
+- `limit` - Number of gyms per page (1-100, default: 10)
+- `offset` - Number of gyms to skip (default: 0)
+
+**Files modified:**
+- `backend/src/controllers/gymController.ts` - Added getAllGyms controller
+- `backend/src/routes/gyms.ts` - Added GET / route
+
+**Testing:**
+- ✅ Backend restarted successfully
+- ✅ No TypeScript errors
+- ✅ Route registered at GET /api/v1/gyms
+
+**Example Usage:**
+```bash
+# Get first 10 gyms
+curl http://localhost:3000/api/v1/gyms
+
+# Get next 10 gyms
+curl http://localhost:3000/api/v1/gyms?limit=10&offset=10
+
+# Get 20 gyms
+curl http://localhost:3000/api/v1/gyms?limit=20&offset=0
+```
+
+**Next task:** 3.3 Implement nearby gyms search with geospatial queries
 
 ---
 

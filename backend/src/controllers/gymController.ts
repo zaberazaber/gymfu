@@ -182,3 +182,36 @@ export const deleteGym = async (req: Request, res: Response) => {
     throw error;
   }
 };
+
+export const getAllGyms = async (req: Request, res: Response) => {
+  try {
+    const limit = parseInt(req.query.limit as string) || 10;
+    const offset = parseInt(req.query.offset as string) || 0;
+
+    // Validate pagination parameters
+    if (limit < 1 || limit > 100) {
+      throw new AppError('Limit must be between 1 and 100', 400, 'INVALID_LIMIT');
+    }
+
+    if (offset < 0) {
+      throw new AppError('Offset must be non-negative', 400, 'INVALID_OFFSET');
+    }
+
+    const gyms = await GymModel.findAll(limit, offset);
+    const totalCount = await GymModel.count();
+
+    res.json({
+      success: true,
+      data: gyms,
+      pagination: {
+        limit,
+        offset,
+        total: totalCount,
+        hasMore: offset + gyms.length < totalCount,
+      },
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    throw error;
+  }
+};

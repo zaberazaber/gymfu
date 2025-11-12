@@ -105,6 +105,11 @@ router.get(
 );
 
 router.get(
+  '/',
+  asyncHandler(gymController.getAllGyms)
+);
+
+router.get(
   '/:id',
   param('id').isInt().withMessage('Invalid gym ID'),
   asyncHandler(gymController.getGymById)
