@@ -82,10 +82,13 @@ app.get('/', (req: Request, res: Response) => {
 // API Routes
 const authRoutes = require('./routes/auth').default;
 const usersRoutes = require('./routes/users').default;
+const profileRoutes = require('./routes/profile').default;
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', usersRoutes);
+app.use('/api/v1/users', profileRoutes);
 logger.info('🔐 Auth routes enabled at /api/v1/auth');
 logger.info('👤 Users routes enabled at /api/v1/users');
+logger.info('📝 Profile routes enabled at /api/v1/users/profile');
 
 // Test routes (only in development)
 if (process.env.NODE_ENV === 'development') {

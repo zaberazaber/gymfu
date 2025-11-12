@@ -1028,7 +1028,97 @@ npm start
 
 ---
 
-## Current Status - Mobile & Web Authentication Complete! 🎉
+### ✅ Task 2.8: Implement profile management endpoints
+
+**Completed:** November 13, 2025
+
+**What was implemented:**
+- Added profile fields to User table (age, gender, location, fitnessGoals, profileImage)
+- Created profile controller with get and update methods
+- Created profile routes with comprehensive validation
+- Implemented profile management in User model
+- Created integration tests for profile endpoints
+- All tests passing (78 total)
+
+**Files created:**
+- `backend/src/scripts/addProfileFields.ts` - Database migration script
+- `backend/src/controllers/profileController.ts` - Profile controller
+- `backend/src/routes/profile.ts` - Profile routes with validation
+- `backend/src/__tests__/profile.integration.test.ts` - Profile tests (11 tests)
+
+**Files modified:**
+- `backend/src/models/User.ts` - Added profile fields and methods
+- `backend/src/index.ts` - Registered profile routes
+
+**Database Schema Updates:**
+```sql
+ALTER TABLE users
+ADD COLUMN age INTEGER,
+ADD COLUMN gender VARCHAR(20),
+ADD COLUMN location JSONB,
+ADD COLUMN fitness_goals TEXT[],
+ADD COLUMN profile_image TEXT;
+```
+
+**API Endpoints:**
+- `GET /api/v1/users/profile` - Get user profile (protected)
+- `PUT /api/v1/users/profile` - Update user profile (protected)
+
+**Profile Fields:**
+- `age` - Integer (13-120)
+- `gender` - Enum: male, female, other, prefer_not_to_say
+- `location` - Object with city, state, country, pincode
+- `fitnessGoals` - Array of: weight_loss, muscle_gain, general_fitness, strength, endurance, flexibility, sports_training
+- `profileImage` - String (URL or base64)
+
+**Validation Rules:**
+- Age: 13-120 years
+- Gender: Valid enum values
+- Location: Valid city, state, country names
+- Pincode: 6 digits (Indian format)
+- Fitness goals: Valid predefined goals
+- Name: 2-100 characters
+
+**Testing Results:**
+✅ All 78 tests passing (11 new profile tests)
+✅ Get profile with authentication
+✅ Update profile fields
+✅ Update location
+✅ Update fitness goals
+✅ Validation for all fields
+✅ Error handling for invalid data
+
+**Example Requests:**
+
+Get Profile:
+```bash
+curl http://localhost:3000/api/v1/users/profile \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+Update Profile:
+```bash
+curl -X PUT http://localhost:3000/api/v1/users/profile \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "age": 25,
+    "gender": "male",
+    "location": {
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "country": "India",
+      "pincode": "400001"
+    },
+    "fitnessGoals": ["weight_loss", "muscle_gain"]
+  }'
+```
+
+**Next task:** 2.9 Build profile screens (web and mobile)
+
+---
+
+## Current Status - Profile Management Backend Complete! 🎉
 
 **Backend:** ✅ Running on http://localhost:3000 (with logging, error handling, and tests)
 **Database:** ✅ Connected (PostgreSQL, MongoDB, Redis)

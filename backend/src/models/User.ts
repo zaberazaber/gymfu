@@ -1,12 +1,24 @@
 import { pgPool } from '../config/database';
 import bcrypt from 'bcrypt';
 
+export interface Location {
+  city?: string;
+  state?: string;
+  country?: string;
+  pincode?: string;
+}
+
 export interface User {
   id: number;
   phoneNumber?: string;
   email?: string;
   name: string;
   password: string;
+  age?: number;
+  gender?: string;
+  location?: Location;
+  fitnessGoals?: string[];
+  profileImage?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -16,6 +28,15 @@ export interface CreateUserData {
   email?: string;
   name: string;
   password: string;
+}
+
+export interface UpdateProfileData {
+  name?: string;
+  age?: number;
+  gender?: string;
+  location?: Location;
+  fitnessGoals?: string[];
+  profileImage?: string;
 }
 
 export class UserModel {
@@ -78,12 +99,112 @@ export class UserModel {
   // Find user by ID
   static async findById(id: number): Promise<User | null> {
     const query = `
-      SELECT id, phone_number as "phoneNumber", email, name, password, created_at as "createdAt", updated_at as "updatedAt"
+      SELECT 
+        id, 
+        phone_number as "phoneNumber", 
+        email, 
+        name, 
+        password, 
+        age,
+        gender,
+        location,
+        fitness_goals as "fitnessGoals",
+        profile_image as "profileImage",
+        created_at as "createdAt", 
+        updated_at as "updatedAt"
       FROM users
       WHERE id = $1
     `;
 
     const result = await pgPool.query(query, [id]);
+    return result.rows[0] || null;
+  }
+
+  // Get user profile (without password)
+  static async getProfile(id: number): Promise<Omit<User, 'password'> | null> {
+    const query = `
+      SELECT 
+        id, 
+        phone_number as "phoneNumber", 
+        email, 
+        name, 
+        age,
+        gender,
+        location,
+        fitness_goals as "fitnessGoals",
+        profile_image as "profileImage",
+        created_at as "createdAt", 
+        updated_at as "updatedAt"
+      FROM users
+      WHERE id = $1
+    `;
+
+    const result = await pgPool.query(query, [id]);
+    return result.rows[0] || null;
+  }
+
+  // Update user profile
+  static async updateProfile(id: number, profileData: UpdateProfileData): Promise<Omit<User, 'password'> | null> {
+    const fields: string[] = [];
+    const values: any[] = [];
+    let paramCount = 1;
+
+    if (profileData.name !== undefined) {
+      fields.push(`name = $${paramCount++}`);
+      values.push(profileData.name);
+    }
+
+    if (profileData.age !== undefined) {
+      fields.push(`age = $${paramCount++}`);
+      values.push(profileData.age);
+    }
+
+    if (profileData.gender !== undefined) {
+      fields.push(`gender = $${paramCount++}`);
+      values.push(profileData.gender);
+    }
+
+    if (profileData.location !== undefined) {
+      fields.push(`location = $${paramCount++}`);
+      values.push(JSON.stringify(profileData.location));
+    }
+
+    if (profileData.fitnessGoals !== undefined) {
+      fields.push(`fitness_goals = $${paramCount++}`);
+      values.push(profileData.fitnessGoals);
+    }
+
+    if (profileData.profileImage !== undefined) {
+      fields.push(`profile_image = $${paramCount++}`);
+      values.push(profileData.profileImage);
+    }
+
+    if (fields.length === 0) {
+      return this.getProfile(id);
+    }
+
+    fields.push(`updated_at = NOW()`);
+    values.push(id);
+
+    const query = `
+      UPDATE users
+      SET ${fields.join(', ')}
+      WHERE id = $${paramCount}
+      RETURNING 
+        id, 
+        phone_number as "phoneNumber", 
+        email, 
+        name, 
+        age,
+        gender,
+        location,
+        fitness_goals as "fitnessGoals",
+        profile_image as "profileImage",
+        created_at as "createdAt", 
+        updated_at as "updatedAt"
+    `;
+
+    const result = await pgPool.query(query, values);
     return result.rows[0] || null;
   }
 
