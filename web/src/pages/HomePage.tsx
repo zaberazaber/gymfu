@@ -1,4 +1,7 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAppDispatch, useAppSelector } from '../store/hooks';
+import { getCurrentUser, logout } from '../store/authSlice';
 import api from '../utils/api';
 
 interface HealthResponse {
@@ -8,6 +11,10 @@ interface HealthResponse {
 }
 
 function HomePage() {
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const { user, isAuthenticated, token } = useAppSelector((state) => state.auth);
+
   const [health, setHealth] = useState<HealthResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -15,8 +22,10 @@ function HomePage() {
   useEffect(() => {
     const checkHealth = async () => {
       try {
-        const response = await api.get<HealthResponse>('/health');
-        setHealth(response.data);
+        // Health endpoint is at root, not under /api/v1
+        const response = await fetch('http://localhost:3000/health');
+        const data = await response.json();
+        setHealth(data);
         setError(null);
       } catch (err) {
         setError('Failed to connect to backend API');
@@ -27,7 +36,12 @@ function HomePage() {
     };
 
     checkHealth();
-  }, []);
+
+    // Get current user if token exists but user data is not loaded
+    if (token && !user) {
+      dispatch(getCurrentUser());
+    }
+  }, [token, user, dispatch]);
 
   return (
     <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
@@ -127,9 +141,81 @@ function HomePage() {
         </div>
       </div>
 
-      <div style={{ textAlign: 'center', color: '#6B7280' }}>
-        <p>Coming soon: User registration, gym discovery, and more!</p>
-      </div>
+      {isAuthenticated && user ? (
+        <div style={{ 
+          background: 'white', 
+          padding: '2rem', 
+          borderRadius: '0.5rem',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+          textAlign: 'center'
+        }}>
+          <h2 style={{ marginBottom: '1rem' }}>Welcome, {user.name}! 👋</h2>
+          <p style={{ color: '#6B7280', marginBottom: '1rem' }}>
+            {user.phoneNumber && `Phone: ${user.phoneNumber}`}
+            {user.email && `Email: ${user.email}`}
+          </p>
+          <button
+            onClick={() => dispatch(logout())}
+            style={{
+              padding: '0.75rem 2rem',
+              background: '#EF4444',
+              color: 'white',
+              border: 'none',
+              borderRadius: '0.5rem',
+              fontSize: '1rem',
+              fontWeight: '600',
+              cursor: 'pointer',
+            }}
+          >
+            Logout
+          </button>
+        </div>
+      ) : (
+        <div style={{ 
+          textAlign: 'center',
+          background: 'white',
+          padding: '2rem',
+          borderRadius: '0.5rem',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+        }}>
+          <h2 style={{ marginBottom: '1rem' }}>Get Started with GYMFU</h2>
+          <p style={{ color: '#6B7280', marginBottom: '1.5rem' }}>
+            Create an account to start booking gym sessions
+          </p>
+          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+            <button
+              onClick={() => navigate('/register')}
+              style={{
+                padding: '0.75rem 2rem',
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '0.5rem',
+                fontSize: '1rem',
+                fontWeight: '600',
+                cursor: 'pointer',
+              }}
+            >
+              Register
+            </button>
+            <button
+              onClick={() => navigate('/login')}
+              style={{
+                padding: '0.75rem 2rem',
+                background: 'white',
+                color: '#667eea',
+                border: '2px solid #667eea',
+                borderRadius: '0.5rem',
+                fontSize: '1rem',
+                fontWeight: '600',
+                cursor: 'pointer',
+              }}
+            >
+              Login
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

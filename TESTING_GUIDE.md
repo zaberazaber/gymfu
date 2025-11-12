@@ -1,322 +1,220 @@
 # GYMFU Testing Guide
 
-## Current Implementation Status
+## ✅ What's Been Completed
 
-### ✅ Completed Features
-1. Backend API with health check
-2. Database connections (PostgreSQL, MongoDB, Redis)
-3. Web frontend with backend integration
-4. Mobile app with platform-specific API URLs
+### Backend (Tasks 1.1 - 2.5)
+- Express server with TypeScript
+- PostgreSQL, MongoDB, Redis connections
+- User registration and login endpoints
+- OTP generation and verification
+- JWT authentication middleware
+- Protected routes
+- Error handling and logging
+- 67 passing tests
 
-## Testing Checklist
+### Web Frontend (Task 2.6)
+- React app with Vite
+- Redux Toolkit state management
+- Registration UI with validation
+- OTP verification UI
+- JWT token storage
+- User authentication flow
+- Responsive design
 
-### Backend Testing
+## 🧪 Testing the Registration Flow
 
-#### 1. Start Backend Server
+### Step 1: Ensure Services are Running
+
+```bash
+# Check if Docker containers are running
+docker ps
+
+# Should see: postgres, mongo, redis containers
+
+# Backend should be running on http://localhost:3000
+# Web should be running on http://localhost:5173
+```
+
+### Step 2: Test via Web UI
+
+1. **Open the web app**: http://localhost:5173
+
+2. **Click "Register" button**
+
+3. **Fill the registration form**:
+   - Name: `Test User`
+   - Toggle to Phone or Email
+   - Phone: `9876543210` (or Email: `test@example.com`)
+   - Password: `Test@1234`
+   - Confirm Password: `Test@1234`
+
+4. **Click "Create Account"**
+
+5. **Check backend console** for OTP:
+   - Look for a message like:
+   ```
+   ==================================================
+   📱 SMS SENT
+   To: 9876543210
+   Message: Your GYMFU verification code is: 123456. Valid for 10 minutes.
+   ==================================================
+   ```
+
+6. **Enter the 6-digit OTP** on the verification page
+
+7. **Click "Verify OTP"**
+
+8. **Success!** You should be redirected to the homepage showing:
+   - "Welcome, Test User! 👋"
+   - Your phone number or email
+   - A "Logout" button
+
+### Step 3: Test API Directly
+
+```powershell
+# 1. Register a user
+$body = @{
+    name = "API Test User"
+    phoneNumber = "9123456789"
+    password = "Test@1234"
+} | ConvertTo-Json
+
+$response = Invoke-RestMethod -Uri "http://localhost:3000/api/v1/auth/register" `
+    -Method POST -Body $body -ContentType "application/json"
+
+# Check backend console for OTP
+
+# 2. Verify OTP (replace YOUR_OTP with actual OTP from console)
+$otpBody = @{
+    phoneNumber = "9123456789"
+    otp = "YOUR_OTP"
+} | ConvertTo-Json
+
+$authResponse = Invoke-RestMethod -Uri "http://localhost:3000/api/v1/auth/verify-otp" `
+    -Method POST -Body $otpBody -ContentType "application/json"
+
+# Save the token
+$token = $authResponse.data.token
+
+# 3. Test protected endpoint
+$headers = @{
+    Authorization = "Bearer $token"
+}
+
+Invoke-RestMethod -Uri "http://localhost:3000/api/v1/users/me" `
+    -Method GET -Headers $headers
+```
+
+## 🎯 What to Test
+
+### Registration Form Validation
+- ✅ Name too short (< 2 characters)
+- ✅ Invalid phone number (not 10 digits, doesn't start with 6-9)
+- ✅ Invalid email format
+- ✅ Weak password (< 8 chars, no uppercase, no lowercase, no number)
+- ✅ Passwords don't match
+- ✅ Toggle between phone and email
+
+### OTP Verification
+- ✅ Auto-focus on next input when typing
+- ✅ Backspace focuses previous input
+- ✅ Paste 6-digit code fills all inputs
+- ✅ Submit button disabled until all 6 digits entered
+- ✅ Invalid OTP shows error message
+- ✅ Expired OTP shows error message
+
+### Authentication Flow
+- ✅ JWT token stored in localStorage
+- ✅ User info displayed on homepage when logged in
+- ✅ Logout clears token and redirects
+- ✅ Protected routes require authentication
+
+## 📊 Test Results
+
+### Backend Tests
 ```bash
 cd backend
-npm run dev
+npm test
 ```
+Expected: **67 tests passing**
+- 17 validation tests
+- 21 formatting tests
+- 3 error handler tests
+- 9 auth middleware tests
+- 5 auth integration tests
+- 7 login integration tests
+- 5 health endpoint tests
 
-**Expected Output:**
-```
-✅ PostgreSQL connected successfully
-✅ MongoDB connected successfully
-✅ Redis connected successfully
-🎉 All databases connected successfully
-🚀 Server is running on http://localhost:3000
-```
+### API Endpoints Working
+- ✅ `GET /health` - Health check
+- ✅ `GET /health/db` - Database health
+- ✅ `POST /api/v1/auth/register` - User registration
+- ✅ `POST /api/v1/auth/login` - User login
+- ✅ `POST /api/v1/auth/verify-otp` - OTP verification
+- ✅ `GET /api/v1/users/me` - Get current user (protected)
 
-#### 2. Test Health Endpoint
-```bash
-curl http://localhost:3000/health
-```
+### Web UI Working
+- ✅ Homepage loads
+- ✅ Registration page loads
+- ✅ OTP verification page loads
+- ✅ Form validation works
+- ✅ API integration works
+- ✅ Redux state management works
+- ✅ Navigation works
+- ✅ Responsive design works
 
-**Expected Response:**
-```json
-{
-  "success": true,
-  "message": "GYMFU API is running",
-  "timestamp": "2025-11-12T16:25:00.095Z"
-}
-```
+## 🐛 Troubleshooting
 
-#### 3. Test Database Health
-```bash
-curl http://localhost:3000/health/db
-```
+### OTP not visible in logs
+The OTP is printed to the backend console. If you don't see it:
+1. Check the terminal where `npm run dev` is running in the backend folder
+2. Look for the "SMS SENT" or "EMAIL SENT" message
+3. The OTP is a 6-digit number
 
-**Expected Response:**
-```json
-{
-  "success": true,
-  "databases": {
-    "postgres": true,
-    "mongodb": true,
-    "redis": true
-  },
-  "timestamp": "2025-11-12T16:25:00.095Z"
-}
-```
+### Token not persisting
+1. Open browser DevTools (F12)
+2. Go to Application → Local Storage
+3. Check if 'token' key exists
+4. If not, check browser console for errors
 
-### Web App Testing
+### Backend not responding
+1. Ensure Docker containers are running: `docker ps`
+2. Ensure backend is running: `cd backend && npm run dev`
+3. Check http://localhost:3000/health
 
-#### 1. Start Web App
-```bash
-cd web
-npm run dev
-```
+### Web app not loading
+1. Ensure web server is running: `cd web && npm run dev`
+2. Check http://localhost:5173
+3. Clear browser cache and reload
 
-**Expected Output:**
-```
-VITE v7.2.2  ready in 278 ms
-➜  Local:   http://localhost:5173/
-```
+## 🎉 Success Criteria
 
-#### 2. Open in Browser
-Navigate to: http://localhost:5173
+All of the following should work:
 
-**Expected UI:**
-- ✅ Purple gradient background
-- ✅ "GYMFU" header with emoji
-- ✅ "Your Fitness, Your Way - Pay Per Session" subtitle
-- ✅ Backend API Status section showing green success box
-- ✅ "GYMFU API is running" message
-- ✅ Timestamp displayed
-- ✅ Four feature cards (Discover Gyms, Pay Per Session, AI Coach, Marketplace)
+1. ✅ User can register with phone or email
+2. ✅ OTP is generated and can be verified
+3. ✅ JWT token is returned and stored
+4. ✅ User can access protected endpoints with token
+5. ✅ Homepage shows user info when logged in
+6. ✅ User can logout
+7. ✅ Form validation prevents invalid input
+8. ✅ Error messages are clear and helpful
+9. ✅ UI is responsive and looks good
+10. ✅ All backend tests pass
 
-#### 3. Test Backend Connection
-- The page should automatically check backend health on load
-- If backend is running: Green success box
-- If backend is down: Red error box
+## 📝 Notes
 
-#### 4. Test Responsiveness
-- Resize browser window
-- Feature cards should adjust to screen size
-- Layout should remain readable on mobile sizes
+- OTP expires in 10 minutes
+- JWT token expires in 7 days
+- In development, OTP is printed to console
+- In production, OTP would be sent via SMS/Email service
+- Password must be at least 8 characters with uppercase, lowercase, and number
+- Phone numbers must be Indian format (10 digits starting with 6-9)
 
-### Mobile App Testing
+## 🚀 Next Steps
 
-#### 1. Start Mobile App
-```bash
-cd mobile
-npm start
-```
-
-**Expected Output:**
-```
-› Metro waiting on exp://192.168.1.107:8082
-› Scan the QR code above with Expo Go
-```
-
-#### 2. Test on Web
-Press 'w' in the terminal or navigate to the provided URL
-
-**Expected UI:**
-- ✅ Purple header with "GYMFU" title
-- ✅ Backend API Status card
-- ✅ Green success message if backend is running
-- ✅ Four feature cards
-- ✅ Pull-to-refresh functionality
-
-#### 3. Test on Android Emulator
-Press 'a' in the terminal
-
-**Requirements:**
-- Android Studio installed
-- Android emulator running
-- Backend accessible at http://10.0.2.2:3000
-
-**Expected Behavior:**
-- App launches in emulator
-- Shows GYMFU home screen
-- Connects to backend successfully
-- Pull-to-refresh works
-
-#### 4. Test on iOS Simulator (Mac only)
-Press 'i' in the terminal
-
-**Requirements:**
-- Xcode installed
-- iOS simulator running
-- Backend accessible at http://localhost:3000
-
-**Expected Behavior:**
-- App launches in simulator
-- Shows GYMFU home screen
-- Connects to backend successfully
-- Pull-to-refresh works
-
-#### 5. Test on Physical Device
-Scan QR code with Expo Go app
-
-**Requirements:**
-- Expo Go app installed
-- Device and computer on same WiFi
-- Update API URL in `mobile/src/utils/api.ts` to use your computer's IP
-
-**Steps:**
-1. Find your computer's IP address:
-   ```bash
-   # Windows
-   ipconfig
-   # Look for IPv4 Address (e.g., 192.168.1.100)
-   ```
-
-2. Update `mobile/src/utils/api.ts`:
-   ```typescript
-   // For physical device testing, temporarily change to:
-   const API_BASE_URL = 'http://YOUR_IP:3000';
-   ```
-
-3. Scan QR code with Expo Go
-4. App should connect to backend
-
-## Integration Testing
-
-### Full Stack Test
-1. Start all services:
-   ```bash
-   # Terminal 1: Databases
-   cd backend
-   docker-compose up -d
-
-   # Terminal 2: Backend
-   cd backend
-   npm run dev
-
-   # Terminal 3: Web
-   cd web
-   npm run dev
-
-   # Terminal 4: Mobile
-   cd mobile
-   npm start
-   ```
-
-2. Verify all connections:
-   - Backend: http://localhost:3000/health ✅
-   - Web: http://localhost:5173 ✅
-   - Mobile: Expo interface ✅
-
-3. Test cross-platform:
-   - Open web app in browser
-   - Open mobile app on device/emulator
-   - Both should show backend connected
-
-## Common Issues and Solutions
-
-### Backend won't start
-- **Issue:** Port 3000 already in use
-- **Solution:** Kill process on port 3000
-  ```bash
-  # Windows
-  netstat -ano | findstr :3000
-  taskkill /PID <PID> /F
-  ```
-
-### Database connection failed
-- **Issue:** Databases not running
-- **Solution:** Start Docker containers
-  ```bash
-  cd backend
-  docker-compose up -d
-  ```
-
-### Web app can't connect to backend
-- **Issue:** CORS or backend not running
-- **Solution:** 
-  1. Verify backend is running
-  2. Check browser console for errors
-  3. Verify CORS is enabled in backend
-
-### Mobile app can't connect to backend
-- **Issue:** Wrong API URL for platform
-- **Solution:** 
-  - Android emulator: Use `http://10.0.2.2:3000`
-  - iOS simulator: Use `http://localhost:3000`
-  - Physical device: Use `http://YOUR_IP:3000`
-
-### Expo app shows blank screen
-- **Issue:** JavaScript error or build issue
-- **Solution:**
-  ```bash
-  cd mobile
-  npx expo start --clear
-  ```
-
-## Performance Testing
-
-### Backend Response Time
-```bash
-# Test health endpoint response time
-curl -w "@-" -o /dev/null -s http://localhost:3000/health <<'EOF'
-    time_namelookup:  %{time_namelookup}\n
-       time_connect:  %{time_connect}\n
-    time_appconnect:  %{time_appconnect}\n
-      time_redirect:  %{time_redirect}\n
- time_starttransfer:  %{time_starttransfer}\n
-                    ----------\n
-         time_total:  %{time_total}\n
-EOF
-```
-
-**Expected:** < 100ms for health check
-
-### Web App Load Time
-- Open browser DevTools > Network tab
-- Reload page
-- Check "Load" time
-
-**Expected:** < 2 seconds
-
-### Mobile App Launch Time
-- Time from app launch to UI display
-
-**Expected:** < 3 seconds
-
-## Test Results Template
-
-```
-Date: ___________
-Tester: ___________
-
-Backend:
-[ ] Health endpoint responds
-[ ] Database connections work
-[ ] Response time < 100ms
-
-Web App:
-[ ] Loads successfully
-[ ] Backend status shows connected
-[ ] UI renders correctly
-[ ] Responsive design works
-
-Mobile App:
-[ ] Launches successfully
-[ ] Backend status shows connected
-[ ] Pull-to-refresh works
-[ ] Platform detection works
-
-Issues Found:
-1. ___________
-2. ___________
-
-Notes:
-___________
-```
-
-## Next Testing Phase
-
-After implementing authentication (Task 2.x):
-- Test user registration
-- Test OTP verification
-- Test login flow
-- Test JWT token handling
-- Test protected routes
-
-After implementing gym discovery (Task 3.x):
-- Test gym search
-- Test geospatial queries
-- Test filtering
-- Test gym details display
+Task 2.7: Build registration UI for mobile (React Native)
+- Similar functionality to web
+- Native mobile components
+- AsyncStorage for token storage
+- Mobile-specific navigation

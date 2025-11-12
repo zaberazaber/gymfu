@@ -848,7 +848,106 @@ POST /api/v1/auth/login
 
 ---
 
-## Current Status - Authentication Complete! 🎉
+### ✅ Task 2.6: Build registration UI for web
+
+**Completed:** November 13, 2025
+
+**What was implemented:**
+- Installed Redux Toolkit and React Redux
+- Created Redux store with auth slice
+- Built RegisterPage with phone/email toggle
+- Built OTPVerificationPage with 6-digit input
+- Implemented API integration with backend
+- Added form validation and error handling
+- Implemented JWT token storage in localStorage
+- Added navigation after successful registration
+- Updated HomePage to show user info when logged in
+- Added logout functionality
+
+**Files created:**
+- `web/src/store/index.ts` - Redux store configuration
+- `web/src/store/authSlice.ts` - Auth state management with async thunks
+- `web/src/store/hooks.ts` - Typed Redux hooks
+- `web/src/pages/RegisterPage.tsx` - Registration form component
+- `web/src/pages/RegisterPage.css` - Registration page styles
+- `web/src/pages/OTPVerificationPage.tsx` - OTP verification component
+- `web/src/pages/OTPVerificationPage.css` - OTP verification styles
+
+**Files modified:**
+- `web/src/App.tsx` - Added Redux Provider and new routes
+- `web/src/pages/HomePage.tsx` - Added auth state display and navigation
+- `web/package.json` - Added Redux dependencies
+
+**Features:**
+- ✅ Redux Toolkit state management
+- ✅ Registration with phone or email
+- ✅ Toggle between phone and email input
+- ✅ Client-side form validation
+- ✅ Password strength validation
+- ✅ OTP verification with 6-digit input
+- ✅ Auto-focus and paste support for OTP
+- ✅ JWT token storage in localStorage
+- ✅ Automatic navigation after success
+- ✅ Error handling and display
+- ✅ Loading states
+- ✅ Responsive design
+- ✅ User info display on homepage
+- ✅ Logout functionality
+
+**Redux State Management:**
+- Auth slice with user, token, loading, error states
+- Async thunks for register, login, verifyOTP, getCurrentUser
+- Automatic token persistence in localStorage
+- Type-safe hooks (useAppDispatch, useAppSelector)
+
+**Form Validation:**
+- Name: 2-100 characters
+- Phone: Indian format (10 digits, starts with 6-9)
+- Email: Valid email format
+- Password: Min 8 chars, uppercase, lowercase, number
+- Confirm password: Must match password
+
+**User Flow:**
+1. User visits `/register`
+2. Fills form (name, phone/email, password)
+3. Submits → OTP sent to phone/email
+4. Redirected to `/verify-otp`
+5. Enters 6-digit OTP
+6. Submits → JWT token received and stored
+7. Redirected to `/` (homepage)
+8. Homepage shows welcome message with user info
+
+**UI/UX Features:**
+- Beautiful gradient backgrounds
+- Smooth transitions and hover effects
+- Responsive design for mobile and desktop
+- Clear error messages
+- Loading indicators
+- Auto-focus on OTP inputs
+- Paste support for OTP (6 digits)
+- Masked phone/email display
+
+**Routes:**
+```
+/              - HomePage (shows user info if logged in)
+/register      - Registration form
+/verify-otp    - OTP verification
+```
+
+**Testing:**
+To test the registration flow:
+1. Open http://localhost:5173
+2. Click "Register" button
+3. Fill in the form
+4. Check backend console for OTP
+5. Enter OTP on verification page
+6. See welcome message on homepage
+
+**Next task:** 2.7 Build registration UI for mobile
+
+---
+
+## Current Status - Web Authentication UI Complete! 🎉
 
 **Backend:** ✅ Running on http://localhost:3000 (with logging, error handling, and tests)
 **Database:** ✅ Connected (PostgreSQL, MongoDB, Redis)
