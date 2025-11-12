@@ -259,13 +259,88 @@ import { User, API_ENDPOINTS, validateEmail, formatCurrency } from '../shared';
 
 ---
 
+### ✅ Task 1.6: Set up error handling and logging middleware
+
+**Completed:** November 12, 2025
+
+**What was implemented:**
+- Installed Winston for structured logging
+- Installed Morgan for HTTP request logging
+- Created centralized error handling middleware
+- Implemented custom AppError class
+- Set up request logging with different log levels
+- Created log files (error.log, combined.log)
+- Added async error handler wrapper
+- Implemented 404 handler
+- Added global error handlers for unhandled rejections and exceptions
+- Created test endpoints for error handling
+
+**Files created:**
+- `backend/src/config/logger.ts` - Winston logger configuration
+- `backend/src/middleware/errorHandler.ts` - Error handling middleware
+- `backend/src/middleware/requestLogger.ts` - Request logging middleware
+- `backend/src/routes/test.ts` - Test endpoints for error handling
+
+**Files modified:**
+- `backend/src/index.ts` - Added middleware and error handlers
+- `backend/.gitignore` - Added logs directory
+
+**Features:**
+- ✅ Structured logging with Winston
+- ✅ HTTP request logging with Morgan
+- ✅ Centralized error handling
+- ✅ Custom error classes
+- ✅ Consistent error response format
+- ✅ Log files for errors and combined logs
+- ✅ Different log levels (error, warn, info, http, debug)
+- ✅ Colored console output
+- ✅ Stack traces in development mode
+- ✅ Global error handlers
+
+**Error Response Format:**
+```json
+{
+  "success": false,
+  "error": {
+    "code": "ERROR_CODE",
+    "message": "Error message",
+    "details": "Additional details (dev only)",
+    "timestamp": "2025-11-12T16:57:29.458Z"
+  }
+}
+```
+
+**Log Levels:**
+- `error` - Error messages
+- `warn` - Warning messages
+- `info` - Informational messages
+- `http` - HTTP request logs
+- `debug` - Debug messages (dev only)
+
+**Testing:**
+```bash
+# Test success
+curl http://localhost:3000/test/success
+
+# Test error handling
+curl http://localhost:3000/test/error
+
+# Test 404 handling
+curl http://localhost:3000/nonexistent
+```
+
+**Next task:** 1.7 Set up basic testing infrastructure
+
+---
+
 ## Current Status
 
-**Backend:** ✅ Running on http://localhost:3000
+**Backend:** ✅ Running on http://localhost:3000 (with logging and error handling)
 **Database:** ✅ Connected (PostgreSQL, MongoDB, Redis)
 **Web Frontend:** ✅ Running on http://localhost:5173
 **Mobile App:** ✅ Running with Expo (connects to backend)
 **Shared Package:** ✅ Created with types, constants, and utilities
+**Error Handling:** ✅ Centralized with structured logging
 
 ## To Start Development
 
