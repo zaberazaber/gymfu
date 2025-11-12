@@ -2,6 +2,8 @@ import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import { UserModel } from '../models/User';
 import { AppError } from '../middleware/errorHandler';
+import { OTPService } from '../services/otpService';
+import { NotificationService } from '../services/notificationService';
 import logger from '../config/logger';
 
 export class AuthController {
@@ -18,6 +20,7 @@ export class AuthController {
     }
 
     const { phoneNumber, email, name, password } = req.body;
+    const identifier = phoneNumber || email;
 
     // Check if user already exists
     if (phoneNumber) {
@@ -50,7 +53,14 @@ export class AuthController {
       password,
     });
 
-    logger.info(`User registered: ${user.id}`);
+    // Generate and store OTP
+    const otp = OTPService.generateOTP();
+    await OTPService.storeOTP(identifier, otp);
+
+    // Send OTP
+    await NotificationService.sendOTP(identifier, otp);
+
+    logger.info(`User registered: ${user.id}, OTP sent to ${identifier}`);
 
     // Return success (without password)
     res.status(201).json({
@@ -62,7 +72,7 @@ export class AuthController {
         name: user.name,
         createdAt: user.createdAt,
       },
-      message: 'User registered successfully',
+      message: 'User registered successfully. Please verify your OTP.',
       timestamp: new Date().toISOString(),
     });
   }

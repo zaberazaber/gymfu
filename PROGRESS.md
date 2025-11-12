@@ -479,6 +479,80 @@ POST /api/v1/auth/register
 
 ---
 
+### ✅ Task 2.2: Implement OTP generation and storage
+
+**Completed:** November 12, 2025
+
+**What was implemented:**
+- Created OTP service with Redis storage
+- Implemented 6-digit OTP generation
+- Added OTP expiry (10 minutes)
+- Created notification service for SMS/Email
+- Integrated OTP generation into registration flow
+- Added OTP verification logic
+- Implemented OTP cleanup and rate limiting checks
+
+**Files created:**
+- `backend/src/services/otpService.ts` - OTP generation and storage
+- `backend/src/services/notificationService.ts` - SMS/Email notifications
+
+**Files modified:**
+- `backend/src/controllers/authController.ts` - Added OTP generation to registration
+
+**Features:**
+- ✅ 6-digit random OTP generation
+- ✅ Redis storage with 10-minute expiry
+- ✅ OTP sent via SMS or Email (mock implementation)
+- ✅ OTP verification with one-time use
+- ✅ Automatic OTP deletion after verification
+- ✅ OTP existence check for rate limiting
+- ✅ TTL tracking for OTP expiry
+
+**OTP Service Methods:**
+- `generateOTP()` - Generate 6-digit OTP
+- `storeOTP(identifier, otp)` - Store in Redis with expiry
+- `verifyOTP(identifier, otp)` - Verify and delete OTP
+- `deleteOTP(identifier)` - Manual OTP deletion
+- `otpExists(identifier)` - Check if OTP exists
+- `getOTPTTL(identifier)` - Get remaining time
+
+**Notification Service Methods:**
+- `sendSMS(phone, message)` - Send SMS (mock)
+- `sendEmail(email, subject, message)` - Send email (mock)
+- `sendOTP(identifier, otp)` - Auto-detect and send
+- `sendWelcome(identifier, name)` - Welcome message
+
+**Testing Results:**
+✅ OTP generated: 6-digit random number
+✅ OTP stored in Redis with 10-min expiry
+✅ SMS notification sent (console output)
+✅ User registration with OTP works
+
+**Example Flow:**
+1. User registers with phone/email
+2. System generates 6-digit OTP
+3. OTP stored in Redis (expires in 10 min)
+4. OTP sent via SMS/Email
+5. User receives OTP: **169482**
+6. User verifies OTP (next task)
+
+**Console Output:**
+```
+==================================================
+📱 SMS SENT
+To: 8765432109
+Message: Your GYMFU verification code is: 169482. Valid for 10 minutes.
+==================================================
+```
+
+**Next Steps:**
+- Task 2.3: Implement OTP verification endpoint
+- Later: Replace mock SMS/Email with real services (Twilio, SendGrid)
+
+**Next task:** 2.3 Implement OTP verification and JWT authentication
+
+---
+
 ## Current Status - Infrastructure Complete! 🎉
 
 **Backend:** ✅ Running on http://localhost:3000 (with logging, error handling, and tests)
