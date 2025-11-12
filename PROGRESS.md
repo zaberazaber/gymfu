@@ -399,6 +399,86 @@ npm run test:coverage # Run tests with coverage
 
 ---
 
+### ✅ Task 2.1: Create User model and registration endpoint
+
+**Completed:** November 12, 2025
+
+**What was implemented:**
+- Created User model with CRUD operations
+- Implemented password hashing with bcrypt
+- Created auth controller with registration logic
+- Added express-validator for input validation
+- Created auth routes with validation rules
+- Integrated auth routes into main app
+- Tested registration with phone and email
+
+**Files created:**
+- `backend/src/models/User.ts` - User model with database operations
+- `backend/src/controllers/authController.ts` - Auth controller
+- `backend/src/routes/auth.ts` - Auth routes with validation
+
+**Files modified:**
+- `backend/src/index.ts` - Added auth routes
+- `backend/package.json` - Added bcrypt and express-validator
+
+**Features:**
+- ✅ User registration with phone or email
+- ✅ Password hashing with bcrypt (10 rounds)
+- ✅ Input validation (name, password, phone, email)
+- ✅ Duplicate user detection
+- ✅ Proper error handling
+- ✅ Database operations (create, find, update, delete)
+
+**API Endpoints:**
+```
+POST /api/v1/auth/register - Register new user
+GET  /api/v1/auth/me       - Get current user (placeholder)
+```
+
+**Validation Rules:**
+- Name: 2-100 characters, required
+- Password: Min 8 chars, must have uppercase, lowercase, and number
+- Phone: Indian format (10 digits starting with 6-9)
+- Email: Valid email format
+- At least one of phone or email required
+
+**Testing Results:**
+✅ Registration with phone number works
+✅ Registration with email works
+✅ Password validation works
+✅ Duplicate detection works
+✅ Weak password rejected
+
+**Example Request:**
+```json
+POST /api/v1/auth/register
+{
+  "phoneNumber": "9876543210",
+  "name": "Test User",
+  "password": "Test1234"
+}
+```
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": 1,
+    "phoneNumber": "9876543210",
+    "email": null,
+    "name": "Test User",
+    "createdAt": "2025-11-12T17:20:00.000Z"
+  },
+  "message": "User registered successfully",
+  "timestamp": "2025-11-12T17:20:00.000Z"
+}
+```
+
+**Next task:** 2.2 Implement OTP generation and storage
+
+---
+
 ## Current Status - Infrastructure Complete! 🎉
 
 **Backend:** ✅ Running on http://localhost:3000 (with logging, error handling, and tests)

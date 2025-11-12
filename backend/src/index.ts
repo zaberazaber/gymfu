@@ -79,6 +79,11 @@ app.get('/', (req: Request, res: Response) => {
   });
 });
 
+// API Routes
+const authRoutes = require('./routes/auth').default;
+app.use('/api/v1/auth', authRoutes);
+logger.info('🔐 Auth routes enabled at /api/v1/auth');
+
 // Test routes (only in development)
 if (process.env.NODE_ENV === 'development') {
   const testRoutes = require('./routes/test').default;
