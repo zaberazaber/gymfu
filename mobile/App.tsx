@@ -9,6 +9,8 @@ import LoginScreen from './src/screens/LoginScreen';
 import OTPVerificationScreen from './src/screens/OTPVerificationScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import EditProfileScreen from './src/screens/EditProfileScreen';
+import GymListScreen from './src/screens/GymListScreen';
+import GymDetailScreen from './src/screens/GymDetailScreen';
 
 export type RootStackParamList = {
   Home: undefined;
@@ -17,6 +19,8 @@ export type RootStackParamList = {
   OTPVerification: undefined;
   Profile: undefined;
   EditProfile: undefined;
+  GymList: undefined;
+  GymDetail: { gymId: number };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -66,6 +70,16 @@ export default function App() {
             name="EditProfile"
             component={EditProfileScreen}
             options={{ title: 'Edit Profile' }}
+          />
+          <Stack.Screen
+            name="GymList"
+            component={GymListScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="GymDetail"
+            component={GymDetailScreen}
+            options={{ title: 'Gym Details' }}
           />
         </Stack.Navigator>
       </NavigationContainer>

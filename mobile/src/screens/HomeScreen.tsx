@@ -44,10 +44,18 @@ export default function HomeScreen() {
           <View style={styles.buttonGroup}>
             <TouchableOpacity
               style={styles.buttonPrimary}
+              onPress={() => navigation.navigate('GymList' as never)}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.buttonTextPrimary}>Find Gyms</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.button}
               onPress={() => navigation.navigate('Profile' as never)}
               activeOpacity={0.8}
             >
-              <Text style={styles.buttonTextPrimary}>View Profile</Text>
+              <Text style={styles.buttonText}>View Profile</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -71,10 +79,18 @@ export default function HomeScreen() {
             <View style={styles.buttonGroup}>
               <TouchableOpacity
                 style={styles.buttonPrimary}
+                onPress={() => navigation.navigate('GymList' as never)}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.buttonTextPrimary}>Browse Gyms</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.button}
                 onPress={() => navigation.navigate('Register' as never)}
                 activeOpacity={0.8}
               >
-                <Text style={styles.buttonTextPrimary}>Register</Text>
+                <Text style={styles.buttonText}>Register</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
