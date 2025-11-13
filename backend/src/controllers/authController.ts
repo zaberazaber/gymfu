@@ -1,9 +1,11 @@
 import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
+import bcrypt from 'bcrypt';
 import { UserModel } from '../models/User';
 import { AppError } from '../middleware/errorHandler';
 import { OTPService } from '../services/otpService';
 import { NotificationService } from '../services/notificationService';
+import { JWTService } from '../services/jwtService';
 import logger from '../config/logger';
 
 export class AuthController {
@@ -193,6 +195,69 @@ export class AuthController {
           : email!.replace(/(.{2})(.*)(@.*)/, '$1***$3'),
       },
       message: 'OTP sent successfully. Please verify to complete login.',
+      timestamp: new Date().toISOString(),
+    });
+  }
+
+  // Login with password (email only)
+  static async loginWithPassword(req: Request, res: Response) {
+    // Check for validation errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      throw new AppError(
+        'Validation failed',
+        400,
+        'VALIDATION_FAILED'
+      );
+    }
+
+    const { email, password } = req.body;
+
+    // Check if user exists
+    const user = await UserModel.findByEmail(email);
+    if (!user) {
+      throw new AppError(
+        'Invalid email or password',
+        401,
+        'INVALID_CREDENTIALS'
+      );
+    }
+
+    // Verify password
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      throw new AppError(
+        'Invalid email or password',
+        401,
+        'INVALID_CREDENTIALS'
+      );
+    }
+
+    // Generate JWT token
+    const token = JWTService.generateToken(user);
+
+    logger.info(`User logged in with password: ${user.id}`);
+
+    // Return token and user data
+    res.json({
+      success: true,
+      data: {
+        token,
+        user: {
+          id: user.id,
+          phoneNumber: user.phoneNumber,
+          email: user.email,
+          name: user.name,
+          age: user.age,
+          gender: user.gender,
+          location: user.location,
+          fitnessGoals: user.fitnessGoals,
+          profileImage: user.profileImage,
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt,
+        },
+      },
+      message: 'Login successful',
       timestamp: new Date().toISOString(),
     });
   }

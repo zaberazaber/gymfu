@@ -104,6 +104,26 @@ export const login = createAsyncThunk(
   }
 );
 
+// Login with password
+export const loginWithPassword = createAsyncThunk(
+  'auth/loginWithPassword',
+  async (
+    data: { email: string; password: string },
+    { rejectWithValue }
+  ) => {
+    try {
+      const response = await axios.post(`${API_BASE_URL}/auth/login-password`, data);
+      const { token, user } = response.data.data;
+      await AsyncStorage.setItem('token', token);
+      return { token, user };
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.error?.message || 'Login failed'
+      );
+    }
+  }
+);
+
 // Get user profile
 export const getProfile = createAsyncThunk('auth/getProfile', async (_, { rejectWithValue }) => {
   try {
@@ -202,6 +222,21 @@ const authSlice = createSlice({
         state.registrationIdentifier = action.payload.identifier;
       })
       .addCase(login.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(loginWithPassword.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(loginWithPassword.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload.user;
+        state.token = action.payload.token;
+        state.isAuthenticated = true;
+        state.registrationIdentifier = null;
+      })
+      .addCase(loginWithPassword.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })

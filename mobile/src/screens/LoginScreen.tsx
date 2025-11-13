@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
-import { login, clearError } from '../store/authSlice';
+import { login, loginWithPassword, clearError } from '../store/authSlice';
 
 export default function LoginScreen() {
   const navigation = useNavigation();
@@ -10,8 +10,10 @@ export default function LoginScreen() {
   const { loading, error } = useAppSelector((state) => state.auth);
 
   const [usePhone, setUsePhone] = useState(true);
+  const [usePassword, setUsePassword] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState('');
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
   const validateForm = () => {
@@ -29,6 +31,10 @@ export default function LoginScreen() {
       } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         errors.email = 'Invalid email address';
       }
+
+      if (usePassword && !password) {
+        errors.password = 'Password is required';
+      }
     }
 
     setValidationErrors(errors);
@@ -42,11 +48,20 @@ export default function LoginScreen() {
       return;
     }
 
-    const data = usePhone ? { phoneNumber } : { email };
-    const result = await dispatch(login(data));
-    
-    if (login.fulfilled.match(result)) {
-      navigation.navigate('OTPVerification' as never);
+    if (!usePhone && usePassword) {
+      // Login with password
+      const result = await dispatch(loginWithPassword({ email, password }));
+      if (loginWithPassword.fulfilled.match(result)) {
+        navigation.navigate('Home' as never);
+      }
+    } else {
+      // Login with OTP
+      const data = usePhone ? { phoneNumber } : { email };
+      const result = await dispatch(login(data));
+
+      if (login.fulfilled.match(result)) {
+        navigation.navigate('OTPVerification' as never);
+      }
     }
   };
 
@@ -96,24 +111,60 @@ export default function LoginScreen() {
           {validationErrors.phoneNumber && <Text style={styles.fieldError}>{validationErrors.phoneNumber}</Text>}
         </View>
       ) : (
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>Email Address</Text>
-          <TextInput
-            style={[styles.input, validationErrors.email && styles.inputError]}
-            placeholder="you@example.com"
-            value={email}
-            onChangeText={(text) => {
-              setEmail(text);
-              if (validationErrors.email) {
-                setValidationErrors({ ...validationErrors, email: '' });
-              }
-            }}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            editable={!loading}
-          />
-          {validationErrors.email && <Text style={styles.fieldError}>{validationErrors.email}</Text>}
-        </View>
+        <>
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Email Address</Text>
+            <TextInput
+              style={[styles.input, validationErrors.email && styles.inputError]}
+              placeholder="you@example.com"
+              value={email}
+              onChangeText={(text) => {
+                setEmail(text);
+                if (validationErrors.email) {
+                  setValidationErrors({ ...validationErrors, email: '' });
+                }
+              }}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              editable={!loading}
+            />
+            {validationErrors.email && <Text style={styles.fieldError}>{validationErrors.email}</Text>}
+          </View>
+
+          {/* Login Method Toggle */}
+          <TouchableOpacity
+            style={styles.checkboxContainer}
+            onPress={() => setUsePassword(!usePassword)}
+            disabled={loading}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.checkbox, usePassword && styles.checkboxChecked]}>
+              {usePassword && <Text style={styles.checkmark}>✓</Text>}
+            </View>
+            <Text style={styles.checkboxLabel}>Login with password instead of OTP</Text>
+          </TouchableOpacity>
+
+          {/* Password Input */}
+          {usePassword && (
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>Password</Text>
+              <TextInput
+                style={[styles.input, validationErrors.password && styles.inputError]}
+                placeholder="Enter your password"
+                value={password}
+                onChangeText={(text) => {
+                  setPassword(text);
+                  if (validationErrors.password) {
+                    setValidationErrors({ ...validationErrors, password: '' });
+                  }
+                }}
+                secureTextEntry
+                editable={!loading}
+              />
+              {validationErrors.password && <Text style={styles.fieldError}>{validationErrors.password}</Text>}
+            </View>
+          )}
+        </>
       )}
 
       {/* Submit Button */}
@@ -125,7 +176,7 @@ export default function LoginScreen() {
         {loading ? (
           <ActivityIndicator color="#fff" />
         ) : (
-          <Text style={styles.buttonText}>Send OTP</Text>
+          <Text style={styles.buttonText}>{usePassword ? 'Login' : 'Send OTP'}</Text>
         )}
       </TouchableOpacity>
 
@@ -254,5 +305,36 @@ const styles = StyleSheet.create({
     color: '#667eea',
     fontSize: 14,
     fontWeight: '600',
+  },
+  checkboxContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+    marginTop: 8,
+  },
+  checkbox: {
+    width: 22,
+    height: 22,
+    borderWidth: 2,
+    borderColor: '#cbd5e0',
+    borderRadius: 4,
+    marginRight: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fff',
+  },
+  checkboxChecked: {
+    backgroundColor: '#667eea',
+    borderColor: '#667eea',
+  },
+  checkmark: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  checkboxLabel: {
+    flex: 1,
+    fontSize: 14,
+    color: '#4a5568',
   },
 });

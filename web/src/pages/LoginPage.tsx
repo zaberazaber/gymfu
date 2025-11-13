@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
-import { login, clearError } from '../store/authSlice';
+import { login, loginWithPassword, clearError } from '../store/authSlice';
 import './LoginPage.css';
 
 export default function LoginPage() {
@@ -10,8 +10,10 @@ export default function LoginPage() {
   const { loading, error } = useAppSelector((state) => state.auth);
 
   const [usePhone, setUsePhone] = useState(true);
+  const [usePassword, setUsePassword] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState('');
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
   const validateForm = () => {
@@ -29,6 +31,10 @@ export default function LoginPage() {
       } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         errors.email = 'Invalid email address';
       }
+      
+      if (usePassword && !password) {
+        errors.password = 'Password is required';
+      }
     }
 
     setValidationErrors(errors);
@@ -43,11 +49,20 @@ export default function LoginPage() {
       return;
     }
 
-    const data = usePhone ? { phoneNumber } : { email };
-    const result = await dispatch(login(data));
-    
-    if (login.fulfilled.match(result)) {
-      navigate('/verify-otp');
+    if (!usePhone && usePassword) {
+      // Login with password
+      const result = await dispatch(loginWithPassword({ email, password }));
+      if (loginWithPassword.fulfilled.match(result)) {
+        navigate('/');
+      }
+    } else {
+      // Login with OTP
+      const data = usePhone ? { phoneNumber } : { email };
+      const result = await dispatch(login(data));
+      
+      if (login.fulfilled.match(result)) {
+        navigate('/verify-otp');
+      }
     }
   };
 
@@ -107,28 +122,69 @@ export default function LoginPage() {
                 )}
               </div>
             ) : (
-              <div className="form-group">
-                <label htmlFor="email" className="form-label">
-                  Email Address
-                </label>
-                <input
-                  id="email"
-                  type="email"
-                  className={`form-input ${validationErrors.email ? 'error' : ''}`}
-                  placeholder="you@example.com"
-                  value={email}
-                  onChange={(e) => {
-                    setEmail(e.target.value);
-                    if (validationErrors.email) {
-                      setValidationErrors({ ...validationErrors, email: '' });
-                    }
-                  }}
-                  disabled={loading}
-                />
-                {validationErrors.email && (
-                  <span className="field-error">{validationErrors.email}</span>
+              <>
+                <div className="form-group">
+                  <label htmlFor="email" className="form-label">
+                    Email Address
+                  </label>
+                  <input
+                    id="email"
+                    type="email"
+                    className={`form-input ${validationErrors.email ? 'error' : ''}`}
+                    placeholder="you@example.com"
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      if (validationErrors.email) {
+                        setValidationErrors({ ...validationErrors, email: '' });
+                      }
+                    }}
+                    disabled={loading}
+                  />
+                  {validationErrors.email && (
+                    <span className="field-error">{validationErrors.email}</span>
+                  )}
+                </div>
+
+                {/* Login Method Toggle for Email */}
+                <div className="login-method-toggle">
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={usePassword}
+                      onChange={(e) => setUsePassword(e.target.checked)}
+                      disabled={loading}
+                    />
+                    <span>Login with password instead of OTP</span>
+                  </label>
+                </div>
+
+                {/* Password Input (only if usePassword is true) */}
+                {usePassword && (
+                  <div className="form-group">
+                    <label htmlFor="password" className="form-label">
+                      Password
+                    </label>
+                    <input
+                      id="password"
+                      type="password"
+                      className={`form-input ${validationErrors.password ? 'error' : ''}`}
+                      placeholder="Enter your password"
+                      value={password}
+                      onChange={(e) => {
+                        setPassword(e.target.value);
+                        if (validationErrors.password) {
+                          setValidationErrors({ ...validationErrors, password: '' });
+                        }
+                      }}
+                      disabled={loading}
+                    />
+                    {validationErrors.password && (
+                      <span className="field-error">{validationErrors.password}</span>
+                    )}
+                  </div>
                 )}
-              </div>
+              </>
             )}
 
             {/* Submit Button */}
@@ -137,7 +193,9 @@ export default function LoginPage() {
               className="submit-button"
               disabled={loading}
             >
-              {loading ? 'Sending OTP...' : 'Send OTP'}
+              {loading 
+                ? (usePassword ? 'Logging in...' : 'Sending OTP...') 
+                : (usePassword ? 'Login' : 'Send OTP')}
             </button>
           </form>
 
