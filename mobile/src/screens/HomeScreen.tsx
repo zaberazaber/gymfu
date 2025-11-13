@@ -1,261 +1,276 @@
-import React, { useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  ActivityIndicator,
-  RefreshControl,
-  Platform,
-} from 'react-native';
-import axios from 'axios';
-import Constants from 'expo-constants';
+import React from 'react';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { useAppDispatch, useAppSelector } from '../store/hooks';
+import { logout } from '../store/authSlice';
+import { colors, shadows, neuStyles } from '../styles/neumorphic';
 
-interface HealthResponse {
-  success: boolean;
-  message: string;
-  timestamp: string;
-}
+export default function HomeScreen() {
+  const navigation = useNavigation();
+  const dispatch = useAppDispatch();
+  const { user, isAuthenticated } = useAppSelector((state) => state.auth);
 
-// Get the correct API URL based on platform
-const getApiUrl = () => {
-  // For Expo Go on physical device, use the dev machine's IP
-  const debuggerHost = Constants.expoConfig?.hostUri;
-  
-  if (debuggerHost) {
-    // Extract IP from debuggerHost (format: "192.168.1.107:8081")
-    const host = debuggerHost.split(':')[0];
-    return `http://${host}:3000`;
-  }
-  
-  // Fallback for different platforms
-  if (Platform.OS === 'android') {
-    // Android emulator
-    return 'http://10.0.2.2:3000';
-  } else if (Platform.OS === 'ios') {
-    // iOS simulator
-    return 'http://localhost:3000';
-  } else {
-    // Web or other platforms
-    return 'http://localhost:3000';
-  }
-};
-
-const HomeScreen = () => {
-  const [health, setHealth] = useState<HealthResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [refreshing, setRefreshing] = useState(false);
-
-  const checkHealth = async () => {
-    try {
-      const apiUrl = getApiUrl();
-      const response = await axios.get<HealthResponse>(
-        `${apiUrl}/health`,
-        { timeout: 5000 }
-      );
-      setHealth(response.data);
-      setError(null);
-    } catch (err) {
-      setError('Failed to connect to backend API');
-      console.error('Health check failed:', err);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
-
-  useEffect(() => {
-    checkHealth();
-  }, []);
-
-  const onRefresh = () => {
-    setRefreshing(true);
-    checkHealth();
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
   };
 
   return (
-    <ScrollView
-      style={styles.container}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-    >
+    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>🏋️ GYMFU</Text>
         <Text style={styles.subtitle}>Your Fitness, Your Way</Text>
       </View>
 
-      <View style={styles.statusCard}>
-        <Text style={styles.cardTitle}>Backend API Status</Text>
-        {loading && <ActivityIndicator size="large" color="#4F46E5" />}
-        {error && (
-          <View style={styles.errorBox}>
-            <Text style={styles.errorText}>❌ {error}</Text>
-            <Text style={styles.errorHint}>
-              Make sure backend is running on http://localhost:3000
-            </Text>
+      {isAuthenticated && user ? (
+        /* Authenticated View */
+        <View style={styles.card}>
+          <View style={styles.avatarContainer}>
+            <View style={styles.avatar}>
+              <Text style={styles.avatarText}>{getInitials(user.name)}</Text>
+            </View>
           </View>
-        )}
-        {health && (
-          <View style={styles.successBox}>
-            <Text style={styles.successText}>✅ {health.message}</Text>
-            <Text style={styles.timestamp}>
-              {new Date(health.timestamp).toLocaleString()}
-            </Text>
+          
+          <Text style={styles.welcomeTitle}>Welcome, {user.name}! 👋</Text>
+          <Text style={styles.welcomeInfo}>
+            {user.phoneNumber || user.email}
+          </Text>
+
+          <View style={styles.buttonGroup}>
+            <TouchableOpacity
+              style={styles.buttonPrimary}
+              onPress={() => navigation.navigate('Profile' as never)}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.buttonTextPrimary}>View Profile</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.buttonDanger}
+              onPress={() => dispatch(logout())}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.buttonTextPrimary}>Logout</Text>
+            </TouchableOpacity>
           </View>
-        )}
-      </View>
-
-      <View style={styles.featuresGrid}>
-        <View style={styles.featureCard}>
-          <Text style={styles.featureIcon}>🔍</Text>
-          <Text style={styles.featureTitle}>Discover Gyms</Text>
-          <Text style={styles.featureText}>
-            Find gyms near you and book sessions instantly
-          </Text>
         </View>
+      ) : (
+        /* Unauthenticated View */
+        <>
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Get Started</Text>
+            <Text style={styles.cardText}>
+              Create an account to start booking gym sessions and unlock your fitness potential
+            </Text>
 
-        <View style={styles.featureCard}>
-          <Text style={styles.featureIcon}>💳</Text>
-          <Text style={styles.featureTitle}>Pay Per Session</Text>
-          <Text style={styles.featureText}>
-            No memberships, no commitments - pay only when you workout
-          </Text>
-        </View>
+            <View style={styles.buttonGroup}>
+              <TouchableOpacity
+                style={styles.buttonPrimary}
+                onPress={() => navigation.navigate('Register' as never)}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.buttonTextPrimary}>Register</Text>
+              </TouchableOpacity>
 
-        <View style={styles.featureCard}>
-          <Text style={styles.featureIcon}>🤖</Text>
-          <Text style={styles.featureTitle}>AI Coach</Text>
-          <Text style={styles.featureText}>
-            Get personalized workout and nutrition plans
-          </Text>
-        </View>
+              <TouchableOpacity
+                style={styles.button}
+                onPress={() => navigation.navigate('Login' as never)}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.buttonText}>Login</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
 
-        <View style={styles.featureCard}>
-          <Text style={styles.featureIcon}>🛒</Text>
-          <Text style={styles.featureTitle}>Marketplace</Text>
-          <Text style={styles.featureText}>
-            Shop supplements, gear, and healthy foods
-          </Text>
-        </View>
-      </View>
+          {/* Features Grid */}
+          <View style={styles.featuresGrid}>
+            <View style={styles.featureCard}>
+              <Text style={styles.featureIcon}>🏋️</Text>
+              <Text style={styles.featureTitle}>Find Gyms</Text>
+              <Text style={styles.featureDescription}>
+                Discover gyms near you with advanced filters
+              </Text>
+            </View>
 
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>
-          Coming soon: User registration, gym discovery, and more!
-        </Text>
-      </View>
+            <View style={styles.featureCard}>
+              <Text style={styles.featureIcon}>📅</Text>
+              <Text style={styles.featureTitle}>Book Sessions</Text>
+              <Text style={styles.featureDescription}>
+                Easy booking with instant confirmation
+              </Text>
+            </View>
+
+            <View style={styles.featureCard}>
+              <Text style={styles.featureIcon}>💪</Text>
+              <Text style={styles.featureTitle}>AI Coach</Text>
+              <Text style={styles.featureDescription}>
+                Personalized workout and nutrition plans
+              </Text>
+            </View>
+
+            <View style={styles.featureCard}>
+              <Text style={styles.featureIcon}>🛒</Text>
+              <Text style={styles.featureTitle}>Marketplace</Text>
+              <Text style={styles.featureDescription}>
+                Shop fitness gear and supplements
+              </Text>
+            </View>
+          </View>
+        </>
+      )}
     </ScrollView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: colors.bgPrimary,
+  },
+  contentContainer: {
+    padding: 20,
+    alignItems: 'center',
   },
   header: {
-    backgroundColor: '#4F46E5',
-    padding: 32,
     alignItems: 'center',
+    marginBottom: 32,
+    marginTop: 20,
   },
   title: {
-    fontSize: 36,
+    fontSize: 56,
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: colors.accentPrimary,
     marginBottom: 8,
+    textShadowColor: 'rgba(0, 0, 0, 0.1)',
+    textShadowOffset: { width: 2, height: 2 },
+    textShadowRadius: 4,
   },
   subtitle: {
-    fontSize: 16,
-    color: '#E0E7FF',
+    fontSize: 18,
+    color: colors.textSecondary,
+    fontWeight: '500',
   },
-  statusCard: {
-    backgroundColor: '#FFFFFF',
-    margin: 16,
-    padding: 20,
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+  card: {
+    backgroundColor: colors.bgPrimary,
+    borderRadius: 30,
+    padding: 32,
+    width: '100%',
+    maxWidth: 400,
+    ...shadows.large,
+    marginBottom: 24,
+  },
+  avatarContainer: {
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  avatar: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: colors.accentPrimary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...shadows.large,
+  },
+  avatarText: {
+    fontSize: 48,
+    fontWeight: 'bold',
+    color: '#ffffff',
+  },
+  welcomeTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  welcomeInfo: {
+    fontSize: 16,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    marginBottom: 24,
   },
   cardTitle: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+  cardText: {
+    fontSize: 16,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 24,
+    marginBottom: 24,
+  },
+  buttonGroup: {
+    gap: 16,
+  },
+  button: {
+    backgroundColor: colors.bgPrimary,
+    borderRadius: 16,
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    alignItems: 'center',
+    ...shadows.medium,
+  },
+  buttonPrimary: {
+    backgroundColor: colors.accentPrimary,
+    borderRadius: 16,
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    alignItems: 'center',
+    ...shadows.medium,
+  },
+  buttonDanger: {
+    backgroundColor: colors.error,
+    borderRadius: 16,
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    alignItems: 'center',
+    ...shadows.medium,
+  },
+  buttonText: {
+    color: colors.textPrimary,
     fontSize: 18,
     fontWeight: '600',
-    marginBottom: 12,
-    color: '#1F2937',
   },
-  errorBox: {
-    backgroundColor: '#FEE2E2',
-    padding: 16,
-    borderRadius: 8,
-  },
-  errorText: {
-    color: '#991B1B',
-    fontSize: 14,
-    marginBottom: 4,
-  },
-  errorHint: {
-    color: '#991B1B',
-    fontSize: 12,
-    opacity: 0.8,
-  },
-  successBox: {
-    backgroundColor: '#D1FAE5',
-    padding: 16,
-    borderRadius: 8,
-  },
-  successText: {
-    color: '#065F46',
-    fontSize: 14,
+  buttonTextPrimary: {
+    color: '#ffffff',
+    fontSize: 18,
     fontWeight: '600',
-    marginBottom: 4,
-  },
-  timestamp: {
-    color: '#065F46',
-    fontSize: 12,
-    opacity: 0.8,
   },
   featuresGrid: {
-    padding: 16,
+    width: '100%',
+    gap: 16,
   },
   featureCard: {
-    backgroundColor: '#FFFFFF',
-    padding: 20,
-    borderRadius: 12,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  featureIcon: {
-    fontSize: 32,
-    marginBottom: 8,
-  },
-  featureTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#4F46E5',
-    marginBottom: 8,
-  },
-  featureText: {
-    fontSize: 14,
-    color: '#6B7280',
-    lineHeight: 20,
-  },
-  footer: {
+    backgroundColor: colors.bgPrimary,
+    borderRadius: 20,
     padding: 24,
     alignItems: 'center',
+    ...shadows.medium,
   },
-  footerText: {
+  featureIcon: {
+    fontSize: 48,
+    marginBottom: 12,
+  },
+  featureTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: colors.textPrimary,
+    marginBottom: 8,
+  },
+  featureDescription: {
     fontSize: 14,
-    color: '#6B7280',
+    color: colors.textSecondary,
     textAlign: 'center',
+    lineHeight: 20,
   },
 });
-
-export default HomeScreen;

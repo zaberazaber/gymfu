@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test API URL</title>
+</head>
+<body>
+    <h1>Testing API URL Configuration</h1>
+    <div id="result"></div>
+    
+    <script>
+        // This simulates what the React app does
+        const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
+        
+        document.getElementById('result').innerHTML = `
+            <p><strong>API Base URL:</strong> ${API_BASE_URL}</p>
+            <p><strong>Register endpoint:</strong> ${API_BASE_URL}/auth/register</p>
+            <p><strong>Expected:</strong> http://localhost:3000/api/v1/auth/register</p>
+        `;
+        
+        // Test the health endpoint
+        fetch('http://localhost:3000/api/v1/health')
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('result').innerHTML += `
+                    <p><strong>Health Check:</strong> ✅ ${data.message}</p>
+                `;
+            })
+            .catch(err => {
+                document.getElementById('result').innerHTML += `
+                    <p><strong>Health Check:</strong> ❌ ${err.message}</p>
+                `;
+            });
+    </script>
+</body>
+</html>
