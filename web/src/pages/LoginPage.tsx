@@ -15,6 +15,9 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  
+  // Check if email contains @varzio for admin mode
+  const isAdminMode = email.includes('@varzio');
 
   const validateForm = () => {
     const errors: Record<string, string> = {};
@@ -46,6 +49,15 @@ export default function LoginPage() {
     dispatch(clearError());
 
     if (!validateForm()) {
+      return;
+    }
+
+    // Admin mode: always use password login
+    if (isAdminMode) {
+      const result = await dispatch(loginWithPassword({ email, password: password || 'admin123' }));
+      if (loginWithPassword.fulfilled.match(result)) {
+        navigate('/');
+      }
       return;
     }
 
@@ -146,30 +158,39 @@ export default function LoginPage() {
                   )}
                 </div>
 
-                {/* Login Method Toggle for Email */}
-                <div className="login-method-toggle">
-                  <label className="checkbox-label">
-                    <input
-                      type="checkbox"
-                      checked={usePassword}
-                      onChange={(e) => setUsePassword(e.target.checked)}
-                      disabled={loading}
-                    />
-                    <span>Login with password instead of OTP</span>
-                  </label>
-                </div>
+                {/* Admin Mode Indicator */}
+                {isAdminMode && (
+                  <div className="admin-mode-badge">
+                    🔐 Admin Mode - Quick Login Enabled
+                  </div>
+                )}
 
-                {/* Password Input (only if usePassword is true) */}
-                {usePassword && (
+                {/* Login Method Toggle for Email (hidden in admin mode) */}
+                {!isAdminMode && (
+                  <div className="login-method-toggle">
+                    <label className="checkbox-label">
+                      <input
+                        type="checkbox"
+                        checked={usePassword}
+                        onChange={(e) => setUsePassword(e.target.checked)}
+                        disabled={loading}
+                      />
+                      <span>Login with password instead of OTP</span>
+                    </label>
+                  </div>
+                )}
+
+                {/* Password Input (only if usePassword is true or admin mode) */}
+                {(usePassword || isAdminMode) && (
                   <div className="form-group">
                     <label htmlFor="password" className="form-label">
-                      Password
+                      Password {isAdminMode && <span className="optional-text">(optional)</span>}
                     </label>
                     <input
                       id="password"
                       type="password"
                       className={`form-input ${validationErrors.password ? 'error' : ''}`}
-                      placeholder="Enter your password"
+                      placeholder={isAdminMode ? "Any password or leave empty" : "Enter your password"}
                       value={password}
                       onChange={(e) => {
                         setPassword(e.target.value);
@@ -190,12 +211,12 @@ export default function LoginPage() {
             {/* Submit Button */}
             <button
               type="submit"
-              className="submit-button"
+              className={`submit-button ${isAdminMode ? 'admin-button' : ''}`}
               disabled={loading}
             >
               {loading 
-                ? (usePassword ? 'Logging in...' : 'Sending OTP...') 
-                : (usePassword ? 'Login' : 'Send OTP')}
+                ? (isAdminMode ? 'Logging in...' : usePassword ? 'Logging in...' : 'Sending OTP...') 
+                : (isAdminMode ? '🚀 Admin Login' : usePassword ? 'Login' : 'Send OTP')}
             </button>
           </form>
 

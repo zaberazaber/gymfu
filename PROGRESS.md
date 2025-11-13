@@ -1752,3 +1752,56 @@ All infrastructure setup is complete! Ready to continue building features.
 - **Web App:** http://localhost:5173
 - **API Health:** http://localhost:3000/health
 - **DB Health:** http://localhost:3000/health/db
+
+
+---
+
+## ✅ Admin Login Feature (Development Mode)
+
+**Completed:** November 13, 2025
+
+**What was implemented:**
+- Magic `@varzio` email bypass for instant login
+- Auto-creation of admin users on first login
+- Works on both mobile and web apps
+- No OTP or password verification required
+- Seeded default admin account
+
+**Features:**
+- Any email containing `@varzio` logs in instantly
+- Auto-creates user if doesn't exist
+- Returns valid JWT token
+- Perfect for development and testing
+
+**Default Admin Account:**
+```
+Email: admin@varzio.com
+Password: admin123
+```
+
+**Files created/modified:**
+- `backend/src/controllers/authController.ts` - Added admin bypass logic
+- `backend/src/scripts/seedAdminUser.ts` - Admin user seeding script
+- `backend/package.json` - Added `db:seed-admin` script
+- `ADMIN_LOGIN_GUIDE.md` - Comprehensive documentation
+- `QUICK_ADMIN_LOGIN.md` - Quick reference guide
+
+**Testing results:**
+✅ Admin login works with `admin@varzio.com`
+✅ Auto-creates new users with any `@varzio` email
+✅ Returns valid JWT token
+✅ Works on both mobile and web apps
+✅ Bypasses OTP verification
+
+**Usage:**
+```bash
+# Seed admin user
+npm run db:seed-admin
+
+# Login with any @varzio email
+Email: yourname@varzio.com
+Password: anything
+```
+
+**Security Note:** This feature is for development only and should be disabled in production.
+

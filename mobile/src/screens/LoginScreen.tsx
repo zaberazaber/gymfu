@@ -15,6 +15,9 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  
+  // Check if email contains @varzio for admin mode
+  const isAdminMode = email.includes('@varzio');
 
   const validateForm = () => {
     const errors: Record<string, string> = {};
@@ -45,6 +48,15 @@ export default function LoginScreen() {
     dispatch(clearError());
 
     if (!validateForm()) {
+      return;
+    }
+
+    // Admin mode: always use password login
+    if (isAdminMode) {
+      const result = await dispatch(loginWithPassword({ email, password: password || 'admin123' }));
+      if (loginWithPassword.fulfilled.match(result)) {
+        navigation.navigate('Home' as never);
+      }
       return;
     }
 
@@ -131,26 +143,37 @@ export default function LoginScreen() {
             {validationErrors.email && <Text style={styles.fieldError}>{validationErrors.email}</Text>}
           </View>
 
-          {/* Login Method Toggle */}
-          <TouchableOpacity
-            style={styles.checkboxContainer}
-            onPress={() => setUsePassword(!usePassword)}
-            disabled={loading}
-            activeOpacity={0.7}
-          >
-            <View style={[styles.checkbox, usePassword && styles.checkboxChecked]}>
-              {usePassword && <Text style={styles.checkmark}>✓</Text>}
+          {/* Admin Mode Badge */}
+          {isAdminMode && (
+            <View style={styles.adminBadge}>
+              <Text style={styles.adminBadgeText}>🔐 Admin Mode - Quick Login Enabled</Text>
             </View>
-            <Text style={styles.checkboxLabel}>Login with password instead of OTP</Text>
-          </TouchableOpacity>
+          )}
 
-          {/* Password Input */}
-          {usePassword && (
+          {/* Login Method Toggle (hidden in admin mode) */}
+          {!isAdminMode && (
+            <TouchableOpacity
+              style={styles.checkboxContainer}
+              onPress={() => setUsePassword(!usePassword)}
+              disabled={loading}
+              activeOpacity={0.7}
+            >
+              <View style={[styles.checkbox, usePassword && styles.checkboxChecked]}>
+                {usePassword && <Text style={styles.checkmark}>✓</Text>}
+              </View>
+              <Text style={styles.checkboxLabel}>Login with password instead of OTP</Text>
+            </TouchableOpacity>
+          )}
+
+          {/* Password Input (shown if usePassword or admin mode) */}
+          {(usePassword || isAdminMode) && (
             <View style={styles.formGroup}>
-              <Text style={styles.label}>Password</Text>
+              <Text style={styles.label}>
+                Password {isAdminMode && <Text style={styles.optionalText}>(optional)</Text>}
+              </Text>
               <TextInput
                 style={[styles.input, validationErrors.password && styles.inputError]}
-                placeholder="Enter your password"
+                placeholder={isAdminMode ? "Any password or leave empty" : "Enter your password"}
                 value={password}
                 onChangeText={(text) => {
                   setPassword(text);
@@ -169,14 +192,16 @@ export default function LoginScreen() {
 
       {/* Submit Button */}
       <TouchableOpacity
-        style={[styles.button, loading && styles.buttonDisabled]}
+        style={[styles.button, loading && styles.buttonDisabled, isAdminMode && styles.adminButton]}
         onPress={handleLogin}
         disabled={loading}
       >
         {loading ? (
           <ActivityIndicator color="#fff" />
         ) : (
-          <Text style={styles.buttonText}>{usePassword ? 'Login' : 'Send OTP'}</Text>
+          <Text style={styles.buttonText}>
+            {isAdminMode ? '🚀 Admin Login' : usePassword ? 'Login' : 'Send OTP'}
+          </Text>
         )}
       </TouchableOpacity>
 
@@ -336,5 +361,30 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 14,
     color: '#4a5568',
+  },
+  adminBadge: {
+    backgroundColor: '#667eea',
+    padding: 14,
+    borderRadius: 12,
+    marginBottom: 16,
+    shadowColor: '#667eea',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  adminBadgeText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  adminButton: {
+    backgroundColor: '#764ba2',
+  },
+  optionalText: {
+    fontSize: 12,
+    color: '#a0aec0',
+    fontWeight: 'normal',
   },
 });
