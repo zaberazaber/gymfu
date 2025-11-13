@@ -179,9 +179,15 @@ const authSlice = createSlice({
       state.isAuthenticated = false;
       state.registrationIdentifier = null;
       AsyncStorage.removeItem('token');
+      AsyncStorage.removeItem('user');
     },
     clearError: (state) => {
       state.error = null;
+    },
+    setCredentials: (state, action) => {
+      state.user = action.payload.user;
+      state.token = action.payload.token;
+      state.isAuthenticated = true;
     },
   },
   extraReducers: (builder) => {
@@ -208,6 +214,9 @@ const authSlice = createSlice({
         state.token = action.payload.token;
         state.isAuthenticated = true;
         state.registrationIdentifier = null;
+        // Persist to AsyncStorage
+        AsyncStorage.setItem('token', action.payload.token);
+        AsyncStorage.setItem('user', JSON.stringify(action.payload.user));
       })
       .addCase(verifyOTP.rejected, (state, action) => {
         state.loading = false;
@@ -235,6 +244,9 @@ const authSlice = createSlice({
         state.token = action.payload.token;
         state.isAuthenticated = true;
         state.registrationIdentifier = null;
+        // Persist to AsyncStorage
+        AsyncStorage.setItem('token', action.payload.token);
+        AsyncStorage.setItem('user', JSON.stringify(action.payload.user));
       })
       .addCase(loginWithPassword.rejected, (state, action) => {
         state.loading = false;
@@ -273,5 +285,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { logout, clearError } = authSlice.actions;
+export const { logout, clearError, setCredentials } = authSlice.actions;
 export default authSlice.reducer;
