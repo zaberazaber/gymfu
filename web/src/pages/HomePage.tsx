@@ -44,8 +44,14 @@ function HomePage() {
             </p>
             <div className="button-group">
               <button
-                onClick={() => navigate('/profile')}
+                onClick={() => navigate('/gyms')}
                 className="neu-btn neu-btn-primary"
+              >
+                Find Gyms
+              </button>
+              <button
+                onClick={() => navigate('/profile')}
+                className="neu-btn neu-btn-secondary"
               >
                 View Profile
               </button>
