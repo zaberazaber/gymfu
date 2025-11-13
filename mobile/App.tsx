@@ -9,7 +9,7 @@ import LoginScreen from './src/screens/LoginScreen';
 import OTPVerificationScreen from './src/screens/OTPVerificationScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import EditProfileScreen from './src/screens/EditProfileScreen';
-import GymListScreen from './src/screens/GymListScreen';
+import GymListScreen from './src/screens/GymListScreen_new';
 import GymDetailScreen from './src/screens/GymDetailScreen';
 
 export type RootStackParamList = {

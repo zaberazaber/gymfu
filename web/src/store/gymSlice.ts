@@ -16,7 +16,7 @@ interface Gym {
     amenities: string[];
     basePrice: number;
     capacity: number;
-    rating: number;
+    rating: number | string;
     isVerified: boolean;
     operatingHours?: any;
     distance?: number;
@@ -53,7 +53,7 @@ const initialState: GymState = {
     filters: {
         latitude: 19.076, // Default: Mumbai
         longitude: 72.8777,
-        radius: 5,
+        radius: 20,
         amenities: [],
         minPrice: null,
         maxPrice: null,
@@ -161,7 +161,7 @@ const gymSlice = createSlice({
             state.filters.amenities = [];
             state.filters.minPrice = null;
             state.filters.maxPrice = null;
-            state.filters.radius = 5;
+            state.filters.radius = 20;
             state.pagination.offset = 0;
         },
         clearError: (state) => {

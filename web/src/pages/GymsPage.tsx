@@ -11,16 +11,12 @@ import {
 import './GymsPage.css';
 
 const AMENITIES = [
-  'cardio',
-  'weights',
-  'shower',
-  'parking',
-  'locker',
-  'trainer',
-  'pool',
-  'sauna',
-  'yoga',
-  'crossfit',
+  'Cardio',
+  'Weights',
+  'Shower',
+  'Parking',
+  'Locker',
+  'AC',
 ];
 
 export default function GymsPage() {
@@ -219,7 +215,7 @@ export default function GymsPage() {
               <div key={gym.id} className="gym-card">
                 <div className="gym-header">
                   <h3 className="gym-name">{gym.name}</h3>
-                  <div className="gym-rating">⭐ {gym.rating.toFixed(1)}</div>
+                  <div className="gym-rating">⭐ {Number(gym.rating).toFixed(1)}</div>
                 </div>
 
                 <div className="gym-details">

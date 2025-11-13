@@ -1,6 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { API_BASE_URL } from '../utils/api';
 
@@ -16,7 +15,7 @@ interface Gym {
   amenities: string[];
   basePrice: number;
   capacity: number;
-  rating: number;
+  rating: number | string;
   isVerified: boolean;
   operatingHours?: any;
   distance?: number;
@@ -55,7 +54,7 @@ const initialState: GymState = {
   filters: {
     latitude: 19.076, // Default: Mumbai
     longitude: 72.8777,
-    radius: 5,
+    radius: 20,
     amenities: [],
     minPrice: null,
     maxPrice: null,
@@ -95,6 +94,7 @@ export const searchNearbyGyms = createAsyncThunk(
       }
 
       const response = await axios.get(`${API_BASE_URL}/gyms/nearby`, { params });
+      console.log('API Response:', response.data);
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.error?.message || 'Failed to search gyms');
@@ -163,7 +163,7 @@ const gymSlice = createSlice({
       state.filters.amenities = [];
       state.filters.minPrice = null;
       state.filters.maxPrice = null;
-      state.filters.radius = 5;
+      state.filters.radius = 20;
       state.pagination.offset = 0;
     },
     clearError: (state) => {
@@ -176,17 +176,20 @@ const gymSlice = createSlice({
       .addCase(searchNearbyGyms.pending, (state) => {
         state.loading = true;
         state.error = null;
+        // Don't clear gyms - keep showing old data while loading
       })
       .addCase(searchNearbyGyms.fulfilled, (state, action) => {
         state.loading = false;
         state.refreshing = false;
-        state.gyms = action.payload.data;
-        state.pagination = action.payload.pagination;
+        console.log('Gyms received:', action.payload.data?.length || 0);
+        state.gyms = action.payload.data || [];
+        state.pagination = action.payload.pagination || { limit: 10, offset: 0, total: 0, hasMore: false };
       })
       .addCase(searchNearbyGyms.rejected, (state, action) => {
         state.loading = false;
         state.refreshing = false;
         state.error = action.payload as string;
+        console.log('Search gyms error:', action.payload);
       })
       // Get gym by ID
       .addCase(getGymById.pending, (state) => {

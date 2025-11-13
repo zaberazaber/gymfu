@@ -11,7 +11,7 @@ import {
     TextInput,
     Alert,
 } from 'react-native';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import * as Location from 'expo-location';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import {
@@ -29,14 +29,14 @@ const AMENITIES = ['Cardio', 'Weights', 'Shower', 'Parking', 'Locker', 'AC'];
 export default function GymListScreen() {
     const navigation = useNavigation();
     const dispatch = useAppDispatch();
-    const { gyms, loading, error, filters, refreshing } = useAppSelector((state) => state.gym);
+    const { gyms, loading, error, filters } = useAppSelector((state) => state.gym);
 
-    const [filterModalVisible, setFilterModalVisible] = useState(false);
-    const [tempAmenities, setTempAmenities] = useState<string[]>([]);
-    const [tempRadius, setTempRadius] = useState(20);
-    const [tempMinPrice, setTempMinPrice] = useState<string>('');
-    const [tempMaxPrice, setTempMaxPrice] = useState<string>('');
+    const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+    const [tempAmenities, setTempAmenities] = useState<string[]>(filters.amenities);
+    const [tempMinPrice, setTempMinPrice] = useState<string>(filters.minPrice?.toString() || '');
+    const [tempMaxPrice, setTempMaxPrice] = useState<string>(filters.maxPrice?.toString() || '');
     const [locationPermissionGranted, setLocationPermissionGranted] = useState(false);
+    const [usingGPS, setUsingGPS] = useState(false);
 
     useEffect(() => {
         requestLocationPermission();
@@ -48,31 +48,26 @@ export default function GymListScreen() {
         }
     }, [locationPermissionGranted, dispatch]);
 
-    // Reload gyms when screen comes into focus
-    useFocusEffect(
-        React.useCallback(() => {
-            if (locationPermissionGranted && gyms.length === 0) {
-                console.log('Fetching gyms on focus, current count:', gyms.length);
-                dispatch(searchNearbyGyms());
-            }
-        }, [locationPermissionGranted, gyms.length, dispatch])
-    );
-
     const requestLocationPermission = async () => {
         try {
             const { status } = await Location.requestForegroundPermissionsAsync();
             if (status === 'granted') {
                 setLocationPermissionGranted(true);
-                // For testing: Use Mumbai location where gyms are seeded
-                // Uncomment below to use actual device location
-                // const location = await Location.getCurrentPositionAsync({});
-                // dispatch(
-                //     setLocation({
-                //         latitude: location.coords.latitude,
-                //         longitude: location.coords.longitude,
-                //     })
-                // );
-                console.log('Using default Mumbai location for testing');
+                // Get actual device GPS location
+                try {
+                    const location = await Location.getCurrentPositionAsync({});
+                    dispatch(
+                        setLocation({
+                            latitude: location.coords.latitude,
+                            longitude: location.coords.longitude,
+                        })
+                    );
+                    setUsingGPS(true);
+                    console.log('Using GPS location:', location.coords.latitude, location.coords.longitude);
+                } catch (gpsError) {
+                    console.log('GPS error, using default Mumbai location:', gpsError);
+                    setUsingGPS(false);
+                }
             } else {
                 Alert.alert(
                     'Location Permission',
@@ -91,13 +86,38 @@ export default function GymListScreen() {
         dispatch(searchNearbyGyms());
     };
 
-    const openFilterModal = () => {
-        // Sync temp states with current filters when opening modal
-        setTempAmenities(filters.amenities);
-        setTempRadius(filters.radius);
-        setTempMinPrice(filters.minPrice?.toString() || '');
-        setTempMaxPrice(filters.maxPrice?.toString() || '');
-        setFilterModalVisible(true);
+    const handleSearch = () => {
+        dispatch(searchNearbyGyms());
+    };
+
+    const updateGPSLocation = async () => {
+        try {
+            const location = await Location.getCurrentPositionAsync({});
+            dispatch(
+                setLocation({
+                    latitude: location.coords.latitude,
+                    longitude: location.coords.longitude,
+                })
+            );
+            setUsingGPS(true);
+            console.log('GPS location updated:', location.coords.latitude, location.coords.longitude);
+            dispatch(searchNearbyGyms());
+        } catch (error) {
+            Alert.alert('GPS Error', 'Could not get your current location. Using default location.');
+            console.error('GPS update error:', error);
+        }
+    };
+
+    const useDefaultLocation = () => {
+        dispatch(
+            setLocation({
+                latitude: 19.076,
+                longitude: 72.8777,
+            })
+        );
+        setUsingGPS(false);
+        console.log('Using default Mumbai location');
+        dispatch(searchNearbyGyms());
     };
 
     const toggleAmenity = (amenity: string) => {
@@ -108,32 +128,24 @@ export default function GymListScreen() {
         }
     };
 
-    const applyFilters = () => {
-        console.log('Applying filters:', {
-            amenities: tempAmenities,
-            radius: tempRadius,
-            minPrice: tempMinPrice,
-            maxPrice: tempMaxPrice,
-        });
+    const applyAdvancedFilters = () => {
         dispatch(setAmenities(tempAmenities));
-        dispatch(setRadius(tempRadius));
         dispatch(
             setPriceRange({
                 min: tempMinPrice ? parseFloat(tempMinPrice) : null,
                 max: tempMaxPrice ? parseFloat(tempMaxPrice) : null,
             })
         );
-        setFilterModalVisible(false);
+        setShowAdvancedFilters(false);
         dispatch(searchNearbyGyms());
     };
 
-    const resetFilters = () => {
+    const handleClearFilters = () => {
         setTempAmenities([]);
-        setTempRadius(20);
         setTempMinPrice('');
         setTempMaxPrice('');
         dispatch(clearFilters());
-        setFilterModalVisible(false);
+        setShowAdvancedFilters(false);
         dispatch(searchNearbyGyms());
     };
 
@@ -177,23 +189,93 @@ export default function GymListScreen() {
 
     return (
         <View style={styles.container}>
-            {/* Header */}
+            {/* Header with Search Controls */}
             <View style={styles.header}>
-                <Text style={styles.title}>Discover Gyms</Text>
-                <TouchableOpacity
-                    style={styles.filterButton}
-                    onPress={openFilterModal}
-                    activeOpacity={0.8}
-                >
-                    <Text style={styles.filterButtonText}>🔍 Filters</Text>
-                </TouchableOpacity>
+                <View style={styles.titleRow}>
+                    <Text style={styles.title}>Discover Gyms</Text>
+                    <TouchableOpacity
+                        style={styles.locationButton}
+                        onPress={usingGPS ? useDefaultLocation : updateGPSLocation}
+                        activeOpacity={0.8}
+                    >
+                        <Text style={styles.locationButtonText}>
+                            {usingGPS ? '📍 GPS' : '🗺️ Default'}
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+
+                {/* Location Info */}
+                <Text style={styles.locationInfo}>
+                    {usingGPS
+                        ? `Using your location (${filters.latitude.toFixed(4)}, ${filters.longitude.toFixed(4)})`
+                        : 'Using Mumbai, India (Test Location)'}
+                </Text>
+
+                {/* Radius Control - Always Visible */}
+                <View style={styles.radiusControl}>
+                    <Text style={styles.radiusLabel}>Search Radius: {filters.radius} km</Text>
+                    <View style={styles.radiusSliderContainer}>
+                        <Text style={styles.radiusValue}>1km</Text>
+                        <View style={styles.sliderTrack}>
+                            <View style={[styles.sliderFill, { width: `${(filters.radius / 50) * 100}%` }]} />
+                            <TouchableOpacity
+                                style={[styles.sliderThumb, { left: `${(filters.radius / 50) * 100}%` }]}
+                                onPressIn={() => { }}
+                            />
+                        </View>
+                        <Text style={styles.radiusValue}>50km</Text>
+                    </View>
+                    {/* Radius Quick Select Buttons */}
+                    <View style={styles.radiusButtons}>
+                        {[5, 10, 20, 50].map((radius) => (
+                            <TouchableOpacity
+                                key={radius}
+                                style={[
+                                    styles.radiusQuickButton,
+                                    filters.radius === radius && styles.radiusQuickButtonActive,
+                                ]}
+                                onPress={() => dispatch(setRadius(radius))}
+                                activeOpacity={0.8}
+                            >
+                                <Text
+                                    style={[
+                                        styles.radiusQuickButtonText,
+                                        filters.radius === radius && styles.radiusQuickButtonTextActive,
+                                    ]}
+                                >
+                                    {radius}km
+                                </Text>
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+                </View>
+
+                {/* Action Buttons */}
+                <View style={styles.actionButtons}>
+                    <TouchableOpacity
+                        style={styles.searchButton}
+                        onPress={handleSearch}
+                        activeOpacity={0.8}
+                    >
+                        <Text style={styles.searchButtonText}>🔍 Search Gyms</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={styles.filterButton}
+                        onPress={() => setShowAdvancedFilters(true)}
+                        activeOpacity={0.8}
+                    >
+                        <Text style={styles.filterButtonText}>
+                            ⚙️ Filters {filters.amenities.length > 0 && `(${filters.amenities.length})`}
+                        </Text>
+                    </TouchableOpacity>
+                </View>
             </View>
 
             {/* Active Filters Display */}
             {(filters.amenities.length > 0 || filters.minPrice || filters.maxPrice) && (
                 <View style={styles.activeFilters}>
                     <Text style={styles.activeFiltersText}>
-                        Active Filters: {filters.amenities.join(', ')}
+                        Active: {filters.amenities.join(', ')}
                         {filters.minPrice && ` • Min: ₹${filters.minPrice}`}
                         {filters.maxPrice && ` • Max: ₹${filters.maxPrice}`}
                     </Text>
@@ -215,7 +297,7 @@ export default function GymListScreen() {
                 contentContainerStyle={styles.listContent}
                 refreshControl={
                     <RefreshControl
-                        refreshing={refreshing || loading}
+                        refreshing={loading}
                         onRefresh={handleRefresh}
                         colors={[colors.accentPrimary]}
                         tintColor={colors.accentPrimary}
@@ -225,50 +307,23 @@ export default function GymListScreen() {
                     !loading ? (
                         <View style={styles.emptyContainer}>
                             <Text style={styles.emptyText}>No gyms found nearby</Text>
-                            <Text style={styles.emptySubtext}>Try adjusting your filters or location</Text>
+                            <Text style={styles.emptySubtext}>Try adjusting your radius or filters</Text>
                         </View>
                     ) : null
                 }
             />
 
-            {/* Filter Modal */}
+            {/* Advanced Filters Modal */}
             <Modal
-                visible={filterModalVisible}
+                visible={showAdvancedFilters}
                 animationType="slide"
                 transparent={true}
-                onRequestClose={() => setFilterModalVisible(false)}
+                onRequestClose={() => setShowAdvancedFilters(false)}
             >
                 <View style={styles.modalOverlay}>
                     <View style={styles.modalContent}>
                         <ScrollView showsVerticalScrollIndicator={false}>
-                            <Text style={styles.modalTitle}>Filter Gyms</Text>
-
-                            {/* Radius Slider */}
-                            <View style={styles.filterSection}>
-                                <Text style={styles.filterLabel}>Search Radius: {tempRadius} km</Text>
-                                <View style={styles.radiusButtons}>
-                                    {[5, 10, 20, 30].map((radius) => (
-                                        <TouchableOpacity
-                                            key={radius}
-                                            style={[
-                                                styles.radiusButton,
-                                                tempRadius === radius && styles.radiusButtonActive,
-                                            ]}
-                                            onPress={() => setTempRadius(radius)}
-                                            activeOpacity={0.8}
-                                        >
-                                            <Text
-                                                style={[
-                                                    styles.radiusButtonText,
-                                                    tempRadius === radius && styles.radiusButtonTextActive,
-                                                ]}
-                                            >
-                                                {radius}km
-                                            </Text>
-                                        </TouchableOpacity>
-                                    ))}
-                                </View>
-                            </View>
+                            <Text style={styles.modalTitle}>Advanced Filters</Text>
 
                             {/* Amenities */}
                             <View style={styles.filterSection}>
@@ -325,23 +380,23 @@ export default function GymListScreen() {
                             <View style={styles.modalActions}>
                                 <TouchableOpacity
                                     style={styles.resetButton}
-                                    onPress={resetFilters}
+                                    onPress={handleClearFilters}
                                     activeOpacity={0.8}
                                 >
-                                    <Text style={styles.resetButtonText}>Reset</Text>
+                                    <Text style={styles.resetButtonText}>Clear All</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity
                                     style={styles.applyButton}
-                                    onPress={applyFilters}
+                                    onPress={applyAdvancedFilters}
                                     activeOpacity={0.8}
                                 >
-                                    <Text style={styles.applyButtonText}>Apply Filters</Text>
+                                    <Text style={styles.applyButtonText}>Apply</Text>
                                 </TouchableOpacity>
                             </View>
 
                             <TouchableOpacity
                                 style={styles.closeButton}
-                                onPress={() => setFilterModalVisible(false)}
+                                onPress={() => setShowAdvancedFilters(false)}
                                 activeOpacity={0.8}
                             >
                                 <Text style={styles.closeButtonText}>Close</Text>
@@ -360,28 +415,129 @@ const styles = StyleSheet.create({
         backgroundColor: colors.bgPrimary,
     },
     header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
         padding: 20,
         paddingTop: 60,
         backgroundColor: colors.bgPrimary,
         ...shadows.medium,
+    },
+    titleRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 8,
     },
     title: {
         fontSize: 28,
         fontWeight: 'bold',
         color: colors.textPrimary,
     },
-    filterButton: {
+    locationButton: {
         backgroundColor: colors.accentPrimary,
-        paddingHorizontal: 16,
-        paddingVertical: 10,
-        borderRadius: 12,
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        borderRadius: 10,
         ...shadows.small,
     },
-    filterButtonText: {
+    locationButtonText: {
         color: '#ffffff',
+        fontSize: 12,
+        fontWeight: '600',
+    },
+    locationInfo: {
+        fontSize: 12,
+        color: colors.textSecondary,
+        marginBottom: 16,
+    },
+    radiusControl: {
+        marginBottom: 16,
+    },
+    radiusLabel: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: colors.textPrimary,
+        marginBottom: 12,
+    },
+    radiusSliderContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 12,
+    },
+    radiusValue: {
+        fontSize: 12,
+        color: colors.textSecondary,
+        width: 40,
+    },
+    sliderTrack: {
+        flex: 1,
+        height: 4,
+        backgroundColor: colors.bgSecondary,
+        borderRadius: 2,
+        marginHorizontal: 8,
+        position: 'relative',
+    },
+    sliderFill: {
+        height: '100%',
+        backgroundColor: colors.accentPrimary,
+        borderRadius: 2,
+    },
+    sliderThumb: {
+        position: 'absolute',
+        width: 20,
+        height: 20,
+        borderRadius: 10,
+        backgroundColor: colors.accentPrimary,
+        top: -8,
+        marginLeft: -10,
+        ...shadows.small,
+    },
+    radiusButtons: {
+        flexDirection: 'row',
+        gap: 8,
+    },
+    radiusQuickButton: {
+        flex: 1,
+        backgroundColor: colors.bgSecondary,
+        paddingVertical: 10,
+        borderRadius: 10,
+        alignItems: 'center',
+    },
+    radiusQuickButtonActive: {
+        backgroundColor: colors.accentPrimary,
+    },
+    radiusQuickButtonText: {
+        color: colors.textPrimary,
+        fontSize: 13,
+        fontWeight: '600',
+    },
+    radiusQuickButtonTextActive: {
+        color: '#ffffff',
+    },
+    actionButtons: {
+        flexDirection: 'row',
+        gap: 12,
+    },
+    searchButton: {
+        flex: 2,
+        backgroundColor: colors.accentPrimary,
+        paddingVertical: 14,
+        borderRadius: 12,
+        alignItems: 'center',
+        ...shadows.medium,
+    },
+    searchButtonText: {
+        color: '#ffffff',
+        fontSize: 16,
+        fontWeight: '600',
+    },
+    filterButton: {
+        flex: 1,
+        backgroundColor: colors.bgSecondary,
+        paddingVertical: 14,
+        borderRadius: 12,
+        alignItems: 'center',
+    },
+    filterButtonText: {
+        color: colors.textPrimary,
         fontSize: 14,
         fontWeight: '600',
     },
@@ -521,7 +677,7 @@ const styles = StyleSheet.create({
         borderTopLeftRadius: 30,
         borderTopRightRadius: 30,
         padding: 24,
-        maxHeight: '80%',
+        maxHeight: '70%',
     },
     modalTitle: {
         fontSize: 24,
@@ -538,28 +694,6 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         color: colors.textPrimary,
         marginBottom: 12,
-    },
-    radiusButtons: {
-        flexDirection: 'row',
-        gap: 12,
-    },
-    radiusButton: {
-        flex: 1,
-        backgroundColor: colors.bgSecondary,
-        paddingVertical: 12,
-        borderRadius: 12,
-        alignItems: 'center',
-    },
-    radiusButtonActive: {
-        backgroundColor: colors.accentPrimary,
-    },
-    radiusButtonText: {
-        color: colors.textPrimary,
-        fontSize: 14,
-        fontWeight: '600',
-    },
-    radiusButtonTextActive: {
-        color: '#ffffff',
     },
     amenitiesGrid: {
         flexDirection: 'row',

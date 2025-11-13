@@ -35,7 +35,7 @@ export default function HomeScreen() {
               <Text style={styles.avatarText}>{getInitials(user.name)}</Text>
             </View>
           </View>
-          
+
           <Text style={styles.welcomeTitle}>Welcome, {user.name}! 👋</Text>
           <Text style={styles.welcomeInfo}>
             {user.phoneNumber || user.email}
