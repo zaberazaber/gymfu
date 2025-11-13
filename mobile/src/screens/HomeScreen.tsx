@@ -79,18 +79,10 @@ export default function HomeScreen() {
             <View style={styles.buttonGroup}>
               <TouchableOpacity
                 style={styles.buttonPrimary}
-                onPress={() => navigation.navigate('GymList' as never)}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.buttonTextPrimary}>Browse Gyms</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.button}
                 onPress={() => navigation.navigate('Register' as never)}
                 activeOpacity={0.8}
               >
-                <Text style={styles.buttonText}>Register</Text>
+                <Text style={styles.buttonTextPrimary}>Register</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
