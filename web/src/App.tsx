@@ -8,6 +8,7 @@ import OTPVerificationPage from './pages/OTPVerificationPage';
 import ProfilePage from './pages/ProfilePage';
 import EditProfilePage from './pages/EditProfilePage';
 import GymsPage from './pages/GymsPage';
+import GymDetailPage from './pages/GymDetailPage';
 import './App.css';
 import './styles/neumorphic.css';
 
@@ -24,6 +25,7 @@ function App() {
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/edit-profile" element={<EditProfilePage />} />
             <Route path="/gyms" element={<GymsPage />} />
+            <Route path="/gyms/:gymId" element={<GymDetailPage />} />
           </Routes>        </div>
       </Router>
     </Provider>
