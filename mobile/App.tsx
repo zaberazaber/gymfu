@@ -15,6 +15,7 @@ import EditProfileScreen from './src/screens/EditProfileScreen';
 import GymListScreen from './src/screens/GymListScreen_new';
 import GymDetailScreen from './src/screens/GymDetailScreen';
 import PartnerDashboardScreen from './src/screens/PartnerDashboardScreen';
+import GymCreateEditScreen from './src/screens/GymCreateEditScreen';
 
 // Auth Stack (Login/Register)
 export type AuthStackParamList = {
@@ -32,6 +33,7 @@ export type MainStackParamList = {
   GymList: undefined;
   GymDetail: { gymId: number };
   PartnerDashboard: undefined;
+  GymCreateEdit: { gymId?: number };
 };
 
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
@@ -125,6 +127,13 @@ function MainNavigator() {
         name="PartnerDashboard"
         component={PartnerDashboardScreen}
         options={{ title: 'Partner Dashboard' }}
+      />
+      <MainStack.Screen
+        name="GymCreateEdit"
+        component={GymCreateEditScreen}
+        options={({ route }) => ({
+          title: (route.params as any)?.gymId ? 'Edit Gym' : 'Create Gym',
+        })}
       />
     </MainStack.Navigator>
   );

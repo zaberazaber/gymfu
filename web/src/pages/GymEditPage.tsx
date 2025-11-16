@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
-import { getGymById } from '../store/gymSlice';
+import { getGymById, createGym, updateGym } from '../store/gymSlice';
 import './GymEditPage.css';
 
 const AMENITIES_OPTIONS = [
@@ -20,7 +20,8 @@ const AMENITIES_OPTIONS = [
 ];
 
 export default function GymEditPage() {
-  const { gymId } = useParams<{ gymId: string }>();
+  const params = useParams<{ gymId?: string }>();
+  const gymId = params.gymId || 'new'; // Default to 'new' if no gymId in params
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { selectedGym, loading } = useAppSelector((state) => state.gym);
@@ -31,13 +32,18 @@ export default function GymEditPage() {
     address: '',
     city: '',
     pincode: '',
+    latitude: '',
+    longitude: '',
     basePrice: '',
     capacity: '',
     amenities: [] as string[],
   });
 
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [newImageUrl, setNewImageUrl] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
+  const [uploadingImages, setUploadingImages] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -64,10 +70,13 @@ export default function GymEditPage() {
         address: selectedGym.address,
         city: selectedGym.city,
         pincode: selectedGym.pincode,
+        latitude: selectedGym.latitude.toString(),
+        longitude: selectedGym.longitude.toString(),
         basePrice: selectedGym.basePrice.toString(),
         capacity: selectedGym.capacity.toString(),
         amenities: selectedGym.amenities,
       });
+      setImageUrls((selectedGym as any).images || []);
     }
   }, [selectedGym, gymId, user, navigate]);
 
@@ -89,6 +98,47 @@ export default function GymEditPage() {
     }));
   };
 
+  const handleAddImage = () => {
+    if (newImageUrl.trim()) {
+      setImageUrls(prev => [...prev, newImageUrl.trim()]);
+      setNewImageUrl('');
+    }
+  };
+
+  const handleRemoveImage = (index: number) => {
+    setImageUrls(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleUploadImages = async () => {
+    if (gymId === 'new' || imageUrls.length === 0) {
+      return;
+    }
+
+    setUploadingImages(true);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:3000/api/v1/gyms/${gymId}/images`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ images: imageUrls }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to upload images');
+      }
+
+      alert('Images uploaded successfully!');
+    } catch (error) {
+      console.error('Error uploading images:', error);
+      alert('Failed to upload images. Please try again.');
+    } finally {
+      setUploadingImages(false);
+    }
+  };
+
   const validate = () => {
     const newErrors: Record<string, string> = {};
 
@@ -108,6 +158,18 @@ export default function GymEditPage() {
       newErrors.pincode = 'Pincode is required';
     } else if (!/^\d{6}$/.test(formData.pincode)) {
       newErrors.pincode = 'Pincode must be 6 digits';
+    }
+
+    if (!formData.latitude) {
+      newErrors.latitude = 'Latitude is required';
+    } else if (isNaN(Number(formData.latitude)) || Number(formData.latitude) < -90 || Number(formData.latitude) > 90) {
+      newErrors.latitude = 'Latitude must be between -90 and 90';
+    }
+
+    if (!formData.longitude) {
+      newErrors.longitude = 'Longitude is required';
+    } else if (isNaN(Number(formData.longitude)) || Number(formData.longitude) < -180 || Number(formData.longitude) > 180) {
+      newErrors.longitude = 'Longitude must be between -180 and 180';
     }
 
     if (!formData.basePrice) {
@@ -140,17 +202,49 @@ export default function GymEditPage() {
     setSaving(true);
 
     try {
-      // TODO: Implement actual API call to update gym
-      console.log('Saving gym:', formData);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const gymData = {
+        name: formData.name,
+        address: formData.address,
+        city: formData.city,
+        pincode: formData.pincode,
+        latitude: Number(formData.latitude),
+        longitude: Number(formData.longitude),
+        basePrice: Number(formData.basePrice),
+        capacity: Number(formData.capacity),
+        amenities: formData.amenities.map(a => a.toLowerCase()),
+      };
 
-      alert(gymId === 'new' ? 'Gym created successfully!' : 'Gym updated successfully!');
-      navigate('/partner/dashboard');
-    } catch (error) {
+      console.log('gymId:', gymId, 'type:', typeof gymId);
+      console.log('Is new?', gymId === 'new');
+      console.log('gymData:', gymData);
+
+      if (gymId === 'new') {
+        // Create new gym
+        console.log('Creating new gym...');
+        const result = await dispatch(createGym(gymData));
+        if (createGym.fulfilled.match(result)) {
+          alert('Gym created successfully! Pending verification.');
+          navigate('/partner/dashboard');
+        } else {
+          throw new Error(result.payload as string);
+        }
+      } else {
+        // Update existing gym
+        console.log('Updating gym:', gymId);
+        const result = await dispatch(updateGym({
+          gymId: Number(gymId),
+          gymData,
+        }));
+        if (updateGym.fulfilled.match(result)) {
+          alert('Gym updated successfully!');
+          navigate('/partner/dashboard');
+        } else {
+          throw new Error(result.payload as string);
+        }
+      }
+    } catch (error: any) {
       console.error('Error saving gym:', error);
-      alert('Failed to save gym. Please try again.');
+      alert(error.message || 'Failed to save gym. Please try again.');
     } finally {
       setSaving(false);
     }
@@ -179,7 +273,7 @@ export default function GymEditPage() {
             {gymId === 'new' ? '🏋️ Add New Gym' : '✏️ Edit Gym'}
           </h1>
           <p className="edit-subtitle">
-            {gymId === 'new' 
+            {gymId === 'new'
               ? 'Fill in the details to list your gym on GYMFU'
               : 'Update your gym information'}
           </p>
@@ -245,6 +339,36 @@ export default function GymEditPage() {
                 {errors.pincode && <span className="error-text">{errors.pincode}</span>}
               </div>
             </div>
+
+            <div className="form-row">
+              <div className="form-group">
+                <label className="form-label">Latitude *</label>
+                <input
+                  type="number"
+                  name="latitude"
+                  value={formData.latitude}
+                  onChange={handleChange}
+                  className={`form-input ${errors.latitude ? 'error' : ''}`}
+                  placeholder="e.g., 19.0760"
+                  step="0.000001"
+                />
+                {errors.latitude && <span className="error-text">{errors.latitude}</span>}
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Longitude *</label>
+                <input
+                  type="number"
+                  name="longitude"
+                  value={formData.longitude}
+                  onChange={handleChange}
+                  className={`form-input ${errors.longitude ? 'error' : ''}`}
+                  placeholder="e.g., 72.8777"
+                  step="0.000001"
+                />
+                {errors.longitude && <span className="error-text">{errors.longitude}</span>}
+              </div>
+            </div>
           </div>
 
           {/* Pricing & Capacity */}
@@ -286,7 +410,7 @@ export default function GymEditPage() {
           <div className="form-section">
             <h2 className="section-title">Amenities *</h2>
             <p className="section-description">Select all amenities available at your gym</p>
-            
+
             <div className="amenities-grid">
               {AMENITIES_OPTIONS.map((amenity) => (
                 <button
@@ -301,6 +425,60 @@ export default function GymEditPage() {
               ))}
             </div>
             {errors.amenities && <span className="error-text">{errors.amenities}</span>}
+          </div>
+
+          {/* Gym Images */}
+          <div className="form-section">
+            <h2 className="section-title">Gym Images</h2>
+            <p className="section-description">Add image URLs for your gym (optional)</p>
+
+            <div className="images-container">
+              {imageUrls.map((url, index) => (
+                <div key={index} className="image-item">
+                  <img src={url} alt={`Gym ${index + 1}`} className="image-preview" />
+                  <button
+                    type="button"
+                    className="remove-image-btn"
+                    onClick={() => handleRemoveImage(index)}
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <div className="add-image-row">
+              <input
+                type="text"
+                value={newImageUrl}
+                onChange={(e) => setNewImageUrl(e.target.value)}
+                className="form-input"
+                placeholder="Enter image URL (e.g., https://example.com/image.jpg)"
+              />
+              <button
+                type="button"
+                className="add-image-btn"
+                onClick={handleAddImage}
+                disabled={!newImageUrl.trim()}
+              >
+                Add Image
+              </button>
+            </div>
+
+            {gymId !== 'new' && imageUrls.length > 0 && (
+              <button
+                type="button"
+                className="upload-images-btn"
+                onClick={handleUploadImages}
+                disabled={uploadingImages}
+              >
+                {uploadingImages ? 'Uploading...' : 'Upload Images to Server'}
+              </button>
+            )}
+
+            <p className="help-text">
+              💡 Tip: You can use image hosting services like Imgur or upload to your own server
+            </p>
           </div>
 
           {/* Submit Buttons */}

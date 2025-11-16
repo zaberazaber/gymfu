@@ -132,6 +132,71 @@ export const getAllGyms = createAsyncThunk(
     }
 );
 
+export const createGym = createAsyncThunk(
+    'gym/create',
+    async (gymData: {
+        name: string;
+        address: string;
+        latitude: number;
+        longitude: number;
+        city: string;
+        pincode: string;
+        amenities: string[];
+        basePrice: number;
+        capacity: number;
+    }, { rejectWithValue }) => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await axios.post(
+                `${API_BASE_URL}/api/v1/gyms/register`,
+                gymData,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+            return response.data.data;
+        } catch (error: any) {
+            return rejectWithValue(error.response?.data?.error?.message || 'Failed to create gym');
+        }
+    }
+);
+
+export const updateGym = createAsyncThunk(
+    'gym/update',
+    async ({ gymId, gymData }: {
+        gymId: number;
+        gymData: Partial<{
+            name: string;
+            address: string;
+            latitude: number;
+            longitude: number;
+            city: string;
+            pincode: string;
+            amenities: string[];
+            basePrice: number;
+            capacity: number;
+        }>;
+    }, { rejectWithValue }) => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await axios.put(
+                `${API_BASE_URL}/api/v1/gyms/${gymId}`,
+                gymData,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+            return response.data.data;
+        } catch (error: any) {
+            return rejectWithValue(error.response?.data?.error?.message || 'Failed to update gym');
+        }
+    }
+);
+
 const gymSlice = createSlice({
     name: 'gym',
     initialState,
@@ -208,6 +273,38 @@ const gymSlice = createSlice({
                 state.pagination = action.payload.pagination;
             })
             .addCase(getAllGyms.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string;
+            })
+            // Create gym
+            .addCase(createGym.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(createGym.fulfilled, (state, action) => {
+                state.loading = false;
+                state.gyms.unshift(action.payload); // Add to beginning of list
+                state.selectedGym = action.payload;
+            })
+            .addCase(createGym.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string;
+            })
+            // Update gym
+            .addCase(updateGym.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(updateGym.fulfilled, (state, action) => {
+                state.loading = false;
+                // Update in list
+                const index = state.gyms.findIndex(g => g.id === action.payload.id);
+                if (index !== -1) {
+                    state.gyms[index] = action.payload;
+                }
+                state.selectedGym = action.payload;
+            })
+            .addCase(updateGym.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload as string;
             });

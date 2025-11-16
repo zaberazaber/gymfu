@@ -20,6 +20,7 @@ export interface Gym {
     city: string;
     pincode: string;
     amenities: string[];
+    images: string[];
     basePrice: number;
     capacity: number;
     rating: number;
@@ -53,7 +54,7 @@ export class GymModel {
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
       RETURNING 
         id, name, owner_id as "ownerId", address, latitude, longitude,
-        city, pincode, amenities, base_price as "basePrice", capacity,
+        city, pincode, amenities, images, base_price as "basePrice", capacity,
         rating, is_verified as "isVerified", created_at as "createdAt",
         updated_at as "updatedAt"
     `;
@@ -80,7 +81,7 @@ export class GymModel {
         const query = `
       SELECT 
         id, name, owner_id as "ownerId", address, latitude, longitude,
-        city, pincode, amenities, base_price as "basePrice", capacity,
+        city, pincode, amenities, images, base_price as "basePrice", capacity,
         rating, is_verified as "isVerified", operating_hours as "operatingHours",
         created_at as "createdAt", updated_at as "updatedAt"
       FROM gyms
@@ -96,7 +97,7 @@ export class GymModel {
         const query = `
       SELECT 
         id, name, owner_id as "ownerId", address, latitude, longitude,
-        city, pincode, amenities, base_price as "basePrice", capacity,
+        city, pincode, amenities, images, base_price as "basePrice", capacity,
         rating, is_verified as "isVerified", created_at as "createdAt",
         updated_at as "updatedAt"
       FROM gyms
@@ -113,7 +114,7 @@ export class GymModel {
         const query = `
       SELECT 
         id, name, owner_id as "ownerId", address, latitude, longitude,
-        city, pincode, amenities, base_price as "basePrice", capacity,
+        city, pincode, amenities, images, base_price as "basePrice", capacity,
         rating, is_verified as "isVerified", created_at as "createdAt",
         updated_at as "updatedAt"
       FROM gyms
@@ -181,7 +182,7 @@ export class GymModel {
       WHERE id = $${paramCount}
       RETURNING 
         id, name, owner_id as "ownerId", address, latitude, longitude,
-        city, pincode, amenities, base_price as "basePrice", capacity,
+        city, pincode, amenities, images, base_price as "basePrice", capacity,
         rating, is_verified as "isVerified", created_at as "createdAt",
         updated_at as "updatedAt"
     `;
@@ -205,7 +206,7 @@ export class GymModel {
       WHERE id = $2
       RETURNING 
         id, name, owner_id as "ownerId", address, latitude, longitude,
-        city, pincode, amenities, base_price as "basePrice", capacity,
+        city, pincode, amenities, images, base_price as "basePrice", capacity,
         rating, is_verified as "isVerified", created_at as "createdAt",
         updated_at as "updatedAt"
     `;
@@ -275,7 +276,7 @@ export class GymModel {
         const query = `
       SELECT 
         id, name, owner_id as "ownerId", address, latitude, longitude,
-        city, pincode, amenities, base_price as "basePrice", capacity,
+        city, pincode, amenities, images, base_price as "basePrice", capacity,
         rating, is_verified as "isVerified", created_at as "createdAt",
         updated_at as "updatedAt",
         (
@@ -348,5 +349,41 @@ export class GymModel {
 
         const result = await pgPool.query(query, params);
         return parseInt(result.rows[0].count);
+    }
+
+    // Add images to gym
+    static async addImages(id: number, imageUrls: string[]): Promise<Gym | null> {
+        const query = `
+      UPDATE gyms
+      SET images = array_cat(COALESCE(images, '{}'), $1::text[]),
+          updated_at = CURRENT_TIMESTAMP
+      WHERE id = $2
+      RETURNING 
+        id, name, owner_id as "ownerId", address, latitude, longitude,
+        city, pincode, amenities, images, base_price as "basePrice", capacity,
+        rating, is_verified as "isVerified", created_at as "createdAt",
+        updated_at as "updatedAt"
+    `;
+
+        const result = await pgPool.query(query, [imageUrls, id]);
+        return result.rows[0] || null;
+    }
+
+    // Remove image from gym
+    static async removeImage(id: number, imageUrl: string): Promise<Gym | null> {
+        const query = `
+      UPDATE gyms
+      SET images = array_remove(images, $1),
+          updated_at = CURRENT_TIMESTAMP
+      WHERE id = $2
+      RETURNING 
+        id, name, owner_id as "ownerId", address, latitude, longitude,
+        city, pincode, amenities, images, base_price as "basePrice", capacity,
+        rating, is_verified as "isVerified", created_at as "createdAt",
+        updated_at as "updatedAt"
+    `;
+
+        const result = await pgPool.query(query, [imageUrl, id]);
+        return result.rows[0] || null;
     }
 }

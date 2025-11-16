@@ -69,11 +69,7 @@ export default function PartnerDashboardScreen() {
                 <TouchableOpacity
                     style={styles.addButton}
                     onPress={() => {
-                        Alert.alert(
-                            'Add Gym',
-                            'Gym creation is available on the web version. Please visit the web app to add new gyms.',
-                            [{ text: 'OK' }]
-                        );
+                        (navigation as any).navigate('GymCreateEdit');
                     }}
                 >
                     <Text style={styles.addButtonText}>+ Add Gym</Text>
@@ -128,11 +124,7 @@ export default function PartnerDashboardScreen() {
                         <TouchableOpacity
                             style={styles.emptyButton}
                             onPress={() => {
-                                Alert.alert(
-                                    'Add Gym',
-                                    'Gym creation is available on the web version. Please visit the web app to add new gyms.',
-                                    [{ text: 'OK' }]
-                                );
+                                (navigation as any).navigate('GymCreateEdit');
                             }}
                         >
                             <Text style={styles.emptyButtonText}>Add Your First Gym</Text>
@@ -210,11 +202,7 @@ export default function PartnerDashboardScreen() {
                                     <TouchableOpacity
                                         style={styles.editButton}
                                         onPress={() => {
-                                            Alert.alert(
-                                                'Edit Gym',
-                                                'Gym editing is available on the web version. Please visit the web app to edit gym details.',
-                                                [{ text: 'OK' }]
-                                            );
+                                            (navigation as any).navigate('GymCreateEdit', { gymId: gym.id });
                                         }}
                                     >
                                         <Text style={styles.editButtonText}>Edit</Text>

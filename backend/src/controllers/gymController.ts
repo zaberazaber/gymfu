@@ -307,3 +307,96 @@ export const getNearbyGyms = async (req: Request, res: Response) => {
     throw error;
   }
 };
+
+// Upload gym images
+export const uploadGymImages = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.userId;
+    const { id } = req.params;
+    const { images } = req.body;
+
+    if (!userId) {
+      throw new AppError('User not authenticated', 401, 'UNAUTHORIZED');
+    }
+
+    if (!images || !Array.isArray(images) || images.length === 0) {
+      throw new AppError('No images provided', 400, 'NO_IMAGES');
+    }
+
+    // Validate image URLs or base64 strings
+    for (const image of images) {
+      if (typeof image !== 'string' || image.trim().length === 0) {
+        throw new AppError('Invalid image format', 400, 'INVALID_IMAGE');
+      }
+    }
+
+    // Find gym
+    const gym = await GymModel.findById(parseInt(id));
+
+    if (!gym) {
+      throw new AppError('Gym not found', 404, 'GYM_NOT_FOUND');
+    }
+
+    // Check if user owns the gym
+    if (gym.ownerId !== userId) {
+      throw new AppError('You do not have permission to upload images for this gym', 403, 'FORBIDDEN');
+    }
+
+    // Add images to gym
+    const updatedGym = await GymModel.addImages(parseInt(id), images);
+
+    logger.info(`Images uploaded for gym: ${id} by user ${userId}`);
+
+    res.json({
+      success: true,
+      data: updatedGym,
+      message: 'Images uploaded successfully',
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Remove gym image
+export const removeGymImage = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.userId;
+    const { id } = req.params;
+    const { imageUrl } = req.body;
+
+    if (!userId) {
+      throw new AppError('User not authenticated', 401, 'UNAUTHORIZED');
+    }
+
+    if (!imageUrl) {
+      throw new AppError('Image URL is required', 400, 'NO_IMAGE_URL');
+    }
+
+    // Find gym
+    const gym = await GymModel.findById(parseInt(id));
+
+    if (!gym) {
+      throw new AppError('Gym not found', 404, 'GYM_NOT_FOUND');
+    }
+
+    // Check if user owns the gym
+    if (gym.ownerId !== userId) {
+      throw new AppError('You do not have permission to remove images from this gym', 403, 'FORBIDDEN');
+    }
+
+    // Remove image from gym
+    const updatedGym = await GymModel.removeImage(parseInt(id), imageUrl);
+
+    logger.info(`Image removed from gym: ${id} by user ${userId}`);
+
+    res.json({
+      success: true,
+      data: updatedGym,
+      message: 'Image removed successfully',
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    throw error;
+  }
+};
