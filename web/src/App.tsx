@@ -9,6 +9,8 @@ import ProfilePage from './pages/ProfilePage';
 import EditProfilePage from './pages/EditProfilePage';
 import GymsPage from './pages/GymsPage';
 import GymDetailPage from './pages/GymDetailPage';
+import PartnerDashboardPage from './pages/PartnerDashboardPage';
+import GymEditPage from './pages/GymEditPage';
 import './App.css';
 import './styles/neumorphic.css';
 
@@ -26,6 +28,9 @@ function App() {
             <Route path="/edit-profile" element={<EditProfilePage />} />
             <Route path="/gyms" element={<GymsPage />} />
             <Route path="/gyms/:gymId" element={<GymDetailPage />} />
+            <Route path="/partner/dashboard" element={<PartnerDashboardPage />} />
+            <Route path="/partner/gym/new" element={<GymEditPage />} />
+            <Route path="/partner/gym/edit/:gymId" element={<GymEditPage />} />
           </Routes>        </div>
       </Router>
     </Provider>

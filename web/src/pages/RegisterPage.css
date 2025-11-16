@@ -163,3 +163,42 @@
     font-size: 24px;
   }
 }
+
+
+/* Partner Checkbox */
+.partner-checkbox-container {
+  margin-bottom: 24px;
+  padding: 16px;
+  background: var(--bg-secondary);
+  border-radius: 12px;
+}
+
+.partner-checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.partner-checkbox-label input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  cursor: pointer;
+  accent-color: var(--accent-primary);
+}
+
+.checkbox-text {
+  flex: 1;
+  font-size: 15px;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.checkbox-subtext {
+  display: block;
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: normal;
+  margin-top: 4px;
+}

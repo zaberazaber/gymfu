@@ -20,6 +20,7 @@ interface User {
   location?: Location;
   fitnessGoals?: string[];
   profileImage?: string;
+  isPartner?: boolean;
   createdAt: string;
   updatedAt?: string;
 }

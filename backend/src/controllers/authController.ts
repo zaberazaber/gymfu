@@ -21,7 +21,7 @@ export class AuthController {
       );
     }
 
-    const { phoneNumber, email, name, password } = req.body;
+    const { phoneNumber, email, name, password, isPartner } = req.body;
     const identifier = phoneNumber || email;
 
     // Check if user already exists
@@ -53,6 +53,7 @@ export class AuthController {
       email,
       name,
       password,
+      isPartner: isPartner || false,
     });
 
     // Generate and store OTP
@@ -137,6 +138,7 @@ export class AuthController {
           phoneNumber: user.phoneNumber,
           email: user.email,
           name: user.name,
+          isPartner: user.isPartner,
           createdAt: user.createdAt,
         },
       },
@@ -245,6 +247,7 @@ export class AuthController {
             phoneNumber: user.phoneNumber,
             email: user.email,
             name: user.name,
+            isPartner: user.isPartner,
             createdAt: user.createdAt,
           },
         },
@@ -294,6 +297,7 @@ export class AuthController {
           location: user.location,
           fitnessGoals: user.fitnessGoals,
           profileImage: user.profileImage,
+          isPartner: user.isPartner,
           createdAt: user.createdAt,
           updatedAt: user.updatedAt,
         },
@@ -335,6 +339,7 @@ export class AuthController {
         phoneNumber: user.phoneNumber,
         email: user.email,
         name: user.name,
+        isPartner: user.isPartner,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
       },
