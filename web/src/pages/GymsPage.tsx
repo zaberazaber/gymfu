@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import {
   searchNearbyGyms,
@@ -11,19 +12,16 @@ import {
 import './GymsPage.css';
 
 const AMENITIES = [
-  'cardio',
-  'weights',
-  'shower',
-  'parking',
-  'locker',
-  'trainer',
-  'pool',
-  'sauna',
-  'yoga',
-  'crossfit',
+  'Cardio',
+  'Weights',
+  'Shower',
+  'Parking',
+  'Locker',
+  'AC',
 ];
 
 export default function GymsPage() {
+  const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { gyms, loading, error, filters, pagination } = useAppSelector((state) => state.gym);
 
@@ -130,9 +128,8 @@ export default function GymsPage() {
                 {AMENITIES.map((amenity) => (
                   <button
                     key={amenity}
-                    className={`amenity-btn ${
-                      filters.amenities.includes(amenity) ? 'active' : ''
-                    }`}
+                    className={`amenity-btn ${filters.amenities.includes(amenity) ? 'active' : ''
+                      }`}
                     onClick={() => handleAmenityToggle(amenity)}
                   >
                     {amenity}
@@ -216,14 +213,19 @@ export default function GymsPage() {
 
           <div className="gyms-grid">
             {gyms.map((gym) => (
-              <div key={gym.id} className="gym-card">
+              <div
+                key={gym.id}
+                className="gym-card"
+                onClick={() => navigate(`/gyms/${gym.id}`)}
+                style={{ cursor: 'pointer' }}
+              >
                 <div className="gym-header">
                   <h3 className="gym-name">{gym.name}</h3>
-                  <div className="gym-rating">⭐ {gym.rating.toFixed(1)}</div>
+                  <div className="gym-rating">⭐ {Number(gym.rating).toFixed(1)}</div>
                 </div>
 
                 <div className="gym-details">
-                  <p className="gym-address">📍 {gym.address}</p>
+                  <p className="gym-address">� {gym.address}</p>
                   <p className="gym-city">
                     {gym.city}, {gym.pincode}
                   </p>
@@ -249,7 +251,15 @@ export default function GymsPage() {
                     <span className="price-value">₹{gym.basePrice}</span>
                     <span className="price-period">/session</span>
                   </div>
-                  <button className="book-btn">Book Now</button>
+                  <button
+                    className="book-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/gyms/${gym.id}`);
+                    }}
+                  >
+                    View Details
+                  </button>
                 </div>
 
                 {!gym.isVerified && (

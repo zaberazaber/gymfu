@@ -95,9 +95,22 @@ const verifyOTPValidation = [
   }),
 ];
 
+// Validation for password login
+const passwordLoginValidation = [
+  body('email')
+    .isEmail()
+    .withMessage('Invalid email address')
+    .normalizeEmail(),
+  
+  body('password')
+    .notEmpty()
+    .withMessage('Password is required'),
+];
+
 // Routes
 router.post('/register', registerValidation, asyncHandler(AuthController.register));
 router.post('/login', loginValidation, asyncHandler(AuthController.login));
+router.post('/login-password', passwordLoginValidation, asyncHandler(AuthController.loginWithPassword));
 router.post('/verify-otp', verifyOTPValidation, asyncHandler(AuthController.verifyOTP));
 
 // Protected routes

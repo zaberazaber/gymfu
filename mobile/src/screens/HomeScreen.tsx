@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-nati
 import { useNavigation } from '@react-navigation/native';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { logout } from '../store/authSlice';
-import { colors, shadows, neuStyles } from '../styles/neumorphic';
+import { colors, shadows } from '../styles/neumorphic';
 
 export default function HomeScreen() {
   const navigation = useNavigation();
@@ -35,7 +35,7 @@ export default function HomeScreen() {
               <Text style={styles.avatarText}>{getInitials(user.name)}</Text>
             </View>
           </View>
-          
+
           <Text style={styles.welcomeTitle}>Welcome, {user.name}! 👋</Text>
           <Text style={styles.welcomeInfo}>
             {user.phoneNumber || user.email}
@@ -44,11 +44,29 @@ export default function HomeScreen() {
           <View style={styles.buttonGroup}>
             <TouchableOpacity
               style={styles.buttonPrimary}
+              onPress={() => navigation.navigate('GymList' as never)}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.buttonTextPrimary}>Find Gyms</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.button}
               onPress={() => navigation.navigate('Profile' as never)}
               activeOpacity={0.8}
             >
-              <Text style={styles.buttonTextPrimary}>View Profile</Text>
+              <Text style={styles.buttonText}>View Profile</Text>
             </TouchableOpacity>
+
+            {user.isPartner && (
+              <TouchableOpacity
+                style={styles.buttonPartner}
+                onPress={() => navigation.navigate('PartnerDashboard' as never)}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.buttonTextPrimary}>Partner Dashboard</Text>
+              </TouchableOpacity>
+            )}
 
             <TouchableOpacity
               style={styles.buttonDanger}
@@ -222,6 +240,14 @@ const styles = StyleSheet.create({
   },
   buttonPrimary: {
     backgroundColor: colors.accentPrimary,
+    borderRadius: 16,
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    alignItems: 'center',
+    ...shadows.medium,
+  },
+  buttonPartner: {
+    backgroundColor: '#667eea',
     borderRadius: 16,
     paddingVertical: 16,
     paddingHorizontal: 32,

@@ -19,6 +19,7 @@ export default function RegisterPage() {
   });
 
   const [usePhone, setUsePhone] = useState(true);
+  const [isPartner, setIsPartner] = useState(false);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
   const validateForm = () => {
@@ -79,6 +80,7 @@ export default function RegisterPage() {
     const data = {
       name: formData.name,
       password: formData.password,
+      isPartner,
       ...(usePhone ? { phoneNumber: formData.phoneNumber } : { email: formData.email }),
     };
 
@@ -208,6 +210,24 @@ export default function RegisterPage() {
             {validationErrors.confirmPassword && (
               <span className="field-error">{validationErrors.confirmPassword}</span>
             )}
+          </div>
+
+          {/* Partner Registration Checkbox */}
+          <div className="partner-checkbox-container">
+            <label className="partner-checkbox-label">
+              <input
+                type="checkbox"
+                checked={isPartner}
+                onChange={(e) => setIsPartner(e.target.checked)}
+                disabled={loading}
+              />
+              <span className="checkbox-text">
+                Register as a Gym Partner
+                <span className="checkbox-subtext">
+                  (Check this if you want to list and manage gyms)
+                </span>
+              </span>
+            </label>
           </div>
 
           {/* Submit Button */}

@@ -1412,7 +1412,286 @@ curl http://localhost:3000/api/v1/gyms?limit=20&offset=0
 
 ---
 
-## Current Status - Gym Registration System Complete! 🏋️
+### ✅ Task 3.4: Add gym filtering and search
+
+**Completed:** November 13, 2025
+
+**What was implemented:**
+- Added amenities filtering to nearby gyms search
+- Added price range filtering (min/max)
+- Updated validation to support filter parameters
+- Enhanced response format with search metadata
+
+**API Endpoint:**
+- `GET /api/v1/gyms/nearby` - Find gyms with filters
+
+**Query Parameters:**
+- `lat` - Latitude (required)
+- `lng` - Longitude (required)
+- `radius` - Search radius in km (default: 5)
+- `amenities` - Comma-separated amenities (e.g., "Cardio,Weights")
+- `minPrice` - Minimum price per session
+- `maxPrice` - Maximum price per session
+- `limit` - Results per page (default: 10)
+- `offset` - Pagination offset (default: 0)
+
+**Features:**
+- ✅ Filter by multiple amenities (AND logic)
+- ✅ Filter by price range
+- ✅ Combined filters work together
+- ✅ Validation for all parameters
+- ✅ Search metadata in response
+
+**Example Usage:**
+```bash
+# Find gyms with Cardio and Weights
+curl "http://localhost:3000/api/v1/gyms/nearby?lat=19.076&lng=72.877&amenities=Cardio,Weights"
+
+# Find gyms with price range ₹50-₹200
+curl "http://localhost:3000/api/v1/gyms/nearby?lat=19.076&lng=72.877&minPrice=50&maxPrice=200"
+
+# Combined filters
+curl "http://localhost:3000/api/v1/gyms/nearby?lat=19.076&lng=72.877&amenities=Cardio&minPrice=100&maxPrice=300"
+```
+
+**Files modified:**
+- `backend/src/models/Gym.ts` - Added filtering logic
+- `backend/src/controllers/gymController.ts` - Added filter parameters
+- `backend/src/routes/gyms.ts` - Added filter validation
+
+**Next task:** 3.5 Implement gym details endpoint
+
+---
+
+### ✅ Task 3.5: Implement gym details endpoint
+
+**Completed:** November 13, 2025
+
+**What was implemented:**
+- Added operating hours field to gyms table (JSONB)
+- Created database migration script
+- Implemented GET /api/v1/gyms/:id endpoint
+- Added comprehensive validation
+- Returns full gym details including operating hours
+
+**Database Schema Update:**
+```sql
+ALTER TABLE gyms ADD COLUMN operating_hours JSONB;
+```
+
+**Operating Hours Format:**
+```json
+{
+  "monday": { "open": "06:00", "close": "22:00" },
+  "tuesday": { "open": "06:00", "close": "22:00" },
+  ...
+}
+```
+
+**API Endpoint:**
+- `GET /api/v1/gyms/:id` - Get full gym details
+
+**Features:**
+- ✅ Returns all gym fields
+- ✅ Operating hours included
+- ✅ Validation for gym ID
+- ✅ 404 error for non-existent gyms
+- ✅ Proper error handling
+
+**Files created:**
+- `backend/src/scripts/addOperatingHours.ts` - Migration script
+
+**Files modified:**
+- `backend/src/controllers/gymController.ts` - Implemented getGymById
+- `backend/src/routes/gyms.ts` - Added GET /:id route
+
+**Next task:** 3.6 Build gym discovery UI for web
+
+---
+
+### ✅ Task 3.6: Build gym discovery UI for web
+
+**Completed:** November 13, 2025
+
+**What was implemented:**
+- Created Redux gym slice with search, filters, and pagination
+- Built GymsPage with gym list and filter controls
+- Implemented location-based search
+- Added amenity filters (multi-select)
+- Added price range filters (min/max)
+- Added radius slider (2km, 5km, 10km, 15km)
+- Implemented dark neumorphic design
+- Added responsive layout
+
+**Files created:**
+- `web/src/store/gymSlice.ts` - Redux state management for gyms
+- `web/src/pages/GymsPage.tsx` - Gym discovery page
+- `web/src/pages/GymsPage.css` - Dark neumorphic styles
+
+**Files modified:**
+- `web/src/App.tsx` - Added /gyms route
+- `web/src/pages/HomePage.tsx` - Added "Find Gyms" button
+- `web/src/store/index.ts` - Added gym reducer
+
+**Features:**
+- ✅ Location input (latitude/longitude)
+- ✅ Radius slider with quick select buttons
+- ✅ Amenity filters (Cardio, Weights, Shower, Parking, Locker, AC)
+- ✅ Price range inputs (min/max)
+- ✅ Clear filters button
+- ✅ Gym cards with name, rating, address, amenities, price
+- ✅ Distance display
+- ✅ Loading states
+- ✅ Error handling
+- ✅ Empty state
+- ✅ Dark neumorphic design with soft shadows
+
+**Redux Actions:**
+- `searchNearbyGyms` - Search with filters
+- `getGymById` - Get gym details
+- `getAllGyms` - Get all gyms
+- `setLocation` - Update search location
+- `setRadius` - Update search radius
+- `setAmenities` - Update amenity filters
+- `setPriceRange` - Update price filters
+- `clearFilters` - Reset all filters
+
+**User Flow:**
+1. Navigate to /gyms
+2. Enter location (or use default Mumbai)
+3. Adjust radius slider
+4. Select amenities
+5. Set price range
+6. Click "Search Gyms"
+7. View filtered results
+
+**Next task:** 3.7 Build gym discovery UI for mobile
+
+---
+
+### ✅ Task 3.7: Build gym discovery UI for mobile
+
+**Completed:** November 13, 2025
+
+**What was implemented:**
+- Created Redux gym slice for mobile (matching web)
+- Built GymListScreen with gym cards and filters
+- Built GymDetailScreen with full gym information
+- Implemented location permissions (expo-location)
+- Added pull-to-refresh functionality
+- Created filter modal with amenities, radius, and price
+- Implemented dark neumorphic design for mobile
+- Added navigation integration
+
+**Files created:**
+- `mobile/src/store/gymSlice.ts` - Redux state management
+- `mobile/src/screens/GymListScreen.tsx` - Gym list with filters
+- `mobile/src/screens/GymDetailScreen.tsx` - Gym details screen
+- `MOBILE_GYM_DISCOVERY.md` - Implementation documentation
+
+**Files modified:**
+- `mobile/src/store/index.ts` - Added gym reducer
+- `mobile/App.tsx` - Added GymList and GymDetail screens
+- `mobile/src/screens/HomeScreen.tsx` - Added "Find Gyms" buttons
+- `mobile/package.json` - Added expo-location
+
+**Features:**
+- ✅ Location permission request with fallback
+- ✅ Automatic nearby gym search using device location
+- ✅ Pull-to-refresh functionality
+- ✅ Filter modal with:
+  - Radius selection (2km, 5km, 10km, 15km)
+  - Amenity multi-select (6 amenities)
+  - Price range inputs (min/max)
+  - Apply and Reset buttons
+- ✅ Gym cards showing:
+  - Name and rating
+  - Address and distance
+  - Amenities (first 3 + more indicator)
+  - Price per session
+  - Book Now button
+- ✅ Gym detail screen with:
+  - Full information
+  - Operating hours
+  - All amenities
+  - Capacity
+  - Book button
+- ✅ Loading states
+- ✅ Error handling with retry
+- ✅ Empty states
+- ✅ Dark neumorphic design
+
+**Redux Actions (Mobile):**
+- `searchNearbyGyms` - Search with filters
+- `getGymById` - Get gym details
+- `getAllGyms` - Get all gyms
+- `setLocation` - Update location
+- `setRadius` - Update radius
+- `setAmenities` - Update amenities
+- `setPriceRange` - Update price range
+- `clearFilters` - Reset filters
+
+**User Flow:**
+1. Open app → Tap "Find Gyms"
+2. Grant location permission
+3. View nearby gyms automatically
+4. Pull down to refresh
+5. Tap "Filters" to open modal
+6. Select amenities, adjust radius, set price
+7. Tap "Apply Filters"
+8. View filtered results
+9. Tap gym card to see details
+10. View full gym information
+
+**Next task:** 3.8 Build gym detail screen (web and mobile)
+
+---
+
+### ✅ Web Login Page Added
+
+**Completed:** November 13, 2025
+
+**What was implemented:**
+- Created LoginPage component for web
+- Added login route to web App.tsx
+- Implemented phone/email toggle (matching RegisterPage)
+- Added form validation and error handling
+- Created dark neumorphic styles
+- Updated HomePage with Login button
+
+**Files created:**
+- `web/src/pages/LoginPage.tsx` - Login page component
+- `web/src/pages/LoginPage.css` - Dark neumorphic styles
+- `WEB_LOGIN_PAGE_ADDED.md` - Implementation documentation
+
+**Files modified:**
+- `web/src/App.tsx` - Added /login route
+
+**Features:**
+- ✅ Phone/Email toggle
+- ✅ Form validation (Indian phone, email format)
+- ✅ OTP sending functionality
+- ✅ Loading states
+- ✅ Error handling
+- ✅ Navigation to OTP verification
+- ✅ Link to registration page
+- ✅ Dark neumorphic design
+- ✅ Responsive layout
+
+**User Flow:**
+1. Navigate to /login
+2. Select phone or email
+3. Enter credentials
+4. Click "Send OTP"
+5. Receive OTP (console in dev)
+6. Redirect to /verify-otp
+7. Complete login
+
+**Next task:** Continue with remaining tasks
+
+---
+
+## Current Status - Gym Discovery Complete! 🏋️
 
 **Backend:** ✅ Running on http://localhost:3000 (with logging, error handling, and tests)
 **Database:** ✅ Connected (PostgreSQL, MongoDB, Redis)
@@ -1420,11 +1699,29 @@ curl http://localhost:3000/api/v1/gyms?limit=20&offset=0
 **Mobile App:** ✅ Running with Expo (connects to backend)
 **Shared Package:** ✅ Created with types, constants, and utilities
 **Error Handling:** ✅ Centralized with structured logging
-**Testing:** ✅ Jest configured with 46 passing tests
+**Testing:** ✅ Jest configured with 78 passing tests
+
+## Completed Features
+
+### Authentication & User Management (Tasks 2.1-2.9) ✅
+- User registration with OTP verification
+- Login with phone/email
+- JWT authentication
+- Profile management (web & mobile)
+- Protected routes
+
+### Gym Discovery System (Tasks 3.1-3.7) ✅
+- Gym registration and management
+- Geospatial search with Haversine formula
+- Filtering by amenities and price
+- Gym listing with pagination
+- Web UI with dark neumorphic design
+- Mobile UI with location permissions and pull-to-refresh
+- Gym detail screens
 
 ## Infrastructure Tasks Complete (1.1 - 1.7)
 
-All infrastructure setup is complete! Ready to start building features.
+All infrastructure setup is complete! Ready to continue building features.
 
 ## To Start Development
 
@@ -1455,3 +1752,56 @@ All infrastructure setup is complete! Ready to start building features.
 - **Web App:** http://localhost:5173
 - **API Health:** http://localhost:3000/health
 - **DB Health:** http://localhost:3000/health/db
+
+
+---
+
+## ✅ Admin Login Feature (Development Mode)
+
+**Completed:** November 13, 2025
+
+**What was implemented:**
+- Magic `@varzio` email bypass for instant login
+- Auto-creation of admin users on first login
+- Works on both mobile and web apps
+- No OTP or password verification required
+- Seeded default admin account
+
+**Features:**
+- Any email containing `@varzio` logs in instantly
+- Auto-creates user if doesn't exist
+- Returns valid JWT token
+- Perfect for development and testing
+
+**Default Admin Account:**
+```
+Email: admin@varzio.com
+Password: admin123
+```
+
+**Files created/modified:**
+- `backend/src/controllers/authController.ts` - Added admin bypass logic
+- `backend/src/scripts/seedAdminUser.ts` - Admin user seeding script
+- `backend/package.json` - Added `db:seed-admin` script
+- `ADMIN_LOGIN_GUIDE.md` - Comprehensive documentation
+- `QUICK_ADMIN_LOGIN.md` - Quick reference guide
+
+**Testing results:**
+✅ Admin login works with `admin@varzio.com`
+✅ Auto-creates new users with any `@varzio` email
+✅ Returns valid JWT token
+✅ Works on both mobile and web apps
+✅ Bypasses OTP verification
+
+**Usage:**
+```bash
+# Seed admin user
+npm run db:seed-admin
+
+# Login with any @varzio email
+Email: yourname@varzio.com
+Password: anything
+```
+
+**Security Note:** This feature is for development only and should be disabled in production.
+

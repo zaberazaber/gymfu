@@ -8,6 +8,9 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "db:create": "ts-node src/scripts/createTables.ts",
+    "db:seed-gyms": "ts-node src/scripts/seedGyms.ts",
+    "db:seed-admin": "ts-node src/scripts/seedAdminUser.ts",
+    "db:add-partner-column": "ts-node src/scripts/addIsPartnerColumn.ts",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"

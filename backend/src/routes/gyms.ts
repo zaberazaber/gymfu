@@ -134,4 +134,32 @@ router.delete(
   asyncHandler(gymController.deleteGym)
 );
 
+// Image upload routes
+router.post(
+  '/:id/images',
+  authenticate,
+  [
+    param('id').isInt().withMessage('Invalid gym ID'),
+    body('images')
+      .isArray({ min: 1, max: 10 })
+      .withMessage('Images must be an array with 1-10 items'),
+    body('images.*')
+      .isString()
+      .withMessage('Each image must be a string (URL or base64)'),
+  ],
+  asyncHandler(gymController.uploadGymImages)
+);
+
+router.delete(
+  '/:id/images',
+  authenticate,
+  [
+    param('id').isInt().withMessage('Invalid gym ID'),
+    body('imageUrl')
+      .isString()
+      .withMessage('Image URL is required'),
+  ],
+  asyncHandler(gymController.removeGymImage)
+);
+
 export default router;

@@ -55,6 +55,14 @@ function HomePage() {
               >
                 View Profile
               </button>
+              {user.isPartner && (
+                <button
+                  onClick={() => navigate('/partner/dashboard')}
+                  className="neu-btn neu-btn-accent"
+                >
+                  Partner Dashboard
+                </button>
+              )}
               <button
                 onClick={() => dispatch(logout())}
                 className="neu-btn neu-btn-danger"

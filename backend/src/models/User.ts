@@ -19,6 +19,7 @@ export interface User {
   location?: Location;
   fitnessGoals?: string[];
   profileImage?: string;
+  isPartner?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -28,6 +29,7 @@ export interface CreateUserData {
   email?: string;
   name: string;
   password: string;
+  isPartner?: boolean;
 }
 
 export interface UpdateProfileData {
@@ -42,18 +44,18 @@ export interface UpdateProfileData {
 export class UserModel {
   // Create a new user
   static async create(userData: CreateUserData): Promise<User> {
-    const { phoneNumber, email, name, password } = userData;
+    const { phoneNumber, email, name, password, isPartner } = userData;
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const query = `
-      INSERT INTO users (phone_number, email, name, password, created_at, updated_at)
-      VALUES ($1, $2, $3, $4, NOW(), NOW())
-      RETURNING id, phone_number as "phoneNumber", email, name, created_at as "createdAt", updated_at as "updatedAt"
+      INSERT INTO users (phone_number, email, name, password, is_partner, created_at, updated_at)
+      VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
+      RETURNING id, phone_number as "phoneNumber", email, name, is_partner as "isPartner", created_at as "createdAt", updated_at as "updatedAt"
     `;
 
-    const values = [phoneNumber || null, email || null, name, hashedPassword];
+    const values = [phoneNumber || null, email || null, name, hashedPassword, isPartner || false];
 
     try {
       const result = await pgPool.query(query, values);
@@ -75,7 +77,7 @@ export class UserModel {
   // Find user by phone number
   static async findByPhone(phoneNumber: string): Promise<User | null> {
     const query = `
-      SELECT id, phone_number as "phoneNumber", email, name, password, created_at as "createdAt", updated_at as "updatedAt"
+      SELECT id, phone_number as "phoneNumber", email, name, password, is_partner as "isPartner", created_at as "createdAt", updated_at as "updatedAt"
       FROM users
       WHERE phone_number = $1
     `;
@@ -87,7 +89,7 @@ export class UserModel {
   // Find user by email
   static async findByEmail(email: string): Promise<User | null> {
     const query = `
-      SELECT id, phone_number as "phoneNumber", email, name, password, created_at as "createdAt", updated_at as "updatedAt"
+      SELECT id, phone_number as "phoneNumber", email, name, password, is_partner as "isPartner", created_at as "createdAt", updated_at as "updatedAt"
       FROM users
       WHERE email = $1
     `;
@@ -110,6 +112,7 @@ export class UserModel {
         location,
         fitness_goals as "fitnessGoals",
         profile_image as "profileImage",
+        is_partner as "isPartner",
         created_at as "createdAt", 
         updated_at as "updatedAt"
       FROM users
@@ -133,6 +136,7 @@ export class UserModel {
         location,
         fitness_goals as "fitnessGoals",
         profile_image as "profileImage",
+        is_partner as "isPartner",
         created_at as "createdAt", 
         updated_at as "updatedAt"
       FROM users

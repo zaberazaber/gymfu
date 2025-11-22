@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, Keyboard, TouchableWithoutFeedback } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { verifyOTP } from '../store/authSlice';
@@ -22,6 +22,20 @@ export default function OTPVerificationScreen() {
     if (value && index < 5) {
       inputRefs.current[index + 1]?.focus();
     }
+  };
+
+  const handleKeyPress = (e: any, index: number) => {
+    if (e.nativeEvent.key === 'Backspace') {
+      if (!otp[index] && index > 0) {
+        // If current field is empty and backspace is pressed, move to previous field
+        inputRefs.current[index - 1]?.focus();
+      }
+    }
+  };
+
+  const handleClearAll = () => {
+    setOtp(['', '', '', '', '', '']);
+    inputRefs.current[0]?.focus();
   };
 
   const handleVerify = async () => {
@@ -47,17 +61,18 @@ export default function OTPVerificationScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.icon}>📱</Text>
-      <Text style={styles.title}>Verify OTP</Text>
-      <Text style={styles.subtitle}>
-        Enter the 6-digit code sent to{'\n'}
-        <Text style={styles.identifier}>{registrationIdentifier}</Text>
-      </Text>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <View style={styles.container}>
+        <Text style={styles.icon}>📱</Text>
+        <Text style={styles.title}>Verify OTP</Text>
+        <Text style={styles.subtitle}>
+          Enter the 6-digit code sent to{'\n'}
+          <Text style={styles.identifier}>{registrationIdentifier}</Text>
+        </Text>
 
-      {error && <Text style={styles.error}>{error}</Text>}
+        {error && <Text style={styles.error}>{error}</Text>}
 
-      <View style={styles.otpContainer}>
+        <View style={styles.otpContainer}>
         {otp.map((digit, index) => (
           <TextInput
             key={index}
@@ -65,12 +80,23 @@ export default function OTPVerificationScreen() {
             style={styles.otpInput}
             value={digit}
             onChangeText={(value) => handleOtpChange(value, index)}
+            onKeyPress={(e) => handleKeyPress(e, index)}
             keyboardType="number-pad"
             maxLength={1}
             editable={!loading}
           />
         ))}
       </View>
+
+      {otp.some((d) => d) && (
+        <TouchableOpacity
+          style={styles.clearButton}
+          onPress={handleClearAll}
+          disabled={loading}
+        >
+          <Text style={styles.clearButtonText}>Clear All</Text>
+        </TouchableOpacity>
+      )}
 
       <TouchableOpacity
         style={[styles.button, loading && styles.buttonDisabled]}
@@ -83,7 +109,8 @@ export default function OTPVerificationScreen() {
           <Text style={styles.buttonText}>Verify OTP</Text>
         )}
       </TouchableOpacity>
-    </View>
+      </View>
+    </TouchableWithoutFeedback>
   );
 }
 
@@ -150,6 +177,16 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#fff',
     fontSize: 16,
+    fontWeight: '600',
+  },
+  clearButton: {
+    alignItems: 'center',
+    paddingVertical: 12,
+    marginBottom: 16,
+  },
+  clearButtonText: {
+    color: '#667eea',
+    fontSize: 14,
     fontWeight: '600',
   },
 });

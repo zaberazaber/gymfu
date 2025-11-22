@@ -1,9 +1,11 @@
 import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
+import bcrypt from 'bcrypt';
 import { UserModel } from '../models/User';
 import { AppError } from '../middleware/errorHandler';
 import { OTPService } from '../services/otpService';
 import { NotificationService } from '../services/notificationService';
+import { JWTService } from '../services/jwtService';
 import logger from '../config/logger';
 
 export class AuthController {
@@ -19,7 +21,7 @@ export class AuthController {
       );
     }
 
-    const { phoneNumber, email, name, password } = req.body;
+    const { phoneNumber, email, name, password, isPartner } = req.body;
     const identifier = phoneNumber || email;
 
     // Check if user already exists
@@ -51,6 +53,7 @@ export class AuthController {
       email,
       name,
       password,
+      isPartner: isPartner || false,
     });
 
     // Generate and store OTP
@@ -135,6 +138,7 @@ export class AuthController {
           phoneNumber: user.phoneNumber,
           email: user.email,
           name: user.name,
+          isPartner: user.isPartner,
           createdAt: user.createdAt,
         },
       },
@@ -197,6 +201,112 @@ export class AuthController {
     });
   }
 
+  // Login with password (email only)
+  static async loginWithPassword(req: Request, res: Response) {
+    // Check for validation errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      throw new AppError(
+        'Validation failed',
+        400,
+        'VALIDATION_FAILED'
+      );
+    }
+
+    const { email, password } = req.body;
+
+    // Admin bypass for development: @varzio emails
+    const isVarzioAdmin = email && email.includes('@varzio');
+    
+    if (isVarzioAdmin) {
+      // Find or create admin user
+      let user = await UserModel.findByEmail(email);
+      
+      if (!user) {
+        // Create admin user on the fly
+        const hashedPassword = await bcrypt.hash(password || 'admin123', 10);
+        user = await UserModel.create({
+          email,
+          name: email.split('@')[0],
+          password: hashedPassword,
+        });
+        logger.info(`Admin user created: ${email}`);
+      }
+      
+      // Generate JWT token without password verification
+      const token = JWTService.generateToken(user);
+      logger.info(`Admin bypass login: ${email}`);
+      
+      // Return token and user data
+      return res.json({
+        success: true,
+        data: {
+          token,
+          user: {
+            id: user.id,
+            phoneNumber: user.phoneNumber,
+            email: user.email,
+            name: user.name,
+            isPartner: user.isPartner,
+            createdAt: user.createdAt,
+          },
+        },
+        message: 'Admin login successful (development mode)',
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    // Regular user login flow
+    // Check if user exists
+    const user = await UserModel.findByEmail(email);
+    if (!user) {
+      throw new AppError(
+        'Invalid email or password',
+        401,
+        'INVALID_CREDENTIALS'
+      );
+    }
+
+    // Verify password
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      throw new AppError(
+        'Invalid email or password',
+        401,
+        'INVALID_CREDENTIALS'
+      );
+    }
+
+    // Generate JWT token
+    const token = JWTService.generateToken(user);
+
+    logger.info(`User logged in with password: ${user.id}`);
+
+    // Return token and user data
+    res.json({
+      success: true,
+      data: {
+        token,
+        user: {
+          id: user.id,
+          phoneNumber: user.phoneNumber,
+          email: user.email,
+          name: user.name,
+          age: user.age,
+          gender: user.gender,
+          location: user.location,
+          fitnessGoals: user.fitnessGoals,
+          profileImage: user.profileImage,
+          isPartner: user.isPartner,
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt,
+        },
+      },
+      message: 'Login successful',
+      timestamp: new Date().toISOString(),
+    });
+  }
+
   // Get current user
   static async me(req: Request, res: Response) {
     // User is attached to request by authenticate middleware
@@ -229,6 +339,7 @@ export class AuthController {
         phoneNumber: user.phoneNumber,
         email: user.email,
         name: user.name,
+        isPartner: user.isPartner,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
       },

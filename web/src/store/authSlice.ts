@@ -20,6 +20,7 @@ interface User {
     location?: Location;
     fitnessGoals?: string[];
     profileImage?: string;
+    isPartner?: boolean;
     createdAt: string;
     updatedAt?: string;
 }
@@ -94,6 +95,26 @@ export const login = createAsyncThunk(
                 identifier: data.phoneNumber || data.email!,
                 message: response.data.message,
             };
+        } catch (error: any) {
+            return rejectWithValue(
+                error.response?.data?.error?.message || 'Login failed'
+            );
+        }
+    }
+);
+
+// Login with password
+export const loginWithPassword = createAsyncThunk(
+    'auth/loginWithPassword',
+    async (
+        data: { email: string; password: string },
+        { rejectWithValue }
+    ) => {
+        try {
+            const response = await axios.post(`${API_BASE_URL}/auth/login-password`, data);
+            const { token, user } = response.data.data;
+            localStorage.setItem('token', token);
+            return { token, user };
         } catch (error: any) {
             return rejectWithValue(
                 error.response?.data?.error?.message || 'Login failed'
@@ -239,6 +260,24 @@ const authSlice = createSlice({
                 state.registrationIdentifier = action.payload.identifier;
             })
             .addCase(login.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string;
+            });
+
+        // Login with password
+        builder
+            .addCase(loginWithPassword.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(loginWithPassword.fulfilled, (state, action) => {
+                state.loading = false;
+                state.user = action.payload.user;
+                state.token = action.payload.token;
+                state.isAuthenticated = true;
+                state.registrationIdentifier = null;
+            })
+            .addCase(loginWithPassword.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload as string;
             });

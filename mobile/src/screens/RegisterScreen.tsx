@@ -15,6 +15,7 @@ export default function RegisterScreen() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [isPartner, setIsPartner] = useState(false);
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
     const validateForm = () => {
@@ -74,6 +75,7 @@ export default function RegisterScreen() {
         const data = {
             name,
             password,
+            isPartner,
             ...(usePhone ? { phoneNumber } : { email }),
         };
 
@@ -205,6 +207,24 @@ export default function RegisterScreen() {
                 />
                 {validationErrors.confirmPassword && <Text style={styles.fieldError}>{validationErrors.confirmPassword}</Text>}
             </View>
+
+            {/* Partner Registration Checkbox */}
+            <TouchableOpacity
+                style={styles.partnerCheckboxContainer}
+                onPress={() => setIsPartner(!isPartner)}
+                disabled={loading}
+                activeOpacity={0.7}
+            >
+                <View style={[styles.checkbox, isPartner && styles.checkboxChecked]}>
+                    {isPartner && <Text style={styles.checkmark}>✓</Text>}
+                </View>
+                <View style={styles.checkboxTextContainer}>
+                    <Text style={styles.checkboxLabel}>Register as a Gym Partner</Text>
+                    <Text style={styles.checkboxSubtext}>
+                        (Check this if you want to list and manage gyms)
+                    </Text>
+                </View>
+            </TouchableOpacity>
 
             {/* Submit Button */}
             <TouchableOpacity
@@ -344,5 +364,47 @@ const styles = StyleSheet.create({
         color: '#667eea',
         fontSize: 14,
         fontWeight: '600',
+    },
+    partnerCheckboxContainer: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        backgroundColor: '#f7fafc',
+        padding: 16,
+        borderRadius: 12,
+        marginBottom: 20,
+    },
+    checkbox: {
+        width: 22,
+        height: 22,
+        borderWidth: 2,
+        borderColor: '#cbd5e0',
+        borderRadius: 4,
+        marginRight: 12,
+        marginTop: 2,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#fff',
+    },
+    checkboxChecked: {
+        backgroundColor: '#667eea',
+        borderColor: '#667eea',
+    },
+    checkmark: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
+    checkboxTextContainer: {
+        flex: 1,
+    },
+    checkboxLabel: {
+        fontSize: 15,
+        color: '#2d3748',
+        fontWeight: '500',
+        marginBottom: 4,
+    },
+    checkboxSubtext: {
+        fontSize: 13,
+        color: '#718096',
     },
 });
