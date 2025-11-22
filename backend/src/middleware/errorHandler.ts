@@ -83,10 +83,9 @@ export const errorHandler = (
   
   // Always log the full error and stack trace for debugging
   logger.error('Full error details:', {
-    name: err.name,
-    message: err.message,
-    stack: err.stack,
-    ...err
+    errorName: err.name,
+    errorMessage: err.message,
+    stack: err.stack
   });
 
   // Send error response
