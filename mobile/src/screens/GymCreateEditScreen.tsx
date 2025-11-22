@@ -11,6 +11,7 @@ import {
   Keyboard,
   TouchableWithoutFeedback,
 } from 'react-native';
+import * as Location from 'expo-location';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { getGymById, createGym, updateGym } from '../store/gymSlice';
@@ -56,12 +57,49 @@ export default function GymCreateEditScreen() {
   const [newImageUrl, setNewImageUrl] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
+  const [fetchingLocation, setFetchingLocation] = useState(false);
 
   useEffect(() => {
     if (isEditMode && gymId) {
       dispatch(getGymById(Number(gymId)));
+    } else {
+      // Auto-fetch location for new gym
+      getCurrentLocation();
     }
   }, [gymId, isEditMode, dispatch]);
+
+  const getCurrentLocation = async () => {
+    try {
+      setFetchingLocation(true);
+      
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert(
+          'Permission Denied',
+          'Location permission is required to auto-fill coordinates. You can enter them manually.'
+        );
+        return;
+      }
+
+      const location = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+      });
+
+      setFormData((prev) => ({
+        ...prev,
+        latitude: location.coords.latitude.toFixed(6),
+        longitude: location.coords.longitude.toFixed(6),
+      }));
+    } catch (error) {
+      console.error('Error getting location:', error);
+      Alert.alert(
+        'Location Error',
+        'Could not fetch current location. Please enter coordinates manually.'
+      );
+    } finally {
+      setFetchingLocation(false);
+    }
+  };
 
   useEffect(() => {
     if (selectedGym && isEditMode) {
@@ -293,6 +331,23 @@ export default function GymCreateEditScreen() {
               maxLength={6}
             />
             {errors.pincode && <Text style={styles.errorText}>{errors.pincode}</Text>}
+          </View>
+        </View>
+
+        <View style={styles.formGroup}>
+          <View style={styles.locationHeader}>
+            <Text style={styles.label}>Location Coordinates *</Text>
+            <TouchableOpacity
+              style={styles.locationBtn}
+              onPress={getCurrentLocation}
+              disabled={fetchingLocation}
+            >
+              {fetchingLocation ? (
+                <ActivityIndicator size="small" color={colors.accentPrimary} />
+              ) : (
+                <Text style={styles.locationBtnText}>📍 Use Current Location</Text>
+              )}
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -654,6 +709,25 @@ const styles = StyleSheet.create({
   submitText: {
     color: '#ffffff',
     fontSize: 16,
+    fontWeight: '600',
+  },
+  locationHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  locationBtn: {
+    backgroundColor: colors.bgSecondary,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    minWidth: 150,
+    alignItems: 'center',
+  },
+  locationBtnText: {
+    color: colors.accentPrimary,
+    fontSize: 13,
     fontWeight: '600',
   },
 });
