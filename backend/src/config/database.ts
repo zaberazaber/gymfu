@@ -26,23 +26,31 @@ export const connectMongoDB = async (): Promise<void> => {
   }
 };
 
-// Redis client
-export const redisClient = createClient({
-  socket: {
-    host: process.env.REDIS_HOST || 'localhost',
-    port: parseInt(process.env.REDIS_PORT || '6379'),
-  },
-});
+// Redis client - support both URL and host/port configurations
+const redisUrl = process.env.REDIS_URL;
+const redisConfig = redisUrl 
+  ? { url: redisUrl }
+  : {
+      socket: {
+        host: process.env.REDIS_HOST || 'localhost',
+        port: parseInt(process.env.REDIS_PORT || '6379'),
+      },
+    };
+
+export const redisClient = createClient(redisConfig);
 
 redisClient.on('error', (err) => console.error('❌ Redis Client Error:', err));
 redisClient.on('connect', () => console.log('✅ Redis connected successfully'));
 
 export const connectRedis = async (): Promise<void> => {
   try {
-    await redisClient.connect();
+    if (!redisClient.isOpen) {
+      await redisClient.connect();
+    }
   } catch (error) {
     console.error('❌ Redis connection error:', error);
-    throw error;
+    console.warn('⚠️  Continuing without Redis - some features may be limited');
+    // Don't throw - Redis is optional for basic functionality
   }
 };
 
@@ -63,9 +71,15 @@ export const testPostgresConnection = async (): Promise<boolean> => {
 // Initialize all database connections
 export const initializeDatabases = async (): Promise<void> => {
   try {
+    // PostgreSQL is required
     await testPostgresConnection();
+    
+    // MongoDB is required
     await connectMongoDB();
+    
+    // Redis is optional - don't fail if it's not available
     await connectRedis();
+    
     console.log('🎉 All databases connected successfully');
   } catch (error) {
     console.error('❌ Database initialization failed:', error);
