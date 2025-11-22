@@ -112,11 +112,11 @@ const startServer = async () => {
     // Initialize database connections
     await initializeDatabases();
 
-    // Start server
-    app.listen(PORT, () => {
-      logger.info(`🚀 Server is running on http://localhost:${PORT}`);
-      logger.info(`📊 Health check available at http://localhost:${PORT}/health`);
-      logger.info(`💾 Database health check at http://localhost:${PORT}/health/db`);
+    // Start server - bind to 0.0.0.0 for cloud platforms like Render
+    app.listen(PORT, '0.0.0.0', () => {
+      logger.info(`🚀 Server is running on port ${PORT}`);
+      logger.info(`📊 Health check available at /health`);
+      logger.info(`💾 Database health check at /health/db`);
     });
   } catch (error) {
     logger.error('❌ Failed to start server:', error);
