@@ -28,14 +28,37 @@ export const connectMongoDB = async (): Promise<void> => {
 
 // Redis client - support both URL and host/port configurations
 const redisUrl = process.env.REDIS_URL;
-const redisConfig = redisUrl 
-  ? { url: redisUrl }
-  : {
-      socket: {
-        host: process.env.REDIS_HOST || 'localhost',
-        port: parseInt(process.env.REDIS_PORT || '6379'),
-      },
-    };
+const redisHost = process.env.REDIS_HOST;
+const redisPassword = process.env.REDIS_PASSWORD;
+const redisPort = process.env.REDIS_PORT;
+
+let redisConfig: any;
+
+if (redisUrl) {
+  // Use URL format (supports redis:// and rediss:// for TLS)
+  console.log('📝 Using REDIS_URL for connection');
+  redisConfig = { url: redisUrl };
+} else if (redisHost && redisPassword) {
+  // Use individual credentials (Upstash format with TLS)
+  console.log('📝 Using REDIS_HOST/PASSWORD/PORT for connection');
+  redisConfig = {
+    socket: {
+      host: redisHost,
+      port: parseInt(redisPort || '6379'),
+      tls: true, // Upstash requires TLS
+    },
+    password: redisPassword,
+  };
+} else {
+  // Local development fallback
+  console.log('📝 Using localhost Redis');
+  redisConfig = {
+    socket: {
+      host: 'localhost',
+      port: 6379,
+    },
+  };
+}
 
 export const redisClient = createClient(redisConfig);
 
