@@ -76,15 +76,18 @@ export const errorHandler = (
     details = err.message;
   }
 
-  // Log error
+  // Log error with full details
   logger.error(
     `${statusCode} - ${code} - ${message} - ${req.originalUrl} - ${req.method} - ${req.ip}`
   );
-
-  // Log stack trace in development
-  if (process.env.NODE_ENV === 'development') {
-    logger.error(err.stack);
-  }
+  
+  // Always log the full error and stack trace for debugging
+  logger.error('Full error details:', {
+    name: err.name,
+    message: err.message,
+    stack: err.stack,
+    ...err
+  });
 
   // Send error response
   const errorResponse: ErrorResponse = {
