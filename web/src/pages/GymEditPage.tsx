@@ -44,6 +44,7 @@ export default function GymEditPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const [uploadingImages, setUploadingImages] = useState(false);
+  const [fetchingLocation, setFetchingLocation] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -53,8 +54,40 @@ export default function GymEditPage() {
 
     if (gymId && gymId !== 'new') {
       dispatch(getGymById(Number(gymId)));
+    } else {
+      // Auto-fetch location for new gym
+      getCurrentLocation();
     }
   }, [gymId, isAuthenticated, navigate, dispatch]);
+
+  const getCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      alert('Geolocation is not supported by your browser');
+      return;
+    }
+
+    setFetchingLocation(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setFormData(prev => ({
+          ...prev,
+          latitude: position.coords.latitude.toFixed(6),
+          longitude: position.coords.longitude.toFixed(6),
+        }));
+        setFetchingLocation(false);
+      },
+      (error) => {
+        console.error('Error getting location:', error);
+        alert('Could not fetch current location. Please enter coordinates manually.');
+        setFetchingLocation(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0,
+      }
+    );
+  };
 
   useEffect(() => {
     if (selectedGym && gymId !== 'new') {
@@ -337,6 +370,24 @@ export default function GymEditPage() {
                   maxLength={6}
                 />
                 {errors.pincode && <span className="error-text">{errors.pincode}</span>}
+              </div>
+            </div>
+
+            <div className="form-group">
+              <div className="location-header">
+                <label className="form-label">Location Coordinates *</label>
+                <button
+                  type="button"
+                  className="location-btn"
+                  onClick={getCurrentLocation}
+                  disabled={fetchingLocation}
+                >
+                  {fetchingLocation ? (
+                    <span>⏳ Fetching...</span>
+                  ) : (
+                    <span>📍 Use Current Location</span>
+                  )}
+                </button>
               </div>
             </div>
 
