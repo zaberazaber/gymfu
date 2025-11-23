@@ -15,8 +15,12 @@ const PORT = parseInt(process.env.PORT || '3000', 10);
 
 // Middleware
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? [process.env.FRONTEND_URL || 'https://gymfu.vercel.app']
+  origin: process.env.NODE_ENV === 'production'
+    ? [
+      process.env.FRONTEND_URL || 'https://gymfu.vercel.app',
+      'https://gymfu.vercel.app',
+      /\.vercel\.app$/  // Allow all Vercel preview deployments
+    ]
     : ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:3000'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
