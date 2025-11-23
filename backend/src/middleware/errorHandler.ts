@@ -80,13 +80,13 @@ export const errorHandler = (
   logger.error(
     `${statusCode} - ${code} - ${message} - ${req.originalUrl} - ${req.method} - ${req.ip}`
   );
-  
+
   // Always log the full error and stack trace for debugging
-  logger.error('Full error details:', {
-    errorName: err.name,
-    errorMessage: err.message,
-    stack: err.stack
-  });
+  logger.error('Full error details:', err);
+
+  if (err.stack) {
+    logger.error('Stack trace:', err.stack);
+  }
 
   // Send error response
   const errorResponse: ErrorResponse = {
