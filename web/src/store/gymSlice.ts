@@ -92,7 +92,7 @@ export const searchNearbyGyms = createAsyncThunk(
                 params.maxPrice = filters.maxPrice;
             }
 
-            const response = await axios.get(`${API_BASE_URL}/api/v1/gyms/nearby`, { params });
+            const response = await axios.get(`${API_BASE_URL}/gyms/nearby`, { params });
             return response.data;
         } catch (error: any) {
             return rejectWithValue(error.response?.data?.error?.message || 'Failed to search gyms');
@@ -104,7 +104,7 @@ export const getGymById = createAsyncThunk(
     'gym/getById',
     async (gymId: number, { rejectWithValue }) => {
         try {
-            const response = await axios.get(`${API_BASE_URL}/api/v1/gyms/${gymId}`);
+            const response = await axios.get(`${API_BASE_URL}/gyms/${gymId}`);
             return response.data.data;
         } catch (error: any) {
             return rejectWithValue(error.response?.data?.error?.message || 'Failed to get gym details');
@@ -119,7 +119,7 @@ export const getAllGyms = createAsyncThunk(
             const state = getState() as { gym: GymState };
             const { pagination } = state.gym;
 
-            const response = await axios.get(`${API_BASE_URL}/api/v1/gyms`, {
+            const response = await axios.get(`${API_BASE_URL}/gyms`, {
                 params: {
                     limit: pagination.limit,
                     offset: pagination.offset,
