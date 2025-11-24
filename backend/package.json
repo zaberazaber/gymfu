@@ -13,6 +13,7 @@
     "db:add-partner-column": "ts-node src/scripts/addIsPartnerColumn.ts",
     "db:create-gyms-render": "ts-node src/scripts/createGymsTableRender.ts",
     "db:seed-gyms-render": "ts-node src/scripts/seedGymsRender.ts",
+    "db:create-bookings": "ts-node src/scripts/createBookingsTable.ts",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"
