@@ -11,6 +11,8 @@
     "db:seed-gyms": "ts-node src/scripts/seedGyms.ts",
     "db:seed-admin": "ts-node src/scripts/seedAdminUser.ts",
     "db:add-partner-column": "ts-node src/scripts/addIsPartnerColumn.ts",
+    "db:create-gyms-render": "ts-node src/scripts/createGymsTableRender.ts",
+    "db:seed-gyms-render": "ts-node src/scripts/seedGymsRender.ts",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"
