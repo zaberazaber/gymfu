@@ -13,9 +13,16 @@ interface Booking {
   updatedAt?: string;
 }
 
+interface QRCodeData {
+  bookingId: number;
+  qrCodeString: string;
+  qrCodeImage: string;
+}
+
 interface BookingState {
   bookings: Booking[];
   selectedBooking: Booking | null;
+  qrCodeData: QRCodeData | null;
   loading: boolean;
   error: string | null;
 }
@@ -23,6 +30,7 @@ interface BookingState {
 const initialState: BookingState = {
   bookings: [],
   selectedBooking: null,
+  qrCodeData: null,
   loading: false,
   error: null,
 };
@@ -64,6 +72,18 @@ export const getBookingById = createAsyncThunk(
   }
 );
 
+export const getBookingQRCode = createAsyncThunk(
+  'booking/getQRCode',
+  async (bookingId: number, { rejectWithValue }) => {
+    try {
+      const response = await api.get(`/api/v1/bookings/${bookingId}/qrcode`);
+      return response.data.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.error?.message || 'Failed to get QR code');
+    }
+  }
+);
+
 export const cancelBooking = createAsyncThunk(
   'booking/cancel',
   async (bookingId: number, { rejectWithValue }) => {
@@ -85,6 +105,9 @@ const bookingSlice = createSlice({
     },
     clearSelectedBooking: (state) => {
       state.selectedBooking = null;
+    },
+    clearQRCode: (state) => {
+      state.qrCodeData = null;
     },
   },
   extraReducers: (builder) => {
@@ -147,9 +170,22 @@ const bookingSlice = createSlice({
       .addCase(cancelBooking.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
+      })
+      // Get QR code
+      .addCase(getBookingQRCode.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getBookingQRCode.fulfilled, (state, action) => {
+        state.loading = false;
+        state.qrCodeData = action.payload;
+      })
+      .addCase(getBookingQRCode.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
       });
   },
 });
 
-export const { clearError, clearSelectedBooking } = bookingSlice.actions;
+export const { clearError, clearSelectedBooking, clearQRCode } = bookingSlice.actions;
 export default bookingSlice.reducer;

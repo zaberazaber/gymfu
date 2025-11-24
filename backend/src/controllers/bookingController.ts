@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import BookingModel from '../models/Booking';
 import { GymModel } from '../models/Gym';
+import qrCodeService from '../services/qrCodeService';
 
 export const createBooking = async (req: Request, res: Response) => {
   try {
@@ -203,6 +204,64 @@ export const cancelBooking = async (req: Request, res: Response) => {
       error: {
         code: 'INTERNAL_ERROR',
         message: 'Failed to cancel booking',
+      },
+    });
+  }
+};
+
+export const generateQRCode = async (req: Request, res: Response) => {
+  try {
+    const { bookingId } = req.params;
+    const userId = (req as any).user.id;
+
+    const booking = await BookingModel.findById(parseInt(bookingId));
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'BOOKING_NOT_FOUND',
+          message: 'Booking not found',
+        },
+      });
+    }
+
+    // Ensure user can only access their own bookings
+    if (booking.userId !== userId) {
+      return res.status(403).json({
+        success: false,
+        error: {
+          code: 'FORBIDDEN',
+          message: 'You do not have permission to access this booking',
+        },
+      });
+    }
+
+    // Generate QR code string if not already generated
+    let qrCodeString = booking.qrCode;
+    if (!qrCodeString) {
+      qrCodeString = qrCodeService.generateQRCodeString(booking.id);
+      await BookingModel.updateQrCode(booking.id, qrCodeString);
+    }
+
+    // Generate QR code image
+    const qrCodeImage = await qrCodeService.generateQRCodeImage(qrCodeString);
+
+    res.json({
+      success: true,
+      data: {
+        bookingId: booking.id,
+        qrCodeString,
+        qrCodeImage,
+      },
+    });
+  } catch (error: any) {
+    console.error('Error generating QR code:', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'INTERNAL_ERROR',
+        message: 'Failed to generate QR code',
       },
     });
   }
