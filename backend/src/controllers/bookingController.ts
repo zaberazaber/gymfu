@@ -43,7 +43,7 @@ export const createBooking = async (req: Request, res: Response) => {
       });
     }
 
-    // Create booking with gym's base price
+    // Create booking with gym's base price (status is 'confirmed' by default)
     const booking = await BookingModel.create({
       userId,
       gymId,
@@ -51,10 +51,26 @@ export const createBooking = async (req: Request, res: Response) => {
       price: gym.basePrice,
     });
 
+    // Generate QR code immediately
+    const qrCodeString = qrCodeService.generateQRCodeString(booking.id);
+    
+    // Set QR code expiry to 24 hours from now
+    const qrCodeExpiry = new Date();
+    qrCodeExpiry.setHours(qrCodeExpiry.getHours() + 24);
+    
+    // Update booking with QR code and expiry
+    const updatedBooking = await BookingModel.updateQrCode(booking.id, qrCodeString, qrCodeExpiry);
+
+    // Generate QR code image
+    const qrCodeImage = await qrCodeService.generateQRCodeImage(qrCodeString);
+
     res.status(201).json({
       success: true,
-      data: booking,
-      message: 'Booking created successfully',
+      data: {
+        ...updatedBooking,
+        qrCodeImage,
+      },
+      message: 'Booking confirmed successfully',
     });
   } catch (error: any) {
     console.error('Error creating booking:', error);
@@ -241,7 +257,12 @@ export const generateQRCode = async (req: Request, res: Response) => {
     let qrCodeString = booking.qrCode;
     if (!qrCodeString) {
       qrCodeString = qrCodeService.generateQRCodeString(booking.id);
-      await BookingModel.updateQrCode(booking.id, qrCodeString);
+      
+      // Set QR code expiry to 24 hours from now
+      const qrCodeExpiry = new Date();
+      qrCodeExpiry.setHours(qrCodeExpiry.getHours() + 24);
+      
+      await BookingModel.updateQrCode(booking.id, qrCodeString, qrCodeExpiry);
     }
 
     // Generate QR code image
@@ -262,6 +283,92 @@ export const generateQRCode = async (req: Request, res: Response) => {
       error: {
         code: 'INTERNAL_ERROR',
         message: 'Failed to generate QR code',
+      },
+    });
+  }
+};
+
+export const checkInBooking = async (req: Request, res: Response) => {
+  try {
+    const { bookingId } = req.params;
+    const userId = (req as any).user.id;
+
+    const booking = await BookingModel.findById(parseInt(bookingId));
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'BOOKING_NOT_FOUND',
+          message: 'Booking not found',
+        },
+      });
+    }
+
+    // Ensure user can only check-in their own bookings
+    if (booking.userId !== userId) {
+      return res.status(403).json({
+        success: false,
+        error: {
+          code: 'FORBIDDEN',
+          message: 'You do not have permission to check-in this booking',
+        },
+      });
+    }
+
+    // Check if booking status is 'confirmed'
+    if (booking.status !== 'confirmed') {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_STATUS',
+          message: `Cannot check-in booking with status '${booking.status}'. Booking must be confirmed.`,
+        },
+      });
+    }
+
+    // Check if QR code exists
+    if (!booking.qrCode) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'NO_QR_CODE',
+          message: 'Booking does not have a QR code',
+        },
+      });
+    }
+
+    // Check if QR code is expired
+    if (booking.qrCodeExpiry) {
+      const now = new Date();
+      const expiry = new Date(booking.qrCodeExpiry);
+      
+      if (now > expiry) {
+        return res.status(400).json({
+          success: false,
+          error: {
+            code: 'QR_CODE_EXPIRED',
+            message: 'QR code has expired',
+          },
+        });
+      }
+    }
+
+    // Perform check-in
+    const checkedInBooking = await BookingModel.checkIn(parseInt(bookingId));
+
+    res.json({
+      success: true,
+      data: checkedInBooking,
+      message: 'Check-in successful',
+    });
+  } catch (error: any) {
+    console.error('Error checking in booking:', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'INTERNAL_ERROR',
+        message: 'Failed to check-in booking',
       },
     });
   }

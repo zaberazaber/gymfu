@@ -8,6 +8,8 @@ export interface Booking {
   price: number;
   status: 'pending' | 'confirmed' | 'cancelled' | 'checked_in' | 'completed';
   qrCode: string | null;
+  qrCodeExpiry: Date | null;
+  checkInTime: Date | null;
   createdAt: Date;
   updatedAt?: Date;
 }
@@ -23,7 +25,7 @@ class BookingModel {
   async create(data: CreateBookingData): Promise<Booking> {
     const query = `
       INSERT INTO bookings (user_id, gym_id, session_date, price, status, created_at)
-      VALUES ($1, $2, $3, $4, 'pending', CURRENT_TIMESTAMP)
+      VALUES ($1, $2, $3, $4, 'confirmed', CURRENT_TIMESTAMP)
       RETURNING 
         id, 
         user_id as "userId", 
@@ -31,7 +33,9 @@ class BookingModel {
         session_date as "sessionDate", 
         price, 
         status, 
-        qr_code as "qrCode", 
+        qr_code as "qrCode",
+        qr_code_expiry as "qrCodeExpiry",
+        check_in_time as "checkInTime",
         created_at as "createdAt"
     `;
 
@@ -54,7 +58,9 @@ class BookingModel {
         session_date as "sessionDate", 
         price, 
         status, 
-        qr_code as "qrCode", 
+        qr_code as "qrCode",
+        qr_code_expiry as "qrCodeExpiry",
+        check_in_time as "checkInTime",
         created_at as "createdAt",
         updated_at as "updatedAt"
       FROM bookings
@@ -74,7 +80,9 @@ class BookingModel {
         session_date as "sessionDate", 
         price, 
         status, 
-        qr_code as "qrCode", 
+        qr_code as "qrCode",
+        qr_code_expiry as "qrCodeExpiry",
+        check_in_time as "checkInTime",
         created_at as "createdAt",
         updated_at as "updatedAt"
       FROM bookings
@@ -99,7 +107,9 @@ class BookingModel {
         session_date as "sessionDate", 
         price, 
         status, 
-        qr_code as "qrCode", 
+        qr_code as "qrCode",
+        qr_code_expiry as "qrCodeExpiry",
+        check_in_time as "checkInTime",
         created_at as "createdAt",
         updated_at as "updatedAt"
     `;
@@ -108,11 +118,11 @@ class BookingModel {
     return result.rows[0] || null;
   }
 
-  async updateQrCode(id: number, qrCode: string): Promise<Booking | null> {
+  async updateQrCode(id: number, qrCode: string, qrCodeExpiry: Date): Promise<Booking | null> {
     const query = `
       UPDATE bookings
-      SET qr_code = $1, updated_at = CURRENT_TIMESTAMP
-      WHERE id = $2
+      SET qr_code = $1, qr_code_expiry = $2, updated_at = CURRENT_TIMESTAMP
+      WHERE id = $3
       RETURNING 
         id, 
         user_id as "userId", 
@@ -120,12 +130,37 @@ class BookingModel {
         session_date as "sessionDate", 
         price, 
         status, 
-        qr_code as "qrCode", 
+        qr_code as "qrCode",
+        qr_code_expiry as "qrCodeExpiry",
+        check_in_time as "checkInTime",
         created_at as "createdAt",
         updated_at as "updatedAt"
     `;
 
-    const result = await pgPool.query(query, [qrCode, id]);
+    const result = await pgPool.query(query, [qrCode, qrCodeExpiry, id]);
+    return result.rows[0] || null;
+  }
+
+  async checkIn(id: number): Promise<Booking | null> {
+    const query = `
+      UPDATE bookings
+      SET status = 'checked_in', check_in_time = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+      WHERE id = $1
+      RETURNING 
+        id, 
+        user_id as "userId", 
+        gym_id as "gymId", 
+        session_date as "sessionDate", 
+        price, 
+        status, 
+        qr_code as "qrCode",
+        qr_code_expiry as "qrCodeExpiry",
+        check_in_time as "checkInTime",
+        created_at as "createdAt",
+        updated_at as "updatedAt"
+    `;
+
+    const result = await pgPool.query(query, [id]);
     return result.rows[0] || null;
   }
 }

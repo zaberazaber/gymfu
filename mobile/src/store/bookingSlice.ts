@@ -11,6 +11,9 @@ interface Booking {
     price: number;
     status: 'pending' | 'confirmed' | 'cancelled' | 'checked_in' | 'completed';
     qrCode: string | null;
+    qrCodeExpiry: string | null;
+    checkInTime: string | null;
+    qrCodeImage?: string;
     createdAt: string;
     updatedAt?: string;
 }
@@ -102,6 +105,23 @@ export const getBookingQRCode = createAsyncThunk(
             return response.data.data;
         } catch (error: any) {
             return rejectWithValue(error.response?.data?.error?.message || 'Failed to get QR code');
+        }
+    }
+);
+
+export const checkInBooking = createAsyncThunk(
+    'booking/checkIn',
+    async (bookingId: number, { rejectWithValue }) => {
+        try {
+            const token = await AsyncStorage.getItem('token');
+            const response = await axios.post(`${API_BASE_URL}/bookings/${bookingId}/checkin`, {}, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            return response.data.data;
+        } catch (error: any) {
+            return rejectWithValue(error.response?.data?.error?.message || 'Failed to check-in');
         }
     }
 );
@@ -208,6 +228,25 @@ const bookingSlice = createSlice({
                 state.qrCodeData = action.payload;
             })
             .addCase(getBookingQRCode.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string;
+            })
+            // Check-in booking
+            .addCase(checkInBooking.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(checkInBooking.fulfilled, (state, action) => {
+                state.loading = false;
+                const index = state.bookings.findIndex(b => b.id === action.payload.id);
+                if (index !== -1) {
+                    state.bookings[index] = action.payload;
+                }
+                if (state.selectedBooking?.id === action.payload.id) {
+                    state.selectedBooking = action.payload;
+                }
+            })
+            .addCase(checkInBooking.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload as string;
             });

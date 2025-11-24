@@ -6,6 +6,7 @@ import {
   getUserBookings,
   cancelBooking,
   generateQRCode,
+  checkInBooking,
 } from '../controllers/bookingController';
 
 const router = express.Router();
@@ -24,6 +25,9 @@ router.get('/:bookingId', getBookingById);
 
 // Get QR code for booking
 router.get('/:bookingId/qrcode', generateQRCode);
+
+// Check-in to booking
+router.post('/:bookingId/checkin', checkInBooking);
 
 // Cancel a booking
 router.put('/:bookingId/cancel', cancelBooking);
