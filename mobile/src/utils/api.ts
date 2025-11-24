@@ -4,20 +4,26 @@ import Constants from 'expo-constants';
 
 // Get API base URL based on platform and environment
 const getApiBaseUrl = () => {
+  // ============================================
+  // 🔧 CONFIGURATION TOGGLE
+  // ============================================
+  // Set to TRUE to use production backend (Render)
+  // Set to FALSE to use local development backend
+  const USE_PRODUCTION = true;
+  // ============================================
+
   // Production backend URL (Render) - works for both iOS and Android
   const PRODUCTION_URL = 'https://gymfu-backend.onrender.com';
-
-  // Check if we should use production (for testing on real devices with production backend)
-  // You can change this to true when you want to test with production backend
-  const USE_PRODUCTION = true;
 
   if (USE_PRODUCTION) {
     console.log('📡 Using PRODUCTION backend:', PRODUCTION_URL);
     return PRODUCTION_URL;
   }
 
-  // Development mode - use local backend
-  console.log('📡 Using DEVELOPMENT backend');
+  // ============================================
+  // LOCAL DEVELOPMENT MODE
+  // ============================================
+  console.log('📡 Using DEVELOPMENT backend (local)');
 
   // For Expo Go on physical device, use the dev machine's IP
   const debuggerHost = Constants.expoConfig?.hostUri;
