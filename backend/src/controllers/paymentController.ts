@@ -3,6 +3,7 @@ import PaymentModel from '../models/Payment';
 import BookingModel from '../models/Booking';
 import { GymModel } from '../models/Gym';
 import RazorpayService from '../services/razorpayService';
+import { pgPool } from '../config/database';
 
 /**
  * Initiate payment for a booking
@@ -345,17 +346,6 @@ export const processRefund = async (req: Request, res: Response) => {
       });
     }
 
-    // Check if payment was successful
-    if (payment.status !== 'success') {
-      return res.status(400).json({
-        success: false,
-        error: {
-          code: 'PAYMENT_NOT_SUCCESSFUL',
-          message: 'Cannot refund a payment that was not successful',
-        },
-      });
-    }
-
     // Check if already refunded
     if (payment.status === 'refunded') {
       return res.status(400).json({
@@ -363,6 +353,17 @@ export const processRefund = async (req: Request, res: Response) => {
         error: {
           code: 'ALREADY_REFUNDED',
           message: 'Payment has already been refunded',
+        },
+      });
+    }
+
+    // Check if payment was successful
+    if (payment.status !== 'success') {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'PAYMENT_NOT_SUCCESSFUL',
+          message: 'Cannot refund a payment that was not successful',
         },
       });
     }
@@ -425,6 +426,150 @@ export const processRefund = async (req: Request, res: Response) => {
       error: {
         code: 'INTERNAL_ERROR',
         message: 'Failed to process refund',
+        details: error.message,
+      },
+    });
+  }
+};
+
+/**
+ * Get gym earnings and statistics
+ * GET /api/v1/payments/gym/:gymId/earnings
+ */
+export const getGymEarnings = async (req: Request, res: Response) => {
+  try {
+    const { gymId } = req.params;
+    const userId = req.user?.userId;
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        error: {
+          code: 'UNAUTHORIZED',
+          message: 'User not authenticated',
+        },
+      });
+    }
+
+    // Get gym details
+    const gym = await GymModel.findById(parseInt(gymId));
+    if (!gym) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'GYM_NOT_FOUND',
+          message: 'Gym not found',
+        },
+      });
+    }
+
+    // Verify user owns the gym
+    if (gym.ownerId !== userId) {
+      return res.status(403).json({
+        success: false,
+        error: {
+          code: 'FORBIDDEN',
+          message: 'You do not have permission to view earnings for this gym',
+        },
+      });
+    }
+
+    // Get date range from query params (optional)
+    const startDate = req.query.startDate as string;
+    const endDate = req.query.endDate as string;
+
+    // Calculate total earnings
+    const earningsData = await PaymentModel.calculateGymEarnings(parseInt(gymId));
+
+    // Get recent transactions
+    const limit = parseInt(req.query.limit as string) || 10;
+    const offset = parseInt(req.query.offset as string) || 0;
+    const transactions = await PaymentModel.findByGymId(parseInt(gymId), limit, offset);
+    const totalTransactions = await PaymentModel.countByGymId(parseInt(gymId));
+
+    // Calculate earnings by status
+    const earningsByStatus = {
+      successful: earningsData.totalEarnings,
+      pending: 0,
+      refunded: 0,
+    };
+
+    // Get pending and refunded amounts
+    const statusQuery = `
+      SELECT 
+        status,
+        COALESCE(SUM(gym_earnings), 0) as total
+      FROM payments
+      WHERE gym_id = $1 AND status IN ('pending', 'refunded')
+      GROUP BY status
+    `;
+    const statusResult = await pgPool.query(statusQuery, [parseInt(gymId)]);
+    statusResult.rows.forEach((row: any) => {
+      if (row.status === 'pending') {
+        earningsByStatus.pending = parseFloat(row.total);
+      } else if (row.status === 'refunded') {
+        earningsByStatus.refunded = parseFloat(row.total);
+      }
+    });
+
+    // Calculate earnings by date range if provided
+    let earningsByPeriod = null;
+    if (startDate && endDate) {
+      const periodQuery = `
+        SELECT 
+          DATE(created_at) as date,
+          COALESCE(SUM(gym_earnings), 0) as earnings,
+          COUNT(*) as transactions
+        FROM payments
+        WHERE gym_id = $1 
+          AND status = 'success'
+          AND created_at >= $2
+          AND created_at <= $3
+        GROUP BY DATE(created_at)
+        ORDER BY date ASC
+      `;
+      const periodResult = await pgPool.query(periodQuery, [
+        parseInt(gymId),
+        startDate,
+        endDate,
+      ]);
+      earningsByPeriod = periodResult.rows;
+    }
+
+    res.json({
+      success: true,
+      data: {
+        gym: {
+          id: gym.id,
+          name: gym.name,
+        },
+        earnings: {
+          total: earningsData.totalEarnings,
+          successfulPayments: earningsData.successfulPayments,
+          pending: earningsByStatus.pending,
+          refunded: earningsByStatus.refunded,
+          netEarnings: earningsData.totalEarnings - earningsByStatus.refunded,
+        },
+        transactions: {
+          data: transactions,
+          pagination: {
+            limit,
+            offset,
+            total: totalTransactions,
+            hasMore: offset + transactions.length < totalTransactions,
+          },
+        },
+        earningsByPeriod,
+      },
+      message: 'Gym earnings retrieved successfully',
+    });
+  } catch (error: any) {
+    console.error('Error getting gym earnings:', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'INTERNAL_ERROR',
+        message: 'Failed to get gym earnings',
         details: error.message,
       },
     });
