@@ -292,7 +292,7 @@
   - **Test**: Book a gym session from mobile app, view QR code and booking history
   - _Requirements: 3.1, 3.5, 4.1, 14.4_
 
-- [ ] 4.8 Add booking cancellation
+- [x] 4.8 Add booking cancellation
   - Create PUT /api/v1/bookings/{bookingId}/cancel endpoint
   - Update booking status to 'cancelled'
   - Add cancellation button to booking history UI
@@ -300,7 +300,7 @@
   - **Test**: Cancel a booking and verify status updates
   - _Requirements: 3.3_
 
-- [ ] 4.9 Implement capacity checking
+- [x] 4.9 Implement capacity checking
   - Add currentOccupancy field to Gym table
   - Check gym capacity before creating booking
   - Return error if gym is at capacity for selected time

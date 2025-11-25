@@ -166,6 +166,14 @@ export default function BookingScreen() {
             <Text style={styles.priceLabel}>Price:</Text>
             <Text style={styles.priceValue}>₹{selectedGym.basePrice}</Text>
           </View>
+
+          <View style={styles.capacityContainer}>
+            <Text style={styles.capacityLabel}>Capacity:</Text>
+            <Text style={styles.capacityValue}>
+              {selectedGym.currentOccupancy || 0}/{selectedGym.capacity} people
+              {selectedGym.currentOccupancy >= selectedGym.capacity && ' (Full)'}
+            </Text>
+          </View>
         </View>
 
         {/* Date & Time Selection */}
@@ -338,6 +346,21 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     color: colors.accentPrimary,
+  },
+  capacityContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  capacityLabel: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginRight: 8,
+  },
+  capacityValue: {
+    fontSize: 14,
+    color: colors.textPrimary,
+    fontWeight: '500',
   },
   dateTimeButton: {
     flexDirection: 'row',

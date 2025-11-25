@@ -53,6 +53,18 @@ export const createBooking = async (req: Request, res: Response) => {
       });
     }
 
+    // Check if gym has available capacity
+    const hasCapacity = await GymModel.hasCapacity(gymId);
+    if (!hasCapacity) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'GYM_AT_CAPACITY',
+          message: `Gym is currently at full capacity (${gym.capacity}/${gym.capacity}). Please try again later.`,
+        },
+      });
+    }
+
     // Create booking with gym's base price (status is 'confirmed' by default)
     const booking = await BookingModel.create({
       userId,
@@ -410,6 +422,9 @@ export const checkInBooking = async (req: Request, res: Response) => {
 
     // Perform check-in
     const checkedInBooking = await BookingModel.checkIn(parseInt(bookingId));
+
+    // Increment gym occupancy
+    await GymModel.incrementOccupancy(booking.gymId);
 
     res.json({
       success: true,
