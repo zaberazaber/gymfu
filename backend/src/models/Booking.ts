@@ -163,6 +163,47 @@ class BookingModel {
     const result = await pgPool.query(query, [id]);
     return result.rows[0] || null;
   }
+
+  async findByUserIdWithGymDetails(userId: number, limit: number = 10, offset: number = 0): Promise<any[]> {
+    const query = `
+      SELECT 
+        b.id, 
+        b.user_id as "userId", 
+        b.gym_id as "gymId", 
+        b.session_date as "sessionDate", 
+        b.price, 
+        b.status, 
+        b.qr_code as "qrCode",
+        b.qr_code_expiry as "qrCodeExpiry",
+        b.check_in_time as "checkInTime",
+        b.created_at as "createdAt",
+        b.updated_at as "updatedAt",
+        g.name as "gymName",
+        g.address as "gymAddress",
+        g.city as "gymCity",
+        g.pincode as "gymPincode",
+        g.latitude as "gymLatitude",
+        g.longitude as "gymLongitude",
+        g.amenities as "gymAmenities",
+        g.images as "gymImages",
+        g.rating as "gymRating",
+        g.is_verified as "gymIsVerified"
+      FROM bookings b
+      INNER JOIN gyms g ON b.gym_id = g.id
+      WHERE b.user_id = $1
+      ORDER BY b.created_at DESC
+      LIMIT $2 OFFSET $3
+    `;
+
+    const result = await pgPool.query(query, [userId, limit, offset]);
+    return result.rows;
+  }
+
+  async countByUserId(userId: number): Promise<number> {
+    const query = 'SELECT COUNT(*) as count FROM bookings WHERE user_id = $1';
+    const result = await pgPool.query(query, [userId]);
+    return parseInt(result.rows[0].count);
+  }
 }
 
 export default new BookingModel();

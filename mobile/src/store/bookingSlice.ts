@@ -3,6 +3,20 @@ import axios from 'axios';
 import { API_BASE_URL } from '../utils/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+interface Gym {
+    id: number;
+    name: string;
+    address: string;
+    city: string;
+    pincode: string;
+    latitude: string;
+    longitude: string;
+    amenities: string[];
+    images: string[];
+    rating: number;
+    isVerified: boolean;
+}
+
 interface Booking {
     id: number;
     userId: number;
@@ -14,6 +28,7 @@ interface Booking {
     qrCodeExpiry: string | null;
     checkInTime: string | null;
     qrCodeImage?: string;
+    gym?: Gym;
     createdAt: string;
     updatedAt?: string;
 }

@@ -275,7 +275,7 @@
   - **Test**: Get booking history and verify user's bookings are returned
   - _Requirements: 3.3_
 
-- [ ] 4.6 Build booking UI for web
+- [x] 4.6 Build booking UI for web
   - Create BookingPage with gym details and date picker
   - Add "Book Now" button that calls booking endpoint
   - Show booking confirmation with QR code display
@@ -283,7 +283,7 @@
   - **Test**: Book a gym session from web app, view booking history
   - _Requirements: 3.1, 3.5_
 
-- [ ] 4.7 Build booking UI for mobile
+- [x] 4.7 Build booking UI for mobile
   - Create BookingScreen with gym details and date picker
   - Implement booking creation flow
   - Create QRCodeScreen displaying booking QR code

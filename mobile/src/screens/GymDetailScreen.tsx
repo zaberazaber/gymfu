@@ -121,8 +121,7 @@ export default function GymDetailScreen() {
                 <TouchableOpacity
                     style={styles.bookButton}
                     onPress={() => {
-                        // TODO: Navigate to booking screen
-                        console.log('Book gym:', selectedGym.id);
+                        (navigation as any).navigate('Booking', { gymId: selectedGym.id });
                     }}
                     activeOpacity={0.8}
                 >

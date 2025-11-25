@@ -1,6 +1,20 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../utils/api';
 
+interface Gym {
+  id: number;
+  name: string;
+  address: string;
+  city: string;
+  pincode: string;
+  latitude: string;
+  longitude: string;
+  amenities: string[];
+  images: string[];
+  rating: number;
+  isVerified: boolean;
+}
+
 interface Booking {
   id: number;
   userId: number;
@@ -12,6 +26,7 @@ interface Booking {
   qrCodeExpiry: string | null;
   checkInTime: string | null;
   qrCodeImage?: string;
+  gym?: Gym;
   createdAt: string;
   updatedAt?: string;
 }
@@ -43,7 +58,7 @@ export const createBooking = createAsyncThunk(
   'booking/create',
   async (data: { gymId: number; sessionDate: string }, { rejectWithValue }) => {
     try {
-      const response = await api.post('/api/v1/bookings', data);
+      const response = await api.post('/bookings', data);
       return response.data.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.error?.message || 'Failed to create booking');
@@ -55,7 +70,7 @@ export const getUserBookings = createAsyncThunk(
   'booking/getUserBookings',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await api.get('/api/v1/bookings/user');
+      const response = await api.get('/bookings/user');
       return response.data.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.error?.message || 'Failed to get bookings');
@@ -67,7 +82,7 @@ export const getBookingById = createAsyncThunk(
   'booking/getById',
   async (bookingId: number, { rejectWithValue }) => {
     try {
-      const response = await api.get(`/api/v1/bookings/${bookingId}`);
+      const response = await api.get(`/bookings/${bookingId}`);
       return response.data.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.error?.message || 'Failed to get booking');
@@ -79,7 +94,7 @@ export const getBookingQRCode = createAsyncThunk(
   'booking/getQRCode',
   async (bookingId: number, { rejectWithValue }) => {
     try {
-      const response = await api.get(`/api/v1/bookings/${bookingId}/qrcode`);
+      const response = await api.get(`/bookings/${bookingId}/qrcode`);
       return response.data.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.error?.message || 'Failed to get QR code');
@@ -91,7 +106,7 @@ export const checkInBooking = createAsyncThunk(
   'booking/checkIn',
   async (bookingId: number, { rejectWithValue }) => {
     try {
-      const response = await api.post(`/api/v1/bookings/${bookingId}/checkin`);
+      const response = await api.post(`/bookings/${bookingId}/checkin`);
       return response.data.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.error?.message || 'Failed to check-in');
@@ -103,7 +118,7 @@ export const cancelBooking = createAsyncThunk(
   'booking/cancel',
   async (bookingId: number, { rejectWithValue }) => {
     try {
-      const response = await api.put(`/api/v1/bookings/${bookingId}/cancel`);
+      const response = await api.put(`/bookings/${bookingId}/cancel`);
       return response.data.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.error?.message || 'Failed to cancel booking');

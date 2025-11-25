@@ -158,11 +158,7 @@ export default function GymDetailPage() {
         <div className="booking-section">
           <button
             className="book-button"
-            onClick={() => {
-              // TODO: Navigate to booking page
-              console.log('Book gym:', selectedGym.id);
-              alert('Booking feature coming soon!');
-            }}
+            onClick={() => navigate(`/gyms/${selectedGym.id}/book`)}
           >
             Book Now - ₹{selectedGym.basePrice}
           </button>

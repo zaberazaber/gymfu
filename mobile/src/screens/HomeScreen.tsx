@@ -58,6 +58,14 @@ export default function HomeScreen() {
               <Text style={styles.buttonText}>View Profile</Text>
             </TouchableOpacity>
 
+            <TouchableOpacity
+              style={styles.button}
+              onPress={() => navigation.navigate('BookingHistory' as never)}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.buttonText}>My Bookings</Text>
+            </TouchableOpacity>
+
             {user.isPartner && (
               <TouchableOpacity
                 style={styles.buttonPartner}

@@ -6,7 +6,17 @@ import qrCodeService from '../services/qrCodeService';
 export const createBooking = async (req: Request, res: Response) => {
   try {
     const { gymId, sessionDate } = req.body;
-    const userId = (req as any).user.id;
+    const userId = req.user?.userId;
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        error: {
+          code: 'UNAUTHORIZED',
+          message: 'User not authenticated',
+        },
+      });
+    }
 
     // Validate required fields
     if (!gymId || !sessionDate) {
@@ -53,11 +63,11 @@ export const createBooking = async (req: Request, res: Response) => {
 
     // Generate QR code immediately
     const qrCodeString = qrCodeService.generateQRCodeString(booking.id);
-    
+
     // Set QR code expiry to 24 hours from now
     const qrCodeExpiry = new Date();
     qrCodeExpiry.setHours(qrCodeExpiry.getHours() + 24);
-    
+
     // Update booking with QR code and expiry
     const updatedBooking = await BookingModel.updateQrCode(booking.id, qrCodeString, qrCodeExpiry);
 
@@ -87,7 +97,7 @@ export const createBooking = async (req: Request, res: Response) => {
 export const getBookingById = async (req: Request, res: Response) => {
   try {
     const { bookingId } = req.params;
-    const userId = (req as any).user.id;
+    const userId = req.user?.userId;
 
     const booking = await BookingModel.findById(parseInt(bookingId));
 
@@ -130,19 +140,63 @@ export const getBookingById = async (req: Request, res: Response) => {
 
 export const getUserBookings = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.id;
+    const userId = req.user?.userId;
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        error: {
+          code: 'UNAUTHORIZED',
+          message: 'User not authenticated',
+        },
+      });
+    }
+
     const limit = parseInt(req.query.limit as string) || 10;
     const offset = parseInt(req.query.offset as string) || 0;
 
-    const bookings = await BookingModel.findByUserId(userId, limit, offset);
+    // Get bookings with gym details
+    const bookings = await BookingModel.findByUserIdWithGymDetails(userId, limit, offset);
+
+    // Get total count for pagination
+    const total = await BookingModel.countByUserId(userId);
+
+    // Transform the flat structure to nested gym object
+    const transformedBookings = bookings.map(booking => ({
+      id: booking.id,
+      userId: booking.userId,
+      gymId: booking.gymId,
+      sessionDate: booking.sessionDate,
+      price: booking.price,
+      status: booking.status,
+      qrCode: booking.qrCode,
+      qrCodeExpiry: booking.qrCodeExpiry,
+      checkInTime: booking.checkInTime,
+      createdAt: booking.createdAt,
+      updatedAt: booking.updatedAt,
+      gym: {
+        id: booking.gymId,
+        name: booking.gymName,
+        address: booking.gymAddress,
+        city: booking.gymCity,
+        pincode: booking.gymPincode,
+        latitude: booking.gymLatitude,
+        longitude: booking.gymLongitude,
+        amenities: booking.gymAmenities,
+        images: booking.gymImages,
+        rating: booking.gymRating,
+        isVerified: booking.gymIsVerified,
+      },
+    }));
 
     res.json({
       success: true,
-      data: bookings,
+      data: transformedBookings,
       pagination: {
         limit,
         offset,
-        total: bookings.length,
+        total,
+        hasMore: offset + bookings.length < total,
       },
     });
   } catch (error: any) {
@@ -160,7 +214,7 @@ export const getUserBookings = async (req: Request, res: Response) => {
 export const cancelBooking = async (req: Request, res: Response) => {
   try {
     const { bookingId } = req.params;
-    const userId = (req as any).user.id;
+    const userId = req.user?.userId;
 
     const booking = await BookingModel.findById(parseInt(bookingId));
 
@@ -228,7 +282,7 @@ export const cancelBooking = async (req: Request, res: Response) => {
 export const generateQRCode = async (req: Request, res: Response) => {
   try {
     const { bookingId } = req.params;
-    const userId = (req as any).user.id;
+    const userId = req.user?.userId;
 
     const booking = await BookingModel.findById(parseInt(bookingId));
 
@@ -257,11 +311,11 @@ export const generateQRCode = async (req: Request, res: Response) => {
     let qrCodeString = booking.qrCode;
     if (!qrCodeString) {
       qrCodeString = qrCodeService.generateQRCodeString(booking.id);
-      
+
       // Set QR code expiry to 24 hours from now
       const qrCodeExpiry = new Date();
       qrCodeExpiry.setHours(qrCodeExpiry.getHours() + 24);
-      
+
       await BookingModel.updateQrCode(booking.id, qrCodeString, qrCodeExpiry);
     }
 
@@ -291,7 +345,7 @@ export const generateQRCode = async (req: Request, res: Response) => {
 export const checkInBooking = async (req: Request, res: Response) => {
   try {
     const { bookingId } = req.params;
-    const userId = (req as any).user.id;
+    const userId = req.user?.userId;
 
     const booking = await BookingModel.findById(parseInt(bookingId));
 
@@ -342,7 +396,7 @@ export const checkInBooking = async (req: Request, res: Response) => {
     if (booking.qrCodeExpiry) {
       const now = new Date();
       const expiry = new Date(booking.qrCodeExpiry);
-      
+
       if (now > expiry) {
         return res.status(400).json({
           success: false,
