@@ -23,6 +23,7 @@ export interface Gym {
     images: string[];
     basePrice: number;
     capacity: number;
+    currentOccupancy: number;
     rating: number;
     isVerified: boolean;
     operatingHours?: OperatingHours;
@@ -54,7 +55,7 @@ export class GymModel {
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
       RETURNING 
         id, name, owner_id as "ownerId", address, latitude, longitude,
-        city, pincode, amenities, images, base_price as "basePrice", capacity,
+        city, pincode, amenities, images, base_price as "basePrice", capacity, current_occupancy as "currentOccupancy",
         rating, is_verified as "isVerified", created_at as "createdAt",
         updated_at as "updatedAt"
     `;
@@ -81,7 +82,7 @@ export class GymModel {
         const query = `
       SELECT 
         id, name, owner_id as "ownerId", address, latitude, longitude,
-        city, pincode, amenities, images, base_price as "basePrice", capacity,
+        city, pincode, amenities, images, base_price as "basePrice", capacity, current_occupancy as "currentOccupancy",
         rating, is_verified as "isVerified", operating_hours as "operatingHours",
         created_at as "createdAt", updated_at as "updatedAt"
       FROM gyms
@@ -97,7 +98,7 @@ export class GymModel {
         const query = `
       SELECT 
         id, name, owner_id as "ownerId", address, latitude, longitude,
-        city, pincode, amenities, images, base_price as "basePrice", capacity,
+        city, pincode, amenities, images, base_price as "basePrice", capacity, current_occupancy as "currentOccupancy",
         rating, is_verified as "isVerified", created_at as "createdAt",
         updated_at as "updatedAt"
       FROM gyms
@@ -114,7 +115,7 @@ export class GymModel {
         const query = `
       SELECT 
         id, name, owner_id as "ownerId", address, latitude, longitude,
-        city, pincode, amenities, images, base_price as "basePrice", capacity,
+        city, pincode, amenities, images, base_price as "basePrice", capacity, current_occupancy as "currentOccupancy",
         rating, is_verified as "isVerified", created_at as "createdAt",
         updated_at as "updatedAt"
       FROM gyms
@@ -182,7 +183,7 @@ export class GymModel {
       WHERE id = $${paramCount}
       RETURNING 
         id, name, owner_id as "ownerId", address, latitude, longitude,
-        city, pincode, amenities, images, base_price as "basePrice", capacity,
+        city, pincode, amenities, images, base_price as "basePrice", capacity, current_occupancy as "currentOccupancy",
         rating, is_verified as "isVerified", created_at as "createdAt",
         updated_at as "updatedAt"
     `;
@@ -206,7 +207,7 @@ export class GymModel {
       WHERE id = $2
       RETURNING 
         id, name, owner_id as "ownerId", address, latitude, longitude,
-        city, pincode, amenities, images, base_price as "basePrice", capacity,
+        city, pincode, amenities, images, base_price as "basePrice", capacity, current_occupancy as "currentOccupancy",
         rating, is_verified as "isVerified", created_at as "createdAt",
         updated_at as "updatedAt"
     `;
@@ -276,7 +277,7 @@ export class GymModel {
         const query = `
       SELECT 
         id, name, owner_id as "ownerId", address, latitude, longitude,
-        city, pincode, amenities, images, base_price as "basePrice", capacity,
+        city, pincode, amenities, images, base_price as "basePrice", capacity, current_occupancy as "currentOccupancy",
         rating, is_verified as "isVerified", created_at as "createdAt",
         updated_at as "updatedAt",
         (
@@ -360,7 +361,7 @@ export class GymModel {
       WHERE id = $2
       RETURNING 
         id, name, owner_id as "ownerId", address, latitude, longitude,
-        city, pincode, amenities, images, base_price as "basePrice", capacity,
+        city, pincode, amenities, images, base_price as "basePrice", capacity, current_occupancy as "currentOccupancy",
         rating, is_verified as "isVerified", created_at as "createdAt",
         updated_at as "updatedAt"
     `;
@@ -378,7 +379,7 @@ export class GymModel {
       WHERE id = $2
       RETURNING 
         id, name, owner_id as "ownerId", address, latitude, longitude,
-        city, pincode, amenities, images, base_price as "basePrice", capacity,
+        city, pincode, amenities, images, base_price as "basePrice", capacity, current_occupancy as "currentOccupancy",
         rating, is_verified as "isVerified", created_at as "createdAt",
         updated_at as "updatedAt"
     `;
@@ -386,4 +387,51 @@ export class GymModel {
         const result = await pgPool.query(query, [imageUrl, id]);
         return result.rows[0] || null;
     }
+
+    // Increment occupancy (when user checks in)
+    static async incrementOccupancy(id: number): Promise<Gym | null> {
+        const query = `
+      UPDATE gyms
+      SET current_occupancy = current_occupancy + 1, updated_at = CURRENT_TIMESTAMP
+      WHERE id = $1 AND current_occupancy < capacity
+      RETURNING 
+        id, name, owner_id as "ownerId", address, latitude, longitude,
+        city, pincode, amenities, images, base_price as "basePrice", capacity, current_occupancy as "currentOccupancy",
+        current_occupancy as "currentOccupancy", rating, is_verified as "isVerified",
+        created_at as "createdAt", updated_at as "updatedAt"
+    `;
+
+        const result = await pgPool.query(query, [id]);
+        return result.rows[0] || null;
+    }
+
+    // Decrement occupancy (when user checks out or booking is cancelled)
+    static async decrementOccupancy(id: number): Promise<Gym | null> {
+        const query = `
+      UPDATE gyms
+      SET current_occupancy = GREATEST(current_occupancy - 1, 0), updated_at = CURRENT_TIMESTAMP
+      WHERE id = $1
+      RETURNING 
+        id, name, owner_id as "ownerId", address, latitude, longitude,
+        city, pincode, amenities, images, base_price as "basePrice", capacity, current_occupancy as "currentOccupancy",
+        current_occupancy as "currentOccupancy", rating, is_verified as "isVerified",
+        created_at as "createdAt", updated_at as "updatedAt"
+    `;
+
+        const result = await pgPool.query(query, [id]);
+        return result.rows[0] || null;
+    }
+
+    // Check if gym has available capacity
+    static async hasCapacity(id: number): Promise<boolean> {
+        const query = `
+      SELECT current_occupancy < capacity as "hasCapacity"
+      FROM gyms
+      WHERE id = $1
+    `;
+
+        const result = await pgPool.query(query, [id]);
+        return result.rows[0]?.hasCapacity || false;
+    }
 }
+

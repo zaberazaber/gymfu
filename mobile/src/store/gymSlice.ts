@@ -15,6 +15,7 @@ interface Gym {
   amenities: string[];
   basePrice: number;
   capacity: number;
+  currentOccupancy: number;
   rating: number | string;
   isVerified: boolean;
   operatingHours?: any;

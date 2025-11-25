@@ -9,7 +9,7 @@ const getApiBaseUrl = () => {
   // ============================================
   // Set to TRUE to use production backend (Render)
   // Set to FALSE to use local development backend
-  const USE_PRODUCTION = true;
+  const USE_PRODUCTION = false;
   // ============================================
 
   // Production backend URL (Render) - works for both iOS and Android

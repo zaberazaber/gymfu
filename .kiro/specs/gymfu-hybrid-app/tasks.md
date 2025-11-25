@@ -275,7 +275,7 @@
   - **Test**: Get booking history and verify user's bookings are returned
   - _Requirements: 3.3_
 
-- [ ] 4.6 Build booking UI for web
+- [x] 4.6 Build booking UI for web
   - Create BookingPage with gym details and date picker
   - Add "Book Now" button that calls booking endpoint
   - Show booking confirmation with QR code display
@@ -283,7 +283,7 @@
   - **Test**: Book a gym session from web app, view booking history
   - _Requirements: 3.1, 3.5_
 
-- [ ] 4.7 Build booking UI for mobile
+- [x] 4.7 Build booking UI for mobile
   - Create BookingScreen with gym details and date picker
   - Implement booking creation flow
   - Create QRCodeScreen displaying booking QR code
@@ -292,7 +292,7 @@
   - **Test**: Book a gym session from mobile app, view QR code and booking history
   - _Requirements: 3.1, 3.5, 4.1, 14.4_
 
-- [ ] 4.8 Add booking cancellation
+- [x] 4.8 Add booking cancellation
   - Create PUT /api/v1/bookings/{bookingId}/cancel endpoint
   - Update booking status to 'cancelled'
   - Add cancellation button to booking history UI
@@ -300,7 +300,7 @@
   - **Test**: Cancel a booking and verify status updates
   - _Requirements: 3.3_
 
-- [ ] 4.9 Implement capacity checking
+- [x] 4.9 Implement capacity checking
   - Add currentOccupancy field to Gym table
   - Check gym capacity before creating booking
   - Return error if gym is at capacity for selected time
@@ -310,14 +310,14 @@
 
 ## 5. Payment Processing (Payment Service)
 
-- [ ] 5.1 Create Payment model and basic structure
+- [x] 5.1 Create Payment model and basic structure
   - Create Payment table in PostgreSQL: id, bookingId, userId, gymId, amount, platformCommission, gymEarnings, status, createdAt
   - Create Payment model/repository
   - Calculate commission: platformCommission = amount * 0.15, gymEarnings = amount * 0.85
   - **Test**: Verify table is created and commission calculation logic works
   - _Requirements: 3.2, 3.3_
 
-- [ ] 5.2 Integrate Razorpay payment initiation
+- [x] 5.2 Integrate Razorpay payment initiation
   - Install Razorpay SDK
   - Configure Razorpay with test API keys
   - Create POST /api/v1/payments/initiate endpoint

@@ -16,6 +16,9 @@ import GymListScreen from './src/screens/GymListScreen_new';
 import GymDetailScreen from './src/screens/GymDetailScreen';
 import PartnerDashboardScreen from './src/screens/PartnerDashboardScreen';
 import GymCreateEditScreen from './src/screens/GymCreateEditScreen';
+import BookingScreen from './src/screens/BookingScreen';
+import QRCodeScreen from './src/screens/QRCodeScreen';
+import BookingHistoryScreen from './src/screens/BookingHistoryScreen';
 
 // Auth Stack (Login/Register)
 export type AuthStackParamList = {
@@ -32,6 +35,9 @@ export type MainStackParamList = {
   EditProfile: undefined;
   GymList: undefined;
   GymDetail: { gymId: number };
+  Booking: { gymId: number };
+  QRCode: { booking: any };
+  BookingHistory: undefined;
   PartnerDashboard: undefined;
   GymCreateEdit: { gymId?: number };
 };
@@ -122,6 +128,21 @@ function MainNavigator() {
         name="GymDetail"
         component={GymDetailScreen}
         options={{ title: 'Gym Details' }}
+      />
+      <MainStack.Screen
+        name="Booking"
+        component={BookingScreen}
+        options={{ title: 'Book Session' }}
+      />
+      <MainStack.Screen
+        name="QRCode"
+        component={QRCodeScreen}
+        options={{ title: 'Booking Confirmed' }}
+      />
+      <MainStack.Screen
+        name="BookingHistory"
+        component={BookingHistoryScreen}
+        options={{ title: 'My Bookings' }}
       />
       <MainStack.Screen
         name="PartnerDashboard"
