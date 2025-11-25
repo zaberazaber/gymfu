@@ -11,10 +11,12 @@ import {
 } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import RazorpayCheckout from 'react-native-razorpay';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { getGymById } from '../store/gymSlice';
-import { createBooking, clearError } from '../store/bookingSlice';
+import { createBooking, verifyPayment, clearError } from '../store/bookingSlice';
 import { colors, shadows } from '../styles/neumorphic';
+import { RAZORPAY_KEY_ID } from '../utils/api';
 
 export default function BookingScreen() {
   const route = useRoute();
@@ -30,6 +32,7 @@ export default function BookingScreen() {
   const [selectedTime, setSelectedTime] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
+  const [processingPayment, setProcessingPayment] = useState(false);
 
   useEffect(() => {
     if (gymId) {
@@ -50,11 +53,11 @@ export default function BookingScreen() {
   }, []);
 
   useEffect(() => {
-    if (selectedBooking && selectedBooking.status === 'confirmed') {
-      // Navigate to QR code screen
+    if (selectedBooking && selectedBooking.status === 'confirmed' && !processingPayment) {
+      // Navigate to QR code screen after successful payment
       (navigation as any).navigate('QRCode', { booking: selectedBooking });
     }
-  }, [selectedBooking, navigation]);
+  }, [selectedBooking, navigation, processingPayment]);
 
   useEffect(() => {
     return () => {
@@ -94,12 +97,66 @@ export default function BookingScreen() {
     }
 
     try {
-      await dispatch(createBooking({
+      // Step 1: Create booking (status: pending)
+      const result = await dispatch(createBooking({
         gymId,
         sessionDate: sessionDateTime.toISOString(),
       })).unwrap();
+
+      // Step 2: Open Razorpay payment
+      if (result.razorpayOrderId) {
+        openRazorpayPayment(result);
+      } else {
+        Alert.alert('Payment Error', 'Failed to initialize payment. Please try again.');
+      }
     } catch (error) {
       Alert.alert('Booking Failed', error as string || 'Failed to create booking');
+    }
+  };
+
+  const openRazorpayPayment = async (booking: any) => {
+    const options = {
+      description: `Booking for ${selectedGym?.name}`,
+      image: 'https://i.imgur.com/3g7nmJC.png', // Your app logo
+      currency: 'INR',
+      key: RAZORPAY_KEY_ID,
+      amount: booking.price * 100, // Amount in paise
+      name: 'GymFu',
+      order_id: booking.razorpayOrderId,
+      prefill: {
+        email: user?.email || '',
+        contact: user?.phoneNumber || '',
+        name: user?.name || '',
+      },
+      theme: { color: colors.accentPrimary },
+    };
+
+    try {
+      setProcessingPayment(true);
+      const data = await RazorpayCheckout.open(options);
+      
+      // Step 3: Verify payment on backend
+      await dispatch(verifyPayment({
+        bookingId: booking.id,
+        razorpayPaymentId: data.razorpay_payment_id,
+        razorpayOrderId: data.razorpay_order_id,
+        razorpaySignature: data.razorpay_signature,
+      })).unwrap();
+
+      setProcessingPayment(false);
+      Alert.alert('Success', 'Payment successful! Your booking is confirmed.');
+    } catch (error: any) {
+      setProcessingPayment(false);
+      
+      if (error.code === RazorpayCheckout.PAYMENT_CANCELLED) {
+        Alert.alert(
+          'Payment Cancelled',
+          'Your booking is still pending. You can complete payment from booking history.',
+          [{ text: 'OK' }]
+        );
+      } else {
+        Alert.alert('Payment Failed', error.description || 'Payment verification failed');
+      }
     }
   };
 
@@ -252,15 +309,23 @@ export default function BookingScreen() {
       {/* Book Button */}
       <View style={styles.footer}>
         <TouchableOpacity
-          style={[styles.bookButton, bookingLoading && styles.bookButtonDisabled]}
+          style={[styles.bookButton, (bookingLoading || processingPayment) && styles.bookButtonDisabled]}
           onPress={handleBooking}
-          disabled={bookingLoading}
+          disabled={bookingLoading || processingPayment}
           activeOpacity={0.8}
         >
-          {bookingLoading ? (
-            <ActivityIndicator color="#ffffff" />
+          {processingPayment ? (
+            <>
+              <ActivityIndicator color="#ffffff" />
+              <Text style={[styles.bookButtonText, { marginLeft: 8 }]}>Processing Payment...</Text>
+            </>
+          ) : bookingLoading ? (
+            <>
+              <ActivityIndicator color="#ffffff" />
+              <Text style={[styles.bookButtonText, { marginLeft: 8 }]}>Creating Booking...</Text>
+            </>
           ) : (
-            <Text style={styles.bookButtonText}>Book Now</Text>
+            <Text style={styles.bookButtonText}>Proceed to Payment</Text>
           )}
         </TouchableOpacity>
       </View>

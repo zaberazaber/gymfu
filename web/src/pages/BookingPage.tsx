@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { getGymById } from '../store/gymSlice';
-import { createBooking, clearError } from '../store/bookingSlice';
+import { createBooking, verifyPayment, clearError } from '../store/bookingSlice';
 import './BookingPage.css';
 
 export default function BookingPage() {
@@ -12,10 +12,12 @@ export default function BookingPage() {
 
     const { selectedGym, loading: gymLoading } = useAppSelector(state => state.gym);
     const { selectedBooking, loading: bookingLoading, error } = useAppSelector(state => state.booking);
+    const { user } = useAppSelector(state => state.auth);
 
     const [sessionDate, setSessionDate] = useState('');
     const [sessionTime, setSessionTime] = useState('10:00');
     const [showConfirmation, setShowConfirmation] = useState(false);
+    const [processingPayment, setProcessingPayment] = useState(false);
 
     useEffect(() => {
         if (gymId) {
@@ -44,14 +46,68 @@ export default function BookingPage() {
 
         const dateTime = new Date(`${sessionDate}T${sessionTime}:00`);
 
+        // Step 1: Create booking (status: pending)
         const result = await dispatch(createBooking({
             gymId: parseInt(gymId!),
             sessionDate: dateTime.toISOString(),
         }));
 
         if (createBooking.fulfilled.match(result)) {
-            setShowConfirmation(true);
+            const booking = result.payload;
+            
+            // Step 2: Open Razorpay payment modal
+            if (booking.razorpayOrderId) {
+                openRazorpayModal(booking);
+            } else {
+                alert('Failed to initialize payment. Please try again.');
+            }
         }
+    };
+
+    const openRazorpayModal = (booking: any) => {
+        const options: RazorpayOptions = {
+            key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+            amount: booking.price * 100, // Amount in paise
+            currency: 'INR',
+            name: 'GymFu',
+            description: `Booking for ${selectedGym?.name}`,
+            order_id: booking.razorpayOrderId,
+            handler: async (response: RazorpaySuccessResponse) => {
+                setProcessingPayment(true);
+                
+                // Step 3: Verify payment on backend
+                const verifyResult = await dispatch(verifyPayment({
+                    bookingId: booking.id,
+                    razorpayPaymentId: response.razorpay_payment_id,
+                    razorpayOrderId: response.razorpay_order_id,
+                    razorpaySignature: response.razorpay_signature,
+                }));
+
+                setProcessingPayment(false);
+
+                if (verifyPayment.fulfilled.match(verifyResult)) {
+                    setShowConfirmation(true);
+                } else {
+                    alert('Payment verification failed. Please contact support.');
+                }
+            },
+            prefill: {
+                name: user?.name || '',
+                email: user?.email || '',
+                contact: user?.phoneNumber || '',
+            },
+            theme: {
+                color: '#6366f1',
+            },
+            modal: {
+                ondismiss: () => {
+                    alert('Payment cancelled. Your booking is still pending. You can complete payment from booking history.');
+                },
+            },
+        };
+
+        const razorpay = new window.Razorpay(options);
+        razorpay.open();
     };
 
     const handleViewHistory = () => {
@@ -217,14 +273,14 @@ export default function BookingPage() {
 
                     <button
                         onClick={handleBooking}
-                        disabled={bookingLoading || !sessionDate || !sessionTime}
+                        disabled={bookingLoading || processingPayment || !sessionDate || !sessionTime}
                         className="btn-book"
                     >
-                        {bookingLoading ? 'Booking...' : 'Confirm Booking'}
+                        {processingPayment ? 'Processing Payment...' : bookingLoading ? 'Creating Booking...' : 'Proceed to Payment'}
                     </button>
 
                     <p className="booking-note">
-                        * Your booking will be confirmed instantly and you'll receive a QR code
+                        * Payment is required to confirm your booking. You'll receive a QR code after successful payment.
                     </p>
                 </div>
             </div>

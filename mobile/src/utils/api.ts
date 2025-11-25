@@ -85,5 +85,8 @@ api.interceptors.response.use(
   }
 );
 
+// Razorpay configuration
+export const RAZORPAY_KEY_ID = 'rzp_test_your_key_id_here'; // TODO: Move to secure config
+
 export default api;
 export { API_BASE_URL };

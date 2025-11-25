@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import BookingModel from '../models/Booking';
 import { GymModel } from '../models/Gym';
+import PaymentModel from '../models/Payment';
+import RazorpayService from '../services/razorpayService';
 import qrCodeService from '../services/qrCodeService';
 
 export const createBooking = async (req: Request, res: Response) => {
@@ -65,7 +67,7 @@ export const createBooking = async (req: Request, res: Response) => {
       });
     }
 
-    // Create booking with gym's base price (status is 'confirmed' by default)
+    // Create booking with 'pending' status (will be confirmed after payment)
     const booking = await BookingModel.create({
       userId,
       gymId,
@@ -73,26 +75,69 @@ export const createBooking = async (req: Request, res: Response) => {
       price: gym.basePrice,
     });
 
-    // Generate QR code immediately
-    const qrCodeString = qrCodeService.generateQRCodeString(booking.id);
+    // Create payment record
+    const payment = await PaymentModel.create({
+      bookingId: booking.id,
+      userId: booking.userId,
+      gymId: booking.gymId,
+      amount: booking.price,
+    });
 
-    // Set QR code expiry to 24 hours from now
-    const qrCodeExpiry = new Date();
-    qrCodeExpiry.setHours(qrCodeExpiry.getHours() + 24);
+    // Check if Razorpay is configured
+    if (!RazorpayService.isConfigured()) {
+      // If payment gateway not configured, auto-confirm booking (for development)
+      const confirmedBooking = await BookingModel.updateStatus(booking.id, 'confirmed');
+      
+      // Generate QR code
+      const qrCodeString = qrCodeService.generateQRCodeString(booking.id);
+      const qrCodeExpiry = new Date();
+      qrCodeExpiry.setHours(qrCodeExpiry.getHours() + 24);
+      const updatedBooking = await BookingModel.updateQrCode(booking.id, qrCodeString, qrCodeExpiry);
+      const qrCodeImage = await qrCodeService.generateQRCodeImage(qrCodeString);
 
-    // Update booking with QR code and expiry
-    const updatedBooking = await BookingModel.updateQrCode(booking.id, qrCodeString, qrCodeExpiry);
+      return res.status(201).json({
+        success: true,
+        data: {
+          booking: updatedBooking,
+          qrCodeImage,
+          paymentRequired: false,
+        },
+        message: 'Booking confirmed successfully (payment gateway not configured)',
+      });
+    }
 
-    // Generate QR code image
-    const qrCodeImage = await qrCodeService.generateQRCodeImage(qrCodeString);
+    // Create Razorpay order
+    const razorpayOrder = await RazorpayService.createOrder({
+      amount: booking.price,
+      currency: 'INR',
+      receipt: `booking_${booking.id}_payment_${payment.id}`,
+      notes: {
+        bookingId: booking.id.toString(),
+        paymentId: payment.id.toString(),
+        userId: userId.toString(),
+        gymId: booking.gymId.toString(),
+        gymName: gym.name,
+      },
+    });
 
+    // Update payment with Razorpay order ID
+    await PaymentModel.updateRazorpayDetails(payment.id, razorpayOrder.id);
+
+    // Return booking and payment details
     res.status(201).json({
       success: true,
       data: {
-        ...updatedBooking,
-        qrCodeImage,
+        booking: booking,
+        payment: {
+          id: payment.id,
+          orderId: razorpayOrder.id,
+          amount: razorpayOrder.amount,
+          currency: razorpayOrder.currency,
+          keyId: RazorpayService.getKeyId(),
+        },
+        paymentRequired: true,
       },
-      message: 'Booking confirmed successfully',
+      message: 'Booking created. Please complete payment to confirm.',
     });
   } catch (error: any) {
     console.error('Error creating booking:', error);

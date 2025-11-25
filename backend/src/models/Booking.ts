@@ -25,7 +25,7 @@ class BookingModel {
   async create(data: CreateBookingData): Promise<Booking> {
     const query = `
       INSERT INTO bookings (user_id, gym_id, session_date, price, status, created_at)
-      VALUES ($1, $2, $3, $4, 'confirmed', CURRENT_TIMESTAMP)
+      VALUES ($1, $2, $3, $4, 'pending', CURRENT_TIMESTAMP)
       RETURNING 
         id, 
         user_id as "userId", 

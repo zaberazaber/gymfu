@@ -129,6 +129,23 @@ export const cancelBooking = createAsyncThunk(
   }
 );
 
+export const verifyPayment = createAsyncThunk(
+  'booking/verifyPayment',
+  async (data: {
+    bookingId: number;
+    razorpayPaymentId: string;
+    razorpayOrderId: string;
+    razorpaySignature: string;
+  }, { rejectWithValue }) => {
+    try {
+      const response = await api.post('/payments/verify', data);
+      return response.data.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.error?.message || 'Payment verification failed');
+    }
+  }
+);
+
 const bookingSlice = createSlice({
   name: 'booking',
   initialState,
@@ -233,6 +250,28 @@ const bookingSlice = createSlice({
         }
       })
       .addCase(checkInBooking.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // Verify payment
+      .addCase(verifyPayment.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(verifyPayment.fulfilled, (state, action) => {
+        state.loading = false;
+        state.selectedBooking = action.payload.booking;
+        state.qrCodeData = {
+          bookingId: action.payload.booking.id,
+          qrCodeString: action.payload.booking.qrCode,
+          qrCodeImage: action.payload.booking.qrCodeImage,
+        };
+        const index = state.bookings.findIndex(b => b.id === action.payload.booking.id);
+        if (index !== -1) {
+          state.bookings[index] = action.payload.booking;
+        }
+      })
+      .addCase(verifyPayment.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });
