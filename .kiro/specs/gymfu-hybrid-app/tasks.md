@@ -310,14 +310,14 @@
 
 ## 5. Payment Processing (Payment Service)
 
-- [ ] 5.1 Create Payment model and basic structure
+- [x] 5.1 Create Payment model and basic structure
   - Create Payment table in PostgreSQL: id, bookingId, userId, gymId, amount, platformCommission, gymEarnings, status, createdAt
   - Create Payment model/repository
   - Calculate commission: platformCommission = amount * 0.15, gymEarnings = amount * 0.85
   - **Test**: Verify table is created and commission calculation logic works
   - _Requirements: 3.2, 3.3_
 
-- [ ] 5.2 Integrate Razorpay payment initiation
+- [x] 5.2 Integrate Razorpay payment initiation
   - Install Razorpay SDK
   - Configure Razorpay with test API keys
   - Create POST /api/v1/payments/initiate endpoint
