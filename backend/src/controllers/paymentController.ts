@@ -270,6 +270,168 @@ export const getUserPayments = async (req: Request, res: Response) => {
 
 
 /**
+ * Process refund for a payment
+ * POST /api/v1/payments/refund
+ */
+export const processRefund = async (req: Request, res: Response) => {
+  try {
+    const { bookingId, amount } = req.body;
+    const userId = req.user?.userId;
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        error: {
+          code: 'UNAUTHORIZED',
+          message: 'User not authenticated',
+        },
+      });
+    }
+
+    // Validate booking ID
+    if (!bookingId) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'Booking ID is required',
+        },
+      });
+    }
+
+    // Get booking details
+    const booking = await BookingModel.findById(bookingId);
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'BOOKING_NOT_FOUND',
+          message: 'Booking not found',
+        },
+      });
+    }
+
+    // Verify user owns the booking
+    if (booking.userId !== userId) {
+      return res.status(403).json({
+        success: false,
+        error: {
+          code: 'FORBIDDEN',
+          message: 'You do not have permission to refund this booking',
+        },
+      });
+    }
+
+    // Check if booking is cancelled
+    if (booking.status !== 'cancelled') {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_BOOKING_STATUS',
+          message: 'Only cancelled bookings can be refunded',
+        },
+      });
+    }
+
+    // Get payment record
+    const payment = await PaymentModel.findByBookingId(bookingId);
+    if (!payment) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'PAYMENT_NOT_FOUND',
+          message: 'Payment not found for this booking',
+        },
+      });
+    }
+
+    // Check if payment was successful
+    if (payment.status !== 'success') {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'PAYMENT_NOT_SUCCESSFUL',
+          message: 'Cannot refund a payment that was not successful',
+        },
+      });
+    }
+
+    // Check if already refunded
+    if (payment.status === 'refunded') {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'ALREADY_REFUNDED',
+          message: 'Payment has already been refunded',
+        },
+      });
+    }
+
+    // Check if Razorpay payment ID exists
+    if (!payment.razorpayPaymentId) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'NO_PAYMENT_ID',
+          message: 'Razorpay payment ID not found',
+        },
+      });
+    }
+
+    // Validate refund amount
+    const refundAmount = amount || payment.amount;
+    if (refundAmount > payment.amount) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_REFUND_AMOUNT',
+          message: 'Refund amount cannot exceed payment amount',
+        },
+      });
+    }
+
+    // Initiate refund with Razorpay
+    const refund = await RazorpayService.initiateRefund(
+      payment.razorpayPaymentId,
+      refundAmount
+    );
+
+    // Update payment with refund details
+    await PaymentModel.addRefundDetails(
+      payment.id,
+      refund.id,
+      refundAmount
+    );
+
+    // Get updated payment
+    const updatedPayment = await PaymentModel.findById(payment.id);
+
+    res.json({
+      success: true,
+      data: {
+        payment: updatedPayment,
+        refund: {
+          id: refund.id,
+          amount: refundAmount,
+          status: refund.status,
+        },
+      },
+      message: 'Refund processed successfully',
+    });
+  } catch (error: any) {
+    console.error('Error processing refund:', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'INTERNAL_ERROR',
+        message: 'Failed to process refund',
+        details: error.message,
+      },
+    });
+  }
+};
+
+/**
  * Verify Razorpay payment
  * POST /api/v1/payments/verify
  */

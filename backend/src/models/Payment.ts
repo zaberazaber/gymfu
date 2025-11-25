@@ -12,6 +12,8 @@ export interface Payment {
     razorpayOrderId?: string;
     razorpayPaymentId?: string;
     razorpaySignature?: string;
+    razorpayRefundId?: string;
+    refundAmount?: number;
     createdAt: Date;
     updatedAt?: Date;
 }
@@ -76,7 +78,8 @@ export class PaymentModel {
         id, booking_id as "bookingId", user_id as "userId", gym_id as "gymId",
         amount, platform_commission as "platformCommission", gym_earnings as "gymEarnings",
         status, razorpay_order_id as "razorpayOrderId", razorpay_payment_id as "razorpayPaymentId",
-        razorpay_signature as "razorpaySignature", created_at as "createdAt", updated_at as "updatedAt"
+        razorpay_signature as "razorpaySignature", razorpay_refund_id as "razorpayRefundId",
+        refund_amount as "refundAmount", created_at as "createdAt", updated_at as "updatedAt"
       FROM payments
       WHERE id = $1
     `;
@@ -92,7 +95,8 @@ export class PaymentModel {
         id, booking_id as "bookingId", user_id as "userId", gym_id as "gymId",
         amount, platform_commission as "platformCommission", gym_earnings as "gymEarnings",
         status, razorpay_order_id as "razorpayOrderId", razorpay_payment_id as "razorpayPaymentId",
-        razorpay_signature as "razorpaySignature", created_at as "createdAt", updated_at as "updatedAt"
+        razorpay_signature as "razorpaySignature", razorpay_refund_id as "razorpayRefundId",
+        refund_amount as "refundAmount", created_at as "createdAt", updated_at as "updatedAt"
       FROM payments
       WHERE booking_id = $1
     `;
@@ -108,7 +112,8 @@ export class PaymentModel {
         id, booking_id as "bookingId", user_id as "userId", gym_id as "gymId",
         amount, platform_commission as "platformCommission", gym_earnings as "gymEarnings",
         status, razorpay_order_id as "razorpayOrderId", razorpay_payment_id as "razorpayPaymentId",
-        razorpay_signature as "razorpaySignature", created_at as "createdAt", updated_at as "updatedAt"
+        razorpay_signature as "razorpaySignature", razorpay_refund_id as "razorpayRefundId",
+        refund_amount as "refundAmount", created_at as "createdAt", updated_at as "updatedAt"
       FROM payments
       WHERE user_id = $1
       ORDER BY created_at DESC
@@ -126,7 +131,8 @@ export class PaymentModel {
         id, booking_id as "bookingId", user_id as "userId", gym_id as "gymId",
         amount, platform_commission as "platformCommission", gym_earnings as "gymEarnings",
         status, razorpay_order_id as "razorpayOrderId", razorpay_payment_id as "razorpayPaymentId",
-        razorpay_signature as "razorpaySignature", created_at as "createdAt", updated_at as "updatedAt"
+        razorpay_signature as "razorpaySignature", razorpay_refund_id as "razorpayRefundId",
+        refund_amount as "refundAmount", created_at as "createdAt", updated_at as "updatedAt"
       FROM payments
       WHERE gym_id = $1
       ORDER BY created_at DESC
@@ -150,7 +156,8 @@ export class PaymentModel {
         id, booking_id as "bookingId", user_id as "userId", gym_id as "gymId",
         amount, platform_commission as "platformCommission", gym_earnings as "gymEarnings",
         status, razorpay_order_id as "razorpayOrderId", razorpay_payment_id as "razorpayPaymentId",
-        razorpay_signature as "razorpaySignature", created_at as "createdAt", updated_at as "updatedAt"
+        razorpay_signature as "razorpaySignature", razorpay_refund_id as "razorpayRefundId",
+        refund_amount as "refundAmount", created_at as "createdAt", updated_at as "updatedAt"
     `;
 
         const result = await pgPool.query(query, [status, id]);
@@ -176,7 +183,8 @@ export class PaymentModel {
         id, booking_id as "bookingId", user_id as "userId", gym_id as "gymId",
         amount, platform_commission as "platformCommission", gym_earnings as "gymEarnings",
         status, razorpay_order_id as "razorpayOrderId", razorpay_payment_id as "razorpayPaymentId",
-        razorpay_signature as "razorpaySignature", created_at as "createdAt", updated_at as "updatedAt"
+        razorpay_signature as "razorpaySignature", razorpay_refund_id as "razorpayRefundId",
+        refund_amount as "refundAmount", created_at as "createdAt", updated_at as "updatedAt"
     `;
 
         const result = await pgPool.query(query, [razorpayOrderId, razorpayPaymentId, razorpaySignature, id]);
@@ -229,6 +237,32 @@ export class PaymentModel {
         const query = 'SELECT COUNT(*) as count FROM payments WHERE gym_id = $1';
         const result = await pgPool.query(query, [gymId]);
         return parseInt(result.rows[0].count);
+    }
+
+    // Add refund details to payment
+    static async addRefundDetails(
+        id: number,
+        razorpayRefundId: string,
+        refundAmount: number
+    ): Promise<Payment | null> {
+        const query = `
+      UPDATE payments
+      SET 
+        razorpay_refund_id = $1,
+        refund_amount = $2,
+        status = 'refunded',
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = $3
+      RETURNING 
+        id, booking_id as "bookingId", user_id as "userId", gym_id as "gymId",
+        amount, platform_commission as "platformCommission", gym_earnings as "gymEarnings",
+        status, razorpay_order_id as "razorpayOrderId", razorpay_payment_id as "razorpayPaymentId",
+        razorpay_signature as "razorpaySignature", razorpay_refund_id as "razorpayRefundId",
+        refund_amount as "refundAmount", created_at as "createdAt", updated_at as "updatedAt"
+    `;
+
+        const result = await pgPool.query(query, [razorpayRefundId, refundAmount, id]);
+        return result.rows[0] || null;
     }
 }
 

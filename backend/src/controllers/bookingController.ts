@@ -317,12 +317,42 @@ export const cancelBooking = async (req: Request, res: Response) => {
       });
     }
 
+    // Cancel the booking
     const updatedBooking = await BookingModel.updateStatus(parseInt(bookingId), 'cancelled');
+
+    // Check if there's a successful payment to refund
+    const payment = await PaymentModel.findByBookingId(parseInt(bookingId));
+    let refundInfo = null;
+
+    if (payment && payment.status === 'success' && payment.razorpayPaymentId) {
+      try {
+        // Automatically initiate refund
+        const refund = await RazorpayService.initiateRefund(payment.razorpayPaymentId);
+        
+        // Update payment with refund details
+        await PaymentModel.addRefundDetails(payment.id, refund.id, payment.amount);
+        
+        refundInfo = {
+          refundId: refund.id,
+          amount: payment.amount,
+          status: refund.status,
+        };
+      } catch (refundError: any) {
+        console.error('Error processing automatic refund:', refundError);
+        // Don't fail the cancellation if refund fails
+        // User can request refund manually later
+      }
+    }
 
     res.json({
       success: true,
-      data: updatedBooking,
-      message: 'Booking cancelled successfully',
+      data: {
+        booking: updatedBooking,
+        refund: refundInfo,
+      },
+      message: refundInfo 
+        ? 'Booking cancelled and refund initiated successfully' 
+        : 'Booking cancelled successfully',
     });
   } catch (error: any) {
     console.error('Error cancelling booking:', error);

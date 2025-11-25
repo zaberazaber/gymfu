@@ -17,6 +17,7 @@
     "db:create-bookings": "ts-node src/scripts/createBookingsTable.ts",
     "db:migrate-occupancy": "ts-node src/migrations/add_current_occupancy.ts",
     "db:migrate-payments": "ts-node src/migrations/create_payments_table.ts",
+    "db:migrate-refunds": "ts-node src/migrations/add_refund_fields.ts",
     "db:reset-occupancy": "ts-node src/scripts/resetGymOccupancy.ts",
     "test": "jest",
     "test:watch": "jest --watch",

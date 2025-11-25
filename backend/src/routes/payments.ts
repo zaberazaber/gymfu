@@ -5,6 +5,7 @@ import {
   verifyPayment,
   getPaymentById,
   getUserPayments,
+  processRefund,
 } from '../controllers/paymentController';
 
 const router = express.Router();
@@ -17,6 +18,9 @@ router.post('/initiate', initiatePayment);
 
 // Verify payment
 router.post('/verify', verifyPayment);
+
+// Process refund
+router.post('/refund', processRefund);
 
 // Get payment by ID
 router.get('/:paymentId', getPaymentById);
