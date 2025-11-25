@@ -13,6 +13,12 @@ export async function addCurrentOccupancyField() {
     `);
     
     // Add check constraint to ensure currentOccupancy doesn't exceed capacity
+    // Drop constraint if it exists first
+    await client.query(`
+      ALTER TABLE gyms 
+      DROP CONSTRAINT IF EXISTS check_occupancy_capacity;
+    `);
+    
     await client.query(`
       ALTER TABLE gyms 
       ADD CONSTRAINT check_occupancy_capacity 
