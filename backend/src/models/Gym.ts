@@ -425,7 +425,7 @@ export class GymModel {
     // Check if gym has available capacity
     static async hasCapacity(id: number): Promise<boolean> {
         const query = `
-      SELECT current_occupancy < capacity as "hasCapacity"
+      SELECT COALESCE(current_occupancy, 0) < capacity as "hasCapacity"
       FROM gyms
       WHERE id = $1
     `;
