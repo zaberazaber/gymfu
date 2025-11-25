@@ -15,6 +15,8 @@
     "db:create-gyms-render": "ts-node src/scripts/createGymsTableRender.ts",
     "db:seed-gyms-render": "ts-node src/scripts/seedGymsRender.ts",
     "db:create-bookings": "ts-node src/scripts/createBookingsTable.ts",
+    "db:migrate-occupancy": "ts-node src/migrations/add_current_occupancy.ts",
+    "db:migrate-payments": "ts-node src/migrations/create_payments_table.ts",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"
