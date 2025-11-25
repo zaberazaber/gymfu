@@ -1,11 +1,25 @@
 import Razorpay from 'razorpay';
 import crypto from 'crypto';
 
-// Initialize Razorpay instance
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID || '',
-  key_secret: process.env.RAZORPAY_KEY_SECRET || '',
-});
+// Initialize Razorpay instance (lazy initialization to avoid errors in tests)
+let razorpay: Razorpay | null = null;
+
+const getRazorpayInstance = (): Razorpay => {
+  if (!razorpay) {
+    const keyId = process.env.RAZORPAY_KEY_ID || '';
+    const keySecret = process.env.RAZORPAY_KEY_SECRET || '';
+    
+    if (!keyId || !keySecret) {
+      throw new Error('Razorpay credentials not configured');
+    }
+    
+    razorpay = new Razorpay({
+      key_id: keyId,
+      key_secret: keySecret,
+    });
+  }
+  return razorpay;
+};
 
 export interface RazorpayOrderOptions {
   amount: number; // Amount in rupees (will be converted to paise)
@@ -36,6 +50,8 @@ export class RazorpayService {
    */
   static async createOrder(options: RazorpayOrderOptions): Promise<RazorpayOrder> {
     try {
+      const razorpayInstance = getRazorpayInstance();
+      
       // Convert amount from rupees to paise (Razorpay uses paise)
       const amountInPaise = Math.round(options.amount * 100);
 
@@ -46,7 +62,7 @@ export class RazorpayService {
         notes: options.notes || {},
       };
 
-      const order = await razorpay.orders.create(orderOptions);
+      const order = await razorpayInstance.orders.create(orderOptions);
       return order as RazorpayOrder;
     } catch (error: any) {
       console.error('Razorpay order creation failed:', error);
@@ -90,7 +106,8 @@ export class RazorpayService {
    */
   static async fetchPayment(paymentId: string): Promise<any> {
     try {
-      const payment = await razorpay.payments.fetch(paymentId);
+      const razorpayInstance = getRazorpayInstance();
+      const payment = await razorpayInstance.payments.fetch(paymentId);
       return payment;
     } catch (error: any) {
       console.error('Failed to fetch payment:', error);
@@ -106,6 +123,7 @@ export class RazorpayService {
    */
   static async initiateRefund(paymentId: string, amount?: number): Promise<any> {
     try {
+      const razorpayInstance = getRazorpayInstance();
       const refundOptions: any = {};
       
       if (amount) {
@@ -113,7 +131,7 @@ export class RazorpayService {
         refundOptions.amount = Math.round(amount * 100);
       }
 
-      const refund = await razorpay.payments.refund(paymentId, refundOptions);
+      const refund = await razorpayInstance.payments.refund(paymentId, refundOptions);
       return refund;
     } catch (error: any) {
       console.error('Refund initiation failed:', error);

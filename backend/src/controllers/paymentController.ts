@@ -267,3 +267,134 @@ export const getUserPayments = async (req: Request, res: Response) => {
     });
   }
 };
+
+
+/**
+ * Verify Razorpay payment
+ * POST /api/v1/payments/verify
+ */
+export const verifyPayment = async (req: Request, res: Response) => {
+  try {
+    const { razorpayOrderId, razorpayPaymentId, razorpaySignature, paymentId } = req.body;
+    const userId = req.user?.userId;
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        error: {
+          code: 'UNAUTHORIZED',
+          message: 'User not authenticated',
+        },
+      });
+    }
+
+    // Validate required fields
+    if (!razorpayOrderId || !razorpayPaymentId || !razorpaySignature || !paymentId) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'Missing required payment verification fields',
+        },
+      });
+    }
+
+    // Get payment record
+    const payment = await PaymentModel.findById(paymentId);
+    if (!payment) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'PAYMENT_NOT_FOUND',
+          message: 'Payment not found',
+        },
+      });
+    }
+
+    // Verify user owns the payment
+    if (payment.userId !== userId) {
+      return res.status(403).json({
+        success: false,
+        error: {
+          code: 'FORBIDDEN',
+          message: 'You do not have permission to verify this payment',
+        },
+      });
+    }
+
+    // Check if payment is already successful
+    if (payment.status === 'success') {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'PAYMENT_ALREADY_VERIFIED',
+          message: 'Payment has already been verified',
+        },
+      });
+    }
+
+    // Verify Razorpay signature
+    const isValid = RazorpayService.verifyPaymentSignature(
+      razorpayOrderId,
+      razorpayPaymentId,
+      razorpaySignature
+    );
+
+    if (!isValid) {
+      // Update payment status to failed
+      await PaymentModel.updateStatus(payment.id, 'failed');
+
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_SIGNATURE',
+          message: 'Payment signature verification failed',
+        },
+      });
+    }
+
+    // Update payment with Razorpay details and status
+    await PaymentModel.updateRazorpayDetails(
+      payment.id,
+      razorpayOrderId,
+      razorpayPaymentId,
+      razorpaySignature
+    );
+    await PaymentModel.updateStatus(payment.id, 'success');
+
+    // Update booking status to confirmed
+    const booking = await BookingModel.updateStatus(payment.bookingId, 'confirmed');
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'BOOKING_NOT_FOUND',
+          message: 'Associated booking not found',
+        },
+      });
+    }
+
+    // Get updated payment
+    const updatedPayment = await PaymentModel.findById(payment.id);
+
+    res.json({
+      success: true,
+      data: {
+        payment: updatedPayment,
+        booking: booking,
+      },
+      message: 'Payment verified successfully',
+    });
+  } catch (error: any) {
+    console.error('Error verifying payment:', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'INTERNAL_ERROR',
+        message: 'Failed to verify payment',
+        details: error.message,
+      },
+    });
+  }
+};

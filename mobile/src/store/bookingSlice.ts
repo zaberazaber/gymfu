@@ -13,6 +13,9 @@ interface Gym {
     longitude: string;
     amenities: string[];
     images: string[];
+    basePrice: number;
+    capacity: number;
+    currentOccupancy: number;
     rating: number;
     isVerified: boolean;
 }

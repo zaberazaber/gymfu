@@ -2,6 +2,7 @@ import express from 'express';
 import { authenticate } from '../middleware/authMiddleware';
 import {
   initiatePayment,
+  verifyPayment,
   getPaymentById,
   getUserPayments,
 } from '../controllers/paymentController';
@@ -13,6 +14,9 @@ router.use(authenticate);
 
 // Initiate payment for a booking
 router.post('/initiate', initiatePayment);
+
+// Verify payment
+router.post('/verify', verifyPayment);
 
 // Get payment by ID
 router.get('/:paymentId', getPaymentById);
