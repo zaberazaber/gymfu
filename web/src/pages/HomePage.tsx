@@ -50,6 +50,12 @@ function HomePage() {
                 Find Gyms
               </button>
               <button
+                onClick={() => navigate('/bookings')}
+                className="neu-btn neu-btn-primary"
+              >
+                My Bookings
+              </button>
+              <button
                 onClick={() => navigate('/profile')}
                 className="neu-btn neu-btn-secondary"
               >

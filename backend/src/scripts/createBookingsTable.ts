@@ -13,6 +13,8 @@ async function createBookingsTable() {
         price DECIMAL(10, 2) NOT NULL,
         status VARCHAR(20) NOT NULL DEFAULT 'pending',
         qr_code TEXT,
+        qr_code_expiry TIMESTAMP,
+        check_in_time TIMESTAMP,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         CONSTRAINT valid_status CHECK (status IN ('pending', 'confirmed', 'cancelled', 'checked_in', 'completed'))
