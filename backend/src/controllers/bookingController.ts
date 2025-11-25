@@ -60,7 +60,7 @@ export const createBooking = async (req: Request, res: Response) => {
         success: false,
         error: {
           code: 'GYM_AT_CAPACITY',
-          message: `Gym is currently at full capacity (${gym.capacity}/${gym.capacity}). Please try again later.`,
+          message: `Gym is currently at full capacity (${gym.currentOccupancy}/${gym.capacity}). Please try again later.`,
         },
       });
     }
