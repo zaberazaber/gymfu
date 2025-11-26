@@ -19,6 +19,10 @@ import GymCreateEditScreen from './src/screens/GymCreateEditScreen';
 import BookingScreen from './src/screens/BookingScreen';
 import QRCodeScreen from './src/screens/QRCodeScreen';
 import BookingHistoryScreen from './src/screens/BookingHistoryScreen';
+import MarketplaceScreen from './src/screens/MarketplaceScreen';
+import ProductDetailScreen from './src/screens/ProductDetailScreen';
+import CartScreen from './src/screens/CartScreen';
+import OrderHistoryScreen from './src/screens/OrderHistoryScreen';
 
 // Auth Stack (Login/Register)
 export type AuthStackParamList = {
@@ -38,6 +42,10 @@ export type MainStackParamList = {
   Booking: { gymId: number };
   QRCode: { booking: any };
   BookingHistory: undefined;
+  Marketplace: undefined;
+  ProductDetail: { productId: number };
+  Cart: undefined;
+  OrderHistory: undefined;
   PartnerDashboard: undefined;
   GymCreateEdit: { gymId?: number };
 };
@@ -143,6 +151,26 @@ function MainNavigator() {
         name="BookingHistory"
         component={BookingHistoryScreen}
         options={{ title: 'My Bookings' }}
+      />
+      <MainStack.Screen
+        name="Marketplace"
+        component={MarketplaceScreen}
+        options={{ title: 'Marketplace' }}
+      />
+      <MainStack.Screen
+        name="ProductDetail"
+        component={ProductDetailScreen}
+        options={{ title: 'Product Details' }}
+      />
+      <MainStack.Screen
+        name="Cart"
+        component={CartScreen}
+        options={{ title: 'Shopping Cart' }}
+      />
+      <MainStack.Screen
+        name="OrderHistory"
+        component={OrderHistoryScreen}
+        options={{ title: 'My Orders' }}
       />
       <MainStack.Screen
         name="PartnerDashboard"

@@ -97,6 +97,7 @@ const profileRoutes = require('./routes/profile').default;
 const gymRoutes = require('./routes/gyms').default;
 const bookingRoutes = require('./routes/bookings').default;
 const paymentRoutes = require('./routes/payments').default;
+const marketplaceRoutes = require('./routes/marketplace').default;
 const migrateRoutes = require('./routes/migrate').default;
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', usersRoutes);
@@ -104,6 +105,7 @@ app.use('/api/v1/users', profileRoutes);
 app.use('/api/v1/gyms', gymRoutes);
 app.use('/api/v1/bookings', bookingRoutes);
 app.use('/api/v1/payments', paymentRoutes);
+app.use('/api/v1/marketplace', marketplaceRoutes);
 app.use('/api/v1/migrate', migrateRoutes);
 logger.info('🔐 Auth routes enabled at /api/v1/auth');
 logger.info('👤 Users routes enabled at /api/v1/users');
@@ -111,11 +113,7 @@ logger.info('📝 Profile routes enabled at /api/v1/users/profile');
 logger.info('🏋️ Gym routes enabled at /api/v1/gyms');
 logger.info('📅 Booking routes enabled at /api/v1/bookings');
 logger.info('💳 Payment routes enabled at /api/v1/payments');
-logger.info('🔄 Migration routes enabled at /api/v1/migrate');
-logger.info('� Auth lroutes enabled at /api/v1/auth');
-logger.info('👤 Users routes enabled at /api/v1/users');
-logger.info('📝 Profile routes enabled at /api/v1/users/profile');
-logger.info('🏋️ Gym routes enabled at /api/v1/gyms');
+logger.info('🛒 Marketplace routes enabled at /api/v1/marketplace');
 logger.info('🔄 Migration routes enabled at /api/v1/migrate');
 
 // Test routes (only in development)
