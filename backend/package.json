@@ -22,6 +22,7 @@
     "db:seed-products": "ts-node src/scripts/seedProducts.ts",
     "db:reset-occupancy": "ts-node src/scripts/resetGymOccupancy.ts",
     "db:migrate-marketplace": "ts-node src/scripts/runMarketplaceMigrations.ts",
+    "db:seed-ai-providers": "ts-node src/scripts/seedAIProviders.ts",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"
@@ -52,7 +53,10 @@
     "redis": "^5.9.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.2",
-    "winston": "^3.18.3"
+    "winston": "^3.18.3",
+    "openai": "^4.20.0",
+    "@google/generative-ai": "^0.1.3",
+    "@huggingface/inference": "^2.6.4"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",

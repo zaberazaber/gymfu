@@ -56,6 +56,12 @@ function HomePage() {
                 🛒 Marketplace
               </button>
               <button
+                onClick={() => navigate('/ai-chat')}
+                className="neu-btn neu-btn-primary"
+              >
+                🤖 AI Fitness Coach
+              </button>
+              <button
                 onClick={() => navigate('/bookings')}
                 className="neu-btn neu-btn-primary"
               >

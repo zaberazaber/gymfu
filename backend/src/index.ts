@@ -99,6 +99,7 @@ const bookingRoutes = require('./routes/bookings').default;
 const paymentRoutes = require('./routes/payments').default;
 const marketplaceRoutes = require('./routes/marketplace').default;
 const migrateRoutes = require('./routes/migrate').default;
+const aiRoutes = require('./routes/ai').default;
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', usersRoutes);
 app.use('/api/v1/users', profileRoutes);
@@ -107,6 +108,7 @@ app.use('/api/v1/bookings', bookingRoutes);
 app.use('/api/v1/payments', paymentRoutes);
 app.use('/api/v1/marketplace', marketplaceRoutes);
 app.use('/api/v1/migrate', migrateRoutes);
+app.use('/api/v1/ai', aiRoutes);
 logger.info('🔐 Auth routes enabled at /api/v1/auth');
 logger.info('👤 Users routes enabled at /api/v1/users');
 logger.info('📝 Profile routes enabled at /api/v1/users/profile');
@@ -115,6 +117,7 @@ logger.info('📅 Booking routes enabled at /api/v1/bookings');
 logger.info('💳 Payment routes enabled at /api/v1/payments');
 logger.info('🛒 Marketplace routes enabled at /api/v1/marketplace');
 logger.info('🔄 Migration routes enabled at /api/v1/migrate');
+logger.info('🤖 AI routes enabled at /api/v1/ai');
 
 // Test routes (only in development)
 if (process.env.NODE_ENV === 'development') {
@@ -134,6 +137,16 @@ const startServer = async () => {
   try {
     // Initialize database connections
     await initializeDatabases();
+
+    // Initialize AI Provider Manager
+    try {
+      const { aiProviderManager } = await import('./services/AIProviderManager');
+      await aiProviderManager.initialize();
+      logger.info('🤖 AI Provider Manager initialized');
+    } catch (error) {
+      logger.warn('⚠️  AI Provider Manager initialization failed:', error);
+      logger.warn('   AI features will not be available');
+    }
 
     // Start server - bind to 0.0.0.0 for cloud platforms like Render
     app.listen(PORT, '0.0.0.0', () => {
