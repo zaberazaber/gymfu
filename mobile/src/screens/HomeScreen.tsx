@@ -74,6 +74,14 @@ export default function HomeScreen() {
               <Text style={styles.buttonTextPrimary}>🛒 Marketplace</Text>
             </TouchableOpacity>
 
+            <TouchableOpacity
+              style={styles.buttonPrimary}
+              onPress={() => (navigation as any).navigate('AIChat')}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.buttonTextPrimary}>🤖 AI Fitness Coach</Text>
+            </TouchableOpacity>
+
             {user.isPartner && (
               <TouchableOpacity
                 style={styles.buttonPartner}
