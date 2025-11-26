@@ -3,6 +3,7 @@ import authReducer from './authSlice';
 import gymReducer from './gymSlice';
 import bookingReducer from './bookingSlice';
 import cartReducer from './cartSlice';
+import orderReducer from './orderSlice';
 
 export const store = configureStore({
   reducer: {
@@ -10,6 +11,7 @@ export const store = configureStore({
     gym: gymReducer,
     booking: bookingReducer,
     cart: cartReducer,
+    order: orderReducer,
   },
 });
 

@@ -8,8 +8,10 @@ import { ProductModel } from '../models/Product';
  */
 export const addToCart = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.id;
+    const userId = (req as any).user.userId;
     const { productId, quantity = 1 } = req.body;
+
+    console.log('Add to cart request:', { userId, productId, quantity });
 
     // Validate input
     if (!productId) {
@@ -72,7 +74,7 @@ export const addToCart = async (req: Request, res: Response) => {
  */
 export const getCart = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.id;
+    const userId = (req as any).user.userId;
 
     const cart = await Cart.getByUserId(userId);
 
@@ -96,7 +98,7 @@ export const getCart = async (req: Request, res: Response) => {
  */
 export const updateCartItem = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.id;
+    const userId = (req as any).user.userId;
     const cartItemId = parseInt(req.params.itemId);
     const { quantity } = req.body;
 
@@ -169,7 +171,7 @@ export const updateCartItem = async (req: Request, res: Response) => {
  */
 export const removeFromCart = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.id;
+    const userId = (req as any).user.userId;
     const cartItemId = parseInt(req.params.itemId);
 
     const removed = await Cart.removeItem(cartItemId, userId);
@@ -205,7 +207,7 @@ export const removeFromCart = async (req: Request, res: Response) => {
  */
 export const clearCart = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.id;
+    const userId = (req as any).user.userId;
 
     await Cart.clearCart(userId);
 

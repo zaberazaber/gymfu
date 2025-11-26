@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api/v1';
@@ -132,7 +132,7 @@ const cartSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchCart.fulfilled, (state, action: PayloadAction<Cart>) => {
+      .addCase(fetchCart.fulfilled, (state, action) => {
         state.loading = false;
         state.cart = action.payload;
       })
@@ -145,7 +145,7 @@ const cartSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(addToCart.fulfilled, (state, action: PayloadAction<Cart>) => {
+      .addCase(addToCart.fulfilled, (state, action) => {
         state.loading = false;
         state.cart = action.payload;
       })
@@ -158,7 +158,7 @@ const cartSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(updateCartItem.fulfilled, (state, action: PayloadAction<Cart>) => {
+      .addCase(updateCartItem.fulfilled, (state, action) => {
         state.loading = false;
         state.cart = action.payload;
       })
@@ -171,7 +171,7 @@ const cartSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(removeFromCart.fulfilled, (state, action: PayloadAction<Cart>) => {
+      .addCase(removeFromCart.fulfilled, (state, action) => {
         state.loading = false;
         state.cart = action.payload;
       })
@@ -184,7 +184,7 @@ const cartSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(clearCart.fulfilled, (state, action: PayloadAction<Cart>) => {
+      .addCase(clearCart.fulfilled, (state, action) => {
         state.loading = false;
         state.cart = action.payload;
       })

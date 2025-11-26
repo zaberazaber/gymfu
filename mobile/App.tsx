@@ -22,6 +22,7 @@ import BookingHistoryScreen from './src/screens/BookingHistoryScreen';
 import MarketplaceScreen from './src/screens/MarketplaceScreen';
 import ProductDetailScreen from './src/screens/ProductDetailScreen';
 import CartScreen from './src/screens/CartScreen';
+import OrderHistoryScreen from './src/screens/OrderHistoryScreen';
 
 // Auth Stack (Login/Register)
 export type AuthStackParamList = {
@@ -44,6 +45,7 @@ export type MainStackParamList = {
   Marketplace: undefined;
   ProductDetail: { productId: number };
   Cart: undefined;
+  OrderHistory: undefined;
   PartnerDashboard: undefined;
   GymCreateEdit: { gymId?: number };
 };
@@ -164,6 +166,11 @@ function MainNavigator() {
         name="Cart"
         component={CartScreen}
         options={{ title: 'Shopping Cart' }}
+      />
+      <MainStack.Screen
+        name="OrderHistory"
+        component={OrderHistoryScreen}
+        options={{ title: 'My Orders' }}
       />
       <MainStack.Screen
         name="PartnerDashboard"
