@@ -15,7 +15,7 @@ import api from '../utils/api';
 interface Product {
   id: number;
   name: string;
-  category: 'supplement' | 'gear' | 'food';
+  category: string;
   description: string;
   price: number;
   images: string[];
@@ -23,7 +23,7 @@ interface Product {
   rating: number;
 }
 
-type Category = 'all' | 'supplement' | 'gear' | 'food';
+type Category = 'all' | 'Supplements' | 'Equipment' | 'Apparel' | 'Accessories' | 'Recovery';
 
 const MarketplaceScreen = () => {
   const navigation = useNavigation();
@@ -104,9 +104,11 @@ const MarketplaceScreen = () => {
   const getCategoryLabel = (category: string) => {
     const labels: Record<string, string> = {
       all: 'All',
-      supplement: 'Supplements',
-      gear: 'Gear',
-      food: 'Food',
+      Supplements: 'Supplements',
+      Equipment: 'Equipment',
+      Apparel: 'Apparel',
+      Accessories: 'Accessories',
+      Recovery: 'Recovery',
     };
     return labels[category] || category;
   };
@@ -162,7 +164,7 @@ const MarketplaceScreen = () => {
       <Text style={styles.subtitle}>Shop fitness gear and supplements</Text>
       
       <View style={styles.categoryFilters}>
-        {(['all', 'supplement', 'gear', 'food'] as Category[]).map(category => (
+        {(['all', 'Supplements', 'Equipment', 'Apparel', 'Accessories', 'Recovery'] as Category[]).map(category => (
           <TouchableOpacity
             key={category}
             style={[
