@@ -17,7 +17,7 @@ export const getProducts = async (req: Request, res: Response) => {
     const parsedOffset = parseInt(offset as string);
 
     // Validate category if provided
-    if (category && !['supplement', 'gear', 'food'].includes(category as string)) {
+    if (category && !['Supplements', 'Equipment', 'Apparel','Recovery','Accessories'].includes(category as string)) {
       return res.status(400).json({
         success: false,
         error: {
