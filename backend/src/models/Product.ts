@@ -3,7 +3,7 @@ import { pgPool } from '../config/database';
 export interface Product {
   id: number;
   name: string;
-  category: 'supplement' | 'gear' | 'food';
+  category: string;
   description: string;
   price: number;
   images: string[];
@@ -15,7 +15,7 @@ export interface Product {
 
 export interface CreateProductData {
   name: string;
-  category: 'supplement' | 'gear' | 'food';
+  category: string;
   description: string;
   price: number;
   images?: string[];

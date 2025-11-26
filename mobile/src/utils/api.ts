@@ -71,8 +71,15 @@ const api = axios.create({
 
 // Add request interceptor for auth tokens
 api.interceptors.request.use(
-  (config) => {
-    // Token will be added here later when we implement authentication
+  async (config) => {
+    // Get token from AsyncStorage
+    const AsyncStorage = (await import('@react-native-async-storage/async-storage')).default;
+    const token = await AsyncStorage.getItem('token');
+    
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    
     return config;
   },
   (error) => {
