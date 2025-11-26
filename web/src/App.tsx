@@ -13,6 +13,8 @@ import PartnerDashboardPage from './pages/PartnerDashboardPage';
 import GymEditPage from './pages/GymEditPage';
 import BookingPage from './pages/BookingPage';
 import BookingHistoryPage from './pages/BookingHistoryPage';
+import MarketplacePage from './pages/MarketplacePage';
+import ProductDetailPage from './pages/ProductDetailPage';
 import './App.css';
 import './styles/neumorphic.css';
 
@@ -32,6 +34,8 @@ function App() {
             <Route path="/gyms/:gymId" element={<GymDetailPage />} />
             <Route path="/gyms/:gymId/book" element={<BookingPage />} />
             <Route path="/bookings" element={<BookingHistoryPage />} />
+            <Route path="/marketplace" element={<MarketplacePage />} />
+            <Route path="/marketplace/products/:productId" element={<ProductDetailPage />} />
             <Route path="/partner/dashboard" element={<PartnerDashboardPage />} />
             <Route path="/partner/gym/new" element={<GymEditPage />} />
             <Route path="/partner/gym/edit/:gymId" element={<GymEditPage />} />

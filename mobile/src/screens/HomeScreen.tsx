@@ -66,6 +66,14 @@ export default function HomeScreen() {
               <Text style={styles.buttonText}>My Bookings</Text>
             </TouchableOpacity>
 
+            <TouchableOpacity
+              style={styles.buttonPrimary}
+              onPress={() => (navigation as any).navigate('Marketplace')}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.buttonTextPrimary}>🛒 Marketplace</Text>
+            </TouchableOpacity>
+
             {user.isPartner && (
               <TouchableOpacity
                 style={styles.buttonPartner}
@@ -139,13 +147,16 @@ export default function HomeScreen() {
               </Text>
             </View>
 
-            <View style={styles.featureCard}>
+            <TouchableOpacity 
+              style={styles.featureCard}
+              onPress={() => (navigation as any).navigate('Marketplace')}
+            >
               <Text style={styles.featureIcon}>🛒</Text>
               <Text style={styles.featureTitle}>Marketplace</Text>
               <Text style={styles.featureDescription}>
                 Shop fitness gear and supplements
               </Text>
-            </View>
+            </TouchableOpacity>
           </View>
         </>
       )}

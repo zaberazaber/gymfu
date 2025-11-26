@@ -50,6 +50,12 @@ function HomePage() {
                 Find Gyms
               </button>
               <button
+                onClick={() => navigate('/marketplace')}
+                className="neu-btn neu-btn-primary"
+              >
+                🛒 Marketplace
+              </button>
+              <button
                 onClick={() => navigate('/bookings')}
                 className="neu-btn neu-btn-primary"
               >
@@ -125,7 +131,7 @@ function HomePage() {
                 Personalized workout and nutrition plans
               </p>
             </div>
-            <div className="feature-card">
+            <div className="feature-card" onClick={() => navigate('/marketplace')} style={{ cursor: 'pointer' }}>
               <span className="feature-icon">🛒</span>
               <h3 className="feature-title">Marketplace</h3>
               <p className="feature-description">
