@@ -669,17 +669,20 @@ export const verifyPayment = async (req: Request, res: Response) => {
     );
     await PaymentModel.updateStatus(payment.id, 'success');
 
-    // Update booking status to confirmed
-    const booking = await BookingModel.updateStatus(payment.bookingId, 'confirmed');
+    // Update booking status to confirmed (if this is a booking payment)
+    let booking = null;
+    if (payment.bookingId) {
+      booking = await BookingModel.updateStatus(payment.bookingId, 'confirmed');
 
-    if (!booking) {
-      return res.status(404).json({
-        success: false,
-        error: {
-          code: 'BOOKING_NOT_FOUND',
-          message: 'Associated booking not found',
-        },
-      });
+      if (!booking) {
+        return res.status(404).json({
+          success: false,
+          error: {
+            code: 'BOOKING_NOT_FOUND',
+            message: 'Associated booking not found',
+          },
+        });
+      }
     }
 
     // Get updated payment
