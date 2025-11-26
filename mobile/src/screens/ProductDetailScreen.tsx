@@ -11,9 +11,9 @@ import {
   Dimensions,
 } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
-import { API_BASE_URL } from '../utils/api';
-
-const API_URL = API_BASE_URL.replace('/api/v1', '');
+import { useAppDispatch, useAppSelector } from '../store/hooks';
+import { addToCart } from '../store/cartSlice';
+import api from '../utils/api';
 
 interface Product {
   id: number;
@@ -31,12 +31,15 @@ const { width } = Dimensions.get('window');
 const ProductDetailScreen = () => {
   const route = useRoute();
   const navigation = useNavigation();
+  const dispatch = useAppDispatch();
+  const { isAuthenticated } = useAppSelector((state) => state.auth);
   const { productId } = route.params as { productId: number };
   
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState(0);
+  const [addingToCart, setAddingToCart] = useState(false);
 
   useEffect(() => {
     fetchProduct();
@@ -47,21 +50,15 @@ const ProductDetailScreen = () => {
       setLoading(true);
       setError(null);
 
-      const response = await fetch(
-        `${API_URL}/marketplace/products/${productId}`
-      );
-
-      if (!response.ok) {
-        if (response.status === 404) {
-          throw new Error('Product not found');
-        }
-        throw new Error('Failed to fetch product');
-      }
-
-      const data = await response.json();
-      setProduct(data.data);
+      const response = await api.get(`/marketplace/products/${productId}`);
+      setProduct(response.data.data);
     } catch (err: any) {
-      setError(err.message || 'Failed to load product');
+      console.error('Error fetching product:', err);
+      if (err.response?.status === 404) {
+        setError('Product not found');
+      } else {
+        setError(err.response?.data?.message || err.message || 'Failed to load product');
+      }
     } finally {
       setLoading(false);
     }
@@ -81,12 +78,34 @@ const ProductDetailScreen = () => {
     return `₹${numPrice.toFixed(2)}`;
   };
 
-  const handleAddToCart = () => {
-    Alert.alert(
-      'Coming Soon',
-      'Add to cart functionality will be available soon!',
-      [{ text: 'OK' }]
-    );
+  const handleAddToCart = async () => {
+    if (!isAuthenticated) {
+      (navigation as any).navigate('Login');
+      return;
+    }
+
+    if (!product) return;
+
+    try {
+      setAddingToCart(true);
+      await dispatch(addToCart({ productId: product.id, quantity: 1 })).unwrap();
+      
+      Alert.alert(
+        'Success',
+        'Product added to cart!',
+        [
+          { text: 'Continue Shopping', style: 'cancel' },
+          {
+            text: 'Go to Cart',
+            onPress: () => (navigation as any).navigate('Cart'),
+          },
+        ]
+      );
+    } catch (error: any) {
+      Alert.alert('Error', error || 'Failed to add to cart');
+    } finally {
+      setAddingToCart(false);
+    }
   };
 
   if (loading) {
@@ -218,13 +237,17 @@ const ProductDetailScreen = () => {
         <TouchableOpacity
           style={[
             styles.addToCartBtn,
-            product.stockQuantity === 0 && styles.addToCartBtnDisabled,
+            (product.stockQuantity === 0 || addingToCart) && styles.addToCartBtnDisabled,
           ]}
           onPress={handleAddToCart}
-          disabled={product.stockQuantity === 0}
+          disabled={product.stockQuantity === 0 || addingToCart}
         >
           <Text style={styles.addToCartText}>
-            {product.stockQuantity > 0 ? '🛒 Add to Cart' : 'Out of Stock'}
+            {addingToCart
+              ? 'Adding...'
+              : product.stockQuantity > 0
+              ? '🛒 Add to Cart'
+              : 'Out of Stock'}
           </Text>
         </TouchableOpacity>
       </View>

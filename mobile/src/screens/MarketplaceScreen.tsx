@@ -10,9 +10,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { API_BASE_URL } from '../utils/api';
-
-const API_URL = API_BASE_URL.replace('/api/v1', '');
+import api from '../utils/api';
 
 interface Product {
   id: number;
@@ -51,26 +49,28 @@ const MarketplaceScreen = () => {
 
       const currentPage = reset ? 0 : page;
       const categoryParam = selectedCategory !== 'all' ? `&category=${selectedCategory}` : '';
-      const response = await fetch(
-        `${API_URL}/marketplace/products?limit=${limit}&offset=${currentPage * limit}${categoryParam}`
+      const response = await api.get(
+        `/marketplace/products?limit=${limit}&offset=${currentPage * limit}${categoryParam}`
       );
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch products');
-      }
-
-      const data = await response.json();
+      const data = response.data;
       
       if (reset) {
         setProducts(data.data.products);
       } else {
-        setProducts(prev => [...prev, ...data.data.products]);
+        // Deduplicate products by ID to prevent duplicate keys
+        setProducts(prev => {
+          const existingIds = new Set(prev.map(p => p.id));
+          const newProducts = data.data.products.filter((p: Product) => !existingIds.has(p.id));
+          return [...prev, ...newProducts];
+        });
       }
       
       setHasMore(data.data.pagination.hasMore);
       setError(null);
     } catch (err: any) {
-      setError(err.message || 'Failed to load products');
+      console.error('Error fetching products:', err);
+      setError(err.response?.data?.message || err.message || 'Failed to load products');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -90,8 +90,11 @@ const MarketplaceScreen = () => {
   };
 
   const handleCategoryChange = (category: Category) => {
+    if (category === selectedCategory) return;
     setSelectedCategory(category);
     setProducts([]);
+    setPage(0);
+    setHasMore(true);
   };
 
   const handleProductPress = (productId: number) => {
@@ -225,7 +228,7 @@ const MarketplaceScreen = () => {
       <FlatList
         data={products}
         renderItem={renderProduct}
-        keyExtractor={item => item.id.toString()}
+        keyExtractor={(item, index) => `product-${item.id}-${index}`}
         numColumns={2}
         columnWrapperStyle={styles.row}
         ListHeaderComponent={renderHeader}

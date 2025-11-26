@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useAppDispatch, useAppSelector } from '../store/hooks';
+import { addToCart } from '../store/cartSlice';
 import './ProductDetailPage.css';
 
 interface Product {
@@ -16,10 +18,13 @@ interface Product {
 const ProductDetailPage: React.FC = () => {
   const { productId } = useParams<{ productId: string }>();
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const { isAuthenticated } = useAppSelector((state) => state.auth);
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState(0);
+  const [addingToCart, setAddingToCart] = useState(false);
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -66,9 +71,27 @@ const ProductDetailPage: React.FC = () => {
     return `₹${numPrice.toFixed(2)}`;
   };
 
-  const handleAddToCart = () => {
-    // TODO: Implement cart functionality
-    alert('Add to cart functionality coming soon!');
+  const handleAddToCart = async () => {
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
+
+    if (!product) return;
+
+    try {
+      setAddingToCart(true);
+      await dispatch(addToCart({ productId: product.id, quantity: 1 })).unwrap();
+      
+      // Show success message and navigate to cart
+      if (window.confirm('Product added to cart! Go to cart?')) {
+        navigate('/cart');
+      }
+    } catch (error: any) {
+      alert(error || 'Failed to add to cart');
+    } finally {
+      setAddingToCart(false);
+    }
   };
 
   if (loading) {
@@ -173,9 +196,13 @@ const ProductDetailPage: React.FC = () => {
             <button
               className="add-to-cart-btn"
               onClick={handleAddToCart}
-              disabled={product.stockQuantity === 0}
+              disabled={product.stockQuantity === 0 || addingToCart}
             >
-              {product.stockQuantity > 0 ? '🛒 Add to Cart' : 'Out of Stock'}
+              {addingToCart
+                ? 'Adding...'
+                : product.stockQuantity > 0
+                ? '🛒 Add to Cart'
+                : 'Out of Stock'}
             </button>
           </div>
 

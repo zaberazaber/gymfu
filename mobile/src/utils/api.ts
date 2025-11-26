@@ -25,6 +25,13 @@ const getApiBaseUrl = () => {
   // ============================================
   console.log('📡 Using DEVELOPMENT backend (local)');
 
+  // 🔧 MANUAL IP OVERRIDE (uncomment and set your IP if auto-detection fails)
+  // const MANUAL_IP = '192.168.1.107'; // Replace with your computer's IP
+  // if (MANUAL_IP) {
+  //   console.log('📱 Using manual IP:', MANUAL_IP);
+  //   return `http://${MANUAL_IP}:3000`;
+  // }
+
   // For Expo Go on physical device, use the dev machine's IP
   const debuggerHost = Constants.expoConfig?.hostUri;
 
