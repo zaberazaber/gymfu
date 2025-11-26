@@ -21,6 +21,7 @@
     "db:create-products": "ts-node src/migrations/create_products_table.ts",
     "db:seed-products": "ts-node src/scripts/seedProducts.ts",
     "db:reset-occupancy": "ts-node src/scripts/resetGymOccupancy.ts",
+    "db:migrate-marketplace": "ts-node src/scripts/runMarketplaceMigrations.ts",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"

@@ -5,7 +5,7 @@ import './MarketplacePage.css';
 interface Product {
   id: number;
   name: string;
-  category: 'supplement' | 'gear' | 'food';
+  category: string;
   description: string;
   price: number;
   images: string[];
@@ -13,7 +13,7 @@ interface Product {
   rating: number;
 }
 
-type Category = 'all' | 'supplement' | 'gear' | 'food';
+type Category = 'all' | 'Supplements' | 'Equipment' | 'Apparel' | 'Accessories' | 'Recovery';
 
 const MarketplacePage: React.FC = () => {
   const navigate = useNavigate();
@@ -78,9 +78,11 @@ const MarketplacePage: React.FC = () => {
   const getCategoryLabel = (category: string) => {
     const labels: Record<string, string> = {
       all: 'All Products',
-      supplement: 'Supplements',
-      gear: 'Gear & Equipment',
-      food: 'Food & Nutrition',
+      Supplements: 'Supplements',
+      Equipment: 'Equipment',
+      Apparel: 'Apparel',
+      Accessories: 'Accessories',
+      Recovery: 'Recovery',
     };
     return labels[category] || category;
   };
@@ -99,7 +101,7 @@ const MarketplacePage: React.FC = () => {
 
       {/* Category Filters */}
       <div className="category-filters">
-        {(['all', 'supplement', 'gear', 'food'] as Category[]).map(category => (
+        {(['all', 'Supplements', 'Equipment', 'Apparel', 'Accessories', 'Recovery'] as Category[]).map(category => (
           <button
             key={category}
             className={`category-btn ${selectedCategory === category ? 'active' : ''}`}
