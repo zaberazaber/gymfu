@@ -7,7 +7,7 @@ import qrCodeService from '../services/qrCodeService';
 
 export const createBooking = async (req: Request, res: Response) => {
   try {
-    const { gymId, sessionDate } = req.body;
+    const { gymId, sessionDate, sessionType, classId } = req.body;
     const userId = req.user?.userId;
 
     if (!userId) {
@@ -31,6 +31,29 @@ export const createBooking = async (req: Request, res: Response) => {
       });
     }
 
+    // Validate session type
+    const bookingType = sessionType || 'gym';
+    if (bookingType !== 'gym' && bookingType !== 'class') {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_SESSION_TYPE',
+          message: 'Session type must be either "gym" or "class"',
+        },
+      });
+    }
+
+    // If booking a class, classId is required
+    if (bookingType === 'class' && !classId) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'Class ID is required for class bookings',
+        },
+      });
+    }
+
     // Validate session date is in the future
     const session = new Date(sessionDate);
     if (session < new Date()) {
@@ -43,7 +66,7 @@ export const createBooking = async (req: Request, res: Response) => {
       });
     }
 
-    // Get gym details to calculate price
+    // Get gym details
     const gym = await GymModel.findById(gymId);
     if (!gym) {
       return res.status(404).json({
@@ -55,16 +78,49 @@ export const createBooking = async (req: Request, res: Response) => {
       });
     }
 
-    // Check if gym has available capacity
-    const hasCapacity = await GymModel.hasCapacity(gymId);
-    if (!hasCapacity) {
-      return res.status(400).json({
-        success: false,
-        error: {
-          code: 'GYM_AT_CAPACITY',
-          message: `Gym is currently at full capacity (${gym.currentOccupancy}/${gym.capacity}). Please try again later.`,
-        },
-      });
+    let price = gym.basePrice;
+
+    // If booking a class, get class details and use class price
+    if (bookingType === 'class' && classId) {
+      const ClassModel = (await import('../models/Class')).default;
+      const classData = await ClassModel.findById(classId);
+      
+      if (!classData) {
+        return res.status(404).json({
+          success: false,
+          error: {
+            code: 'CLASS_NOT_FOUND',
+            message: 'Class not found',
+          },
+        });
+      }
+
+      // Verify class belongs to the gym
+      if (classData.gymId !== gymId) {
+        return res.status(400).json({
+          success: false,
+          error: {
+            code: 'CLASS_GYM_MISMATCH',
+            message: 'Class does not belong to the specified gym',
+          },
+        });
+      }
+
+      price = classData.price;
+    }
+
+    // Check if gym has available capacity (for gym bookings)
+    if (bookingType === 'gym') {
+      const hasCapacity = await GymModel.hasCapacity(gymId);
+      if (!hasCapacity) {
+        return res.status(400).json({
+          success: false,
+          error: {
+            code: 'GYM_AT_CAPACITY',
+            message: `Gym is currently at full capacity (${gym.currentOccupancy}/${gym.capacity}). Please try again later.`,
+          },
+        });
+      }
     }
 
     // Create booking with 'pending' status (will be confirmed after payment)
@@ -72,7 +128,9 @@ export const createBooking = async (req: Request, res: Response) => {
       userId,
       gymId,
       sessionDate: session,
-      price: gym.basePrice,
+      price,
+      sessionType: bookingType,
+      classId: bookingType === 'class' ? classId : undefined,
     });
 
     // Create payment record

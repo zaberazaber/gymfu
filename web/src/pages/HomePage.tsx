@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { getCurrentUser, logout } from '../store/authSlice';
+import Logo from '../components/Logo';
 import './HomePage.css';
 
 function HomePage() {
@@ -28,8 +29,8 @@ function HomePage() {
   return (
     <div className="home-container">
       <div className="home-header">
-        <h1 className="home-title">🏋️ GYMFU</h1>
-        <p className="home-subtitle">Your Fitness, Your Way</p>
+        <Logo size="large" />
+        <p className="home-subtitle">Your Ultimate Fitness Companion</p>
       </div>
 
       {isAuthenticated && user ? (
@@ -48,6 +49,12 @@ function HomePage() {
                 className="neu-btn neu-btn-primary"
               >
                 Find Gyms
+              </button>
+              <button
+                onClick={() => navigate('/classes')}
+                className="neu-btn neu-btn-primary"
+              >
+                🧘 Fitness Classes
               </button>
               <button
                 onClick={() => navigate('/marketplace')}
@@ -128,6 +135,13 @@ function HomePage() {
               <h3 className="feature-title">Book Sessions</h3>
               <p className="feature-description">
                 Easy booking with instant confirmation
+              </p>
+            </div>
+            <div className="feature-card" onClick={() => navigate('/classes')} style={{ cursor: 'pointer' }}>
+              <span className="feature-icon">🧘</span>
+              <h3 className="feature-title">Fitness Classes</h3>
+              <p className="feature-description">
+                Join yoga, zumba, and other group classes
               </p>
             </div>
             <div className="feature-card">

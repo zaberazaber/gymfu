@@ -214,16 +214,34 @@ export default function BookingHistoryScreen() {
               {/* Booking Header */}
               <View style={styles.bookingHeader}>
                 <View style={styles.gymInfo}>
-                  <Text style={styles.gymName}>{booking.gym?.name || 'Unknown Gym'}</Text>
-                  <Text style={styles.gymAddress}>{booking.gym?.address}</Text>
+                  <Text style={styles.gymName}>{booking.gymName || 'Unknown Gym'}</Text>
+                  {booking.sessionType === 'class' && booking.className && (
+                    <View style={styles.classInfoBadge}>
+                      <Text style={styles.classIcon}>🧘</Text>
+                      <View style={styles.classTextContainer}>
+                        <Text style={styles.className}>{booking.className}</Text>
+                        {booking.instructorName && (
+                          <Text style={styles.instructorName}>with {booking.instructorName}</Text>
+                        )}
+                      </View>
+                    </View>
+                  )}
+                  <Text style={styles.gymAddress}>{booking.gymAddress}</Text>
                   <Text style={styles.gymCity}>
-                    {booking.gym?.city}, {booking.gym?.pincode}
+                    {booking.gymCity}, {booking.gymPincode}
                   </Text>
                 </View>
-                <View style={[styles.statusBadge, getStatusBadgeStyle(booking.status)]}>
-                  <Text style={styles.statusText}>
-                    {booking.status.replace('_', ' ').toUpperCase()}
-                  </Text>
+                <View style={styles.statusContainer}>
+                  <View style={styles.sessionTypeBadge}>
+                    <Text style={styles.sessionTypeText}>
+                      {booking.sessionType === 'class' ? '🧘 Class' : '🏋️ Gym'}
+                    </Text>
+                  </View>
+                  <View style={[styles.statusBadge, getStatusBadgeStyle(booking.status)]}>
+                    <Text style={styles.statusText}>
+                      {booking.status.replace('_', ' ').toUpperCase()}
+                    </Text>
+                  </View>
                 </View>
               </View>
 
@@ -257,9 +275,9 @@ export default function BookingHistoryScreen() {
                   </View>
                 )}
 
-                {booking.gym?.amenities && booking.gym.amenities.length > 0 && (
+                {booking.gymAmenities && booking.gymAmenities.length > 0 && (
                   <View style={styles.amenitiesContainer}>
-                    {booking.gym.amenities.map((amenity, index) => (
+                    {booking.gymAmenities.map((amenity: string, index: number) => (
                       <View key={index} style={styles.amenityTag}>
                         <Text style={styles.amenityText}>{amenity}</Text>
                       </View>
@@ -453,6 +471,51 @@ const styles = StyleSheet.create({
   gymCity: {
     fontSize: 12,
     color: colors.textSecondary,
+  },
+  classInfoBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.accentPrimary,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    marginVertical: 8,
+    gap: 8,
+  },
+  classIcon: {
+    fontSize: 18,
+  },
+  classTextContainer: {
+    flex: 1,
+  },
+  className: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#ffffff',
+  },
+  instructorName: {
+    fontSize: 12,
+    color: '#ffffff',
+    opacity: 0.9,
+    fontStyle: 'italic',
+    marginTop: 2,
+  },
+  statusContainer: {
+    alignItems: 'flex-end',
+    gap: 6,
+  },
+  sessionTypeBadge: {
+    backgroundColor: '#f0f8ff',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e1f0ff',
+  },
+  sessionTypeText: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#4a90e2',
   },
   statusBadge: {
     paddingHorizontal: 12,

@@ -116,8 +116,48 @@
   font-size: 0.9rem;
 }
 
+.class-info-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  margin: 0.8rem 0;
+  font-size: 0.9rem;
+}
+
+.class-icon {
+  font-size: 1.2rem;
+}
+
+.class-name {
+  font-weight: 600;
+}
+
+.instructor-name {
+  font-size: 0.85rem;
+  opacity: 0.9;
+  font-style: italic;
+}
+
 .booking-status {
   flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: flex-end;
+}
+
+.session-type-badge {
+  background: #f0f8ff;
+  color: #4a90e2;
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1px solid #e1f0ff;
 }
 
 .status-badge {

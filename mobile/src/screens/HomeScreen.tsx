@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { logout } from '../store/authSlice';
@@ -23,8 +23,12 @@ export default function HomeScreen() {
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.title}>🏋️ GYMFU</Text>
-        <Text style={styles.subtitle}>Your Fitness, Your Way</Text>
+        <Image 
+          source={require('../../assets/logo.png')} 
+          style={styles.logo}
+          resizeMode="contain"
+        />
+        <Text style={styles.subtitle}>Your Ultimate Fitness Companion</Text>
       </View>
 
       {isAuthenticated && user ? (
@@ -64,6 +68,14 @@ export default function HomeScreen() {
               activeOpacity={0.8}
             >
               <Text style={styles.buttonText}>My Bookings</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.buttonPrimary}
+              onPress={() => (navigation as any).navigate('Classes')}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.buttonTextPrimary}>🧘 Fitness Classes</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -185,6 +197,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 32,
     marginTop: 20,
+  },
+  logo: {
+    width: 200,
+    height: 80,
+    marginBottom: 12,
   },
   title: {
     fontSize: 56,

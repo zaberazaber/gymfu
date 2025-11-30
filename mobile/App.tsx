@@ -24,6 +24,8 @@ import ProductDetailScreen from './src/screens/ProductDetailScreen';
 import CartScreen from './src/screens/CartScreen';
 import OrderHistoryScreen from './src/screens/OrderHistoryScreen';
 import AIChatScreen from './src/screens/AIChatScreen';
+import ClassesScreen from './src/screens/ClassesScreen';
+import ClassDetailScreen from './src/screens/ClassDetailScreen';
 
 // Auth Stack (Login/Register)
 export type AuthStackParamList = {
@@ -43,6 +45,8 @@ export type MainStackParamList = {
   Booking: { gymId: number };
   QRCode: { booking: any };
   BookingHistory: undefined;
+  Classes: undefined;
+  ClassDetail: { classId: number };
   Marketplace: undefined;
   ProductDetail: { productId: number };
   Cart: undefined;
@@ -153,6 +157,16 @@ function MainNavigator() {
         name="BookingHistory"
         component={BookingHistoryScreen}
         options={{ title: 'My Bookings' }}
+      />
+      <MainStack.Screen
+        name="Classes"
+        component={ClassesScreen}
+        options={{ title: 'Fitness Classes' }}
+      />
+      <MainStack.Screen
+        name="ClassDetail"
+        component={ClassDetailScreen}
+        options={{ title: 'Class Details' }}
       />
       <MainStack.Screen
         name="Marketplace"

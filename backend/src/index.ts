@@ -100,6 +100,7 @@ const paymentRoutes = require('./routes/payments').default;
 const marketplaceRoutes = require('./routes/marketplace').default;
 const migrateRoutes = require('./routes/migrate').default;
 const aiRoutes = require('./routes/ai').default;
+const classRoutes = require('./routes/classes').default;
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', usersRoutes);
 app.use('/api/v1/users', profileRoutes);
@@ -109,6 +110,7 @@ app.use('/api/v1/payments', paymentRoutes);
 app.use('/api/v1/marketplace', marketplaceRoutes);
 app.use('/api/v1/migrate', migrateRoutes);
 app.use('/api/v1/ai', aiRoutes);
+app.use('/api/v1/classes', classRoutes);
 logger.info('🔐 Auth routes enabled at /api/v1/auth');
 logger.info('👤 Users routes enabled at /api/v1/users');
 logger.info('📝 Profile routes enabled at /api/v1/users/profile');
@@ -118,6 +120,7 @@ logger.info('💳 Payment routes enabled at /api/v1/payments');
 logger.info('🛒 Marketplace routes enabled at /api/v1/marketplace');
 logger.info('🔄 Migration routes enabled at /api/v1/migrate');
 logger.info('🤖 AI routes enabled at /api/v1/ai');
+logger.info('🧘 Classes routes enabled at /api/v1/classes');
 
 // Test routes (only in development)
 if (process.env.NODE_ENV === 'development') {

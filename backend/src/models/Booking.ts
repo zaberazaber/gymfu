@@ -10,6 +10,8 @@ export interface Booking {
   qrCode: string | null;
   qrCodeExpiry: Date | null;
   checkInTime: Date | null;
+  sessionType: 'gym' | 'class';
+  classId?: number | null;
   createdAt: Date;
   updatedAt?: Date;
 }
@@ -19,13 +21,15 @@ export interface CreateBookingData {
   gymId: number;
   sessionDate: Date;
   price: number;
+  sessionType?: 'gym' | 'class';
+  classId?: number;
 }
 
 class BookingModel {
   async create(data: CreateBookingData): Promise<Booking> {
     const query = `
-      INSERT INTO bookings (user_id, gym_id, session_date, price, status, created_at)
-      VALUES ($1, $2, $3, $4, 'pending', CURRENT_TIMESTAMP)
+      INSERT INTO bookings (user_id, gym_id, session_date, price, status, session_type, class_id, created_at)
+      VALUES ($1, $2, $3, $4, 'pending', $5, $6, CURRENT_TIMESTAMP)
       RETURNING 
         id, 
         user_id as "userId", 
@@ -36,6 +40,8 @@ class BookingModel {
         qr_code as "qrCode",
         qr_code_expiry as "qrCodeExpiry",
         check_in_time as "checkInTime",
+        session_type as "sessionType",
+        class_id as "classId",
         created_at as "createdAt"
     `;
 
@@ -44,6 +50,8 @@ class BookingModel {
       data.gymId,
       data.sessionDate,
       data.price,
+      data.sessionType || 'gym',
+      data.classId || null,
     ]);
 
     return result.rows[0];
@@ -61,6 +69,8 @@ class BookingModel {
         qr_code as "qrCode",
         qr_code_expiry as "qrCodeExpiry",
         check_in_time as "checkInTime",
+        session_type as "sessionType",
+        class_id as "classId",
         created_at as "createdAt",
         updated_at as "updatedAt"
       FROM bookings
@@ -83,6 +93,8 @@ class BookingModel {
         qr_code as "qrCode",
         qr_code_expiry as "qrCodeExpiry",
         check_in_time as "checkInTime",
+        session_type as "sessionType",
+        class_id as "classId",
         created_at as "createdAt",
         updated_at as "updatedAt"
       FROM bookings
@@ -110,6 +122,8 @@ class BookingModel {
         qr_code as "qrCode",
         qr_code_expiry as "qrCodeExpiry",
         check_in_time as "checkInTime",
+        session_type as "sessionType",
+        class_id as "classId",
         created_at as "createdAt",
         updated_at as "updatedAt"
     `;
@@ -133,6 +147,8 @@ class BookingModel {
         qr_code as "qrCode",
         qr_code_expiry as "qrCodeExpiry",
         check_in_time as "checkInTime",
+        session_type as "sessionType",
+        class_id as "classId",
         created_at as "createdAt",
         updated_at as "updatedAt"
     `;
@@ -156,6 +172,8 @@ class BookingModel {
         qr_code as "qrCode",
         qr_code_expiry as "qrCodeExpiry",
         check_in_time as "checkInTime",
+        session_type as "sessionType",
+        class_id as "classId",
         created_at as "createdAt",
         updated_at as "updatedAt"
     `;
@@ -176,6 +194,8 @@ class BookingModel {
         b.qr_code as "qrCode",
         b.qr_code_expiry as "qrCodeExpiry",
         b.check_in_time as "checkInTime",
+        b.session_type as "sessionType",
+        b.class_id as "classId",
         b.created_at as "createdAt",
         b.updated_at as "updatedAt",
         g.name as "gymName",
@@ -187,9 +207,14 @@ class BookingModel {
         g.amenities as "gymAmenities",
         g.images as "gymImages",
         g.rating as "gymRating",
-        g.is_verified as "gymIsVerified"
+        g.is_verified as "gymIsVerified",
+        c.name as "className",
+        c.type as "classType",
+        i.name as "instructorName"
       FROM bookings b
       INNER JOIN gyms g ON b.gym_id = g.id
+      LEFT JOIN classes c ON b.class_id = c.id
+      LEFT JOIN instructors i ON c.instructor_id = i.id
       WHERE b.user_id = $1
       ORDER BY b.created_at DESC
       LIMIT $2 OFFSET $3
