@@ -77,7 +77,7 @@ const initialState: BookingState = {
 // Async thunks
 export const createBooking = createAsyncThunk(
     'booking/create',
-    async (data: { gymId: number; sessionDate: string }, { rejectWithValue }) => {
+    async (data: { gymId: number; sessionDate: string; corporateAccessCode?: string }, { rejectWithValue }) => {
         try {
             const token = await AsyncStorage.getItem('token');
             const response = await axios.post(`${API_BASE_URL}/bookings`, data, {

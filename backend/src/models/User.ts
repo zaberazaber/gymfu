@@ -20,6 +20,9 @@ export interface User {
   fitnessGoals?: string[];
   profileImage?: string;
   isPartner?: boolean;
+  referralCode?: string;
+  referredBy?: number;
+  rewardPoints?: number;
   createdAt: Date;
   updatedAt: Date;
 }

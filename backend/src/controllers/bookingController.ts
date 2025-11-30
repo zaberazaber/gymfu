@@ -7,7 +7,7 @@ import qrCodeService from '../services/qrCodeService';
 
 export const createBooking = async (req: Request, res: Response) => {
   try {
-    const { gymId, sessionDate, sessionType, classId } = req.body;
+    const { gymId, sessionDate, sessionType, classId, corporateAccessCode } = req.body;
     const userId = req.user?.userId;
 
     if (!userId) {
@@ -79,6 +79,90 @@ export const createBooking = async (req: Request, res: Response) => {
     }
 
     let price = gym.basePrice;
+    let isCorporateBooking = false;
+    let corporateAccountId: number | null = null;
+    let employeeAccessId: number | null = null;
+
+    // Handle corporate booking
+    if (corporateAccessCode) {
+      const EmployeeAccessModel = (await import('../models/EmployeeAccess')).default;
+      const CorporateAccountModel = (await import('../models/CorporateAccount')).default;
+
+      // Validate access code
+      const employeeAccess = await EmployeeAccessModel.findByAccessCode(corporateAccessCode);
+      if (!employeeAccess) {
+        return res.status(400).json({
+          success: false,
+          error: {
+            code: 'INVALID_ACCESS_CODE',
+            message: 'Invalid corporate access code',
+          },
+        });
+      }
+
+      // Check employee status
+      if (employeeAccess.status !== 'active') {
+        return res.status(400).json({
+          success: false,
+          error: {
+            code: 'ACCESS_CODE_INACTIVE',
+            message: 'This access code has been deactivated',
+          },
+        });
+      }
+
+      // Get corporate account
+      const corporateAccount = await CorporateAccountModel.findById(employeeAccess.corporateAccountId);
+      if (!corporateAccount) {
+        return res.status(400).json({
+          success: false,
+          error: {
+            code: 'CORPORATE_ACCOUNT_NOT_FOUND',
+            message: 'Corporate account not found',
+          },
+        });
+      }
+
+      // Check corporate account status
+      if (corporateAccount.status !== 'active') {
+        return res.status(400).json({
+          success: false,
+          error: {
+            code: 'CORPORATE_ACCOUNT_INACTIVE',
+            message: 'Corporate account is not active',
+          },
+        });
+      }
+
+      // Check expiry
+      if (new Date(corporateAccount.expiryDate) < new Date()) {
+        return res.status(400).json({
+          success: false,
+          error: {
+            code: 'CORPORATE_ACCOUNT_EXPIRED',
+            message: 'Corporate account has expired',
+          },
+        });
+      }
+
+      // Check available sessions
+      const remainingSessions = corporateAccount.totalSessions - corporateAccount.usedSessions;
+      if (remainingSessions <= 0) {
+        return res.status(400).json({
+          success: false,
+          error: {
+            code: 'NO_SESSIONS_AVAILABLE',
+            message: 'No sessions remaining in corporate account',
+          },
+        });
+      }
+
+      // Corporate booking is valid - no payment needed
+      isCorporateBooking = true;
+      corporateAccountId = corporateAccount.id;
+      employeeAccessId = employeeAccess.id;
+      price = 0; // Corporate bookings are free for employees
+    }
 
     // If booking a class, get class details and use class price
     if (bookingType === 'class' && classId) {
@@ -124,6 +208,7 @@ export const createBooking = async (req: Request, res: Response) => {
     }
 
     // Create booking with 'pending' status (will be confirmed after payment)
+    // For corporate bookings, create as 'confirmed' immediately
     const booking = await BookingModel.create({
       userId,
       gymId,
@@ -133,7 +218,37 @@ export const createBooking = async (req: Request, res: Response) => {
       classId: bookingType === 'class' ? classId : undefined,
     });
 
-    // Create payment record
+    // Handle corporate booking - skip payment and confirm immediately
+    if (isCorporateBooking && corporateAccountId && employeeAccessId) {
+      // Confirm booking immediately
+      const confirmedBooking = await BookingModel.updateStatus(booking.id, 'confirmed');
+
+      // Increment session usage
+      const CorporateAccountModel = (await import('../models/CorporateAccount')).default;
+      const EmployeeAccessModel = (await import('../models/EmployeeAccess')).default;
+      
+      await CorporateAccountModel.incrementUsedSessions(corporateAccountId);
+      await EmployeeAccessModel.incrementSessionsUsed(employeeAccessId);
+
+      // Generate QR code
+      const qrCodeString = qrCodeService.generateQRCodeString(booking.id);
+      const qrCodeExpiry = new Date();
+      qrCodeExpiry.setHours(qrCodeExpiry.getHours() + 24);
+      const updatedBooking = await BookingModel.updateQrCode(booking.id, qrCodeString, qrCodeExpiry);
+      const qrCodeImage = await qrCodeService.generateQRCodeImage(qrCodeString);
+
+      return res.status(201).json({
+        success: true,
+        data: {
+          ...updatedBooking,
+          qrCodeImage,
+          corporateBooking: true,
+        },
+        message: 'Corporate booking confirmed successfully',
+      });
+    }
+
+    // Create payment record for regular bookings
     const payment = await PaymentModel.create({
       bookingId: booking.id,
       userId: booking.userId,

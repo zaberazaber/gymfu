@@ -78,6 +78,7 @@ export const createBooking = createAsyncThunk(
   async (data: { 
     gymId: number; 
     sessionDate: string;
+    corporateAccessCode?: string;
     useRewardPoints?: boolean;
     pointsToUse?: number;
   }, { rejectWithValue }) => {
