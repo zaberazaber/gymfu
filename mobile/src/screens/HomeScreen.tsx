@@ -94,6 +94,14 @@ export default function HomeScreen() {
               <Text style={styles.buttonTextPrimary}>🤖 AI Fitness Coach</Text>
             </TouchableOpacity>
 
+            <TouchableOpacity
+              style={styles.buttonPrimary}
+              onPress={() => (navigation as any).navigate('Referrals')}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.buttonTextPrimary}>🎁 Refer & Earn</Text>
+            </TouchableOpacity>
+
             {user.isPartner && (
               <TouchableOpacity
                 style={styles.buttonPartner}

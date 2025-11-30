@@ -26,6 +26,7 @@ import OrderHistoryScreen from './src/screens/OrderHistoryScreen';
 import AIChatScreen from './src/screens/AIChatScreen';
 import ClassesScreen from './src/screens/ClassesScreen';
 import ClassDetailScreen from './src/screens/ClassDetailScreen';
+import ReferralScreen from './src/screens/ReferralScreen';
 
 // Auth Stack (Login/Register)
 export type AuthStackParamList = {
@@ -48,6 +49,7 @@ export type MainStackParamList = {
   Classes: undefined;
   ClassDetail: { classId: number };
   Marketplace: undefined;
+  Referrals: undefined;
   ProductDetail: { productId: number };
   Cart: undefined;
   OrderHistory: undefined;
@@ -192,6 +194,11 @@ function MainNavigator() {
         name="AIChat"
         component={AIChatScreen}
         options={{ title: 'AI Fitness Coach' }}
+      />
+      <MainStack.Screen
+        name="Referrals"
+        component={ReferralScreen}
+        options={{ title: 'Refer & Earn' }}
       />
       <MainStack.Screen
         name="PartnerDashboard"

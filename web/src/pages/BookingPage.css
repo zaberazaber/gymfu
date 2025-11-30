@@ -342,3 +342,54 @@
   color: var(--text-primary);
   font-size: 1.125rem;
 }
+
+/* Reward Points Section */
+.reward-points-section {
+  background: linear-gradient(135deg, #f0f8ff 0%, #e6f3ff 100%);
+  border: 2px solid #667eea;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.reward-header {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #667eea;
+  margin-bottom: 1rem;
+}
+
+.reward-points-section .form-group {
+  margin-bottom: 1rem;
+}
+
+.reward-points-section label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.reward-points-section input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.reward-points-section input[type="number"] {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid #667eea;
+  border-radius: 8px;
+  font-size: 1rem;
+  margin-top: 0.5rem;
+}
+
+.price-row.discount {
+  color: #10b981;
+  font-weight: 600;
+}
+
+.price-row.discount span:last-child {
+  color: #10b981;
+}

@@ -1,4 +1,4 @@
-import { up as createProductsTable } from '../migrations/create_products_table';
+import { createProductsTable } from '../migrations/create_products_table';
 import { up as createCartTable } from '../migrations/create_cart_table';
 import { up as addMarketplacePayments } from '../migrations/add_marketplace_payments';
 

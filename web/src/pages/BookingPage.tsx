@@ -18,12 +18,35 @@ export default function BookingPage() {
     const [sessionTime, setSessionTime] = useState('10:00');
     const [showConfirmation, setShowConfirmation] = useState(false);
     const [processingPayment, setProcessingPayment] = useState(false);
+    const [rewardPoints, setRewardPoints] = useState(0);
+    const [useRewardPoints, setUseRewardPoints] = useState(false);
+    const [pointsToUse, setPointsToUse] = useState(0);
+    const [discountAmount, setDiscountAmount] = useState(0);
 
     useEffect(() => {
         if (gymId) {
             dispatch(getGymById(parseInt(gymId)));
         }
+        // Fetch reward points balance
+        fetchRewardBalance();
     }, [gymId, dispatch]);
+
+    const fetchRewardBalance = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch('/api/v1/referrals/balance', {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+            const data = await response.json();
+            if (data.success) {
+                setRewardPoints(data.data.rewardPoints);
+            }
+        } catch (error) {
+            console.error('Error fetching reward balance:', error);
+        }
+    };
 
     useEffect(() => {
         // Set default date to tomorrow
@@ -38,6 +61,44 @@ export default function BookingPage() {
         }
     }, [selectedBooking]);
 
+    useEffect(() => {
+        if (useRewardPoints && pointsToUse > 0 && selectedGym) {
+            calculateDiscount();
+        } else {
+            setDiscountAmount(0);
+        }
+    }, [useRewardPoints, pointsToUse, selectedGym]);
+
+    const calculateDiscount = async () => {
+        if (!selectedGym || pointsToUse <= 0) return;
+        
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch('/api/v1/referrals/calculate-discount', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    bookingAmount: selectedGym.basePrice,
+                    pointsToUse: pointsToUse,
+                }),
+            });
+            const data = await response.json();
+            if (data.success && data.data.canApply) {
+                setDiscountAmount(data.data.discountAmount);
+            } else {
+                setDiscountAmount(0);
+                if (!data.data.canApply) {
+                    alert(data.data.message);
+                }
+            }
+        } catch (error) {
+            console.error('Error calculating discount:', error);
+        }
+    };
+
     const handleBooking = async () => {
         if (!sessionDate || !sessionTime) {
             alert('Please select date and time');
@@ -50,6 +111,8 @@ export default function BookingPage() {
         const result = await dispatch(createBooking({
             gymId: parseInt(gymId!),
             sessionDate: dateTime.toISOString(),
+            useRewardPoints: useRewardPoints,
+            pointsToUse: pointsToUse,
         }));
 
         if (createBooking.fulfilled.match(result)) {
@@ -253,14 +316,51 @@ export default function BookingPage() {
                         />
                     </div>
 
+                    {rewardPoints > 0 && (
+                        <div className="reward-points-section">
+                            <div className="reward-header">
+                                <span>💎 You have {rewardPoints} reward points (₹{rewardPoints})</span>
+                            </div>
+                            <div className="form-group">
+                                <label>
+                                    <input
+                                        type="checkbox"
+                                        checked={useRewardPoints}
+                                        onChange={(e) => setUseRewardPoints(e.target.checked)}
+                                    />
+                                    Use reward points for discount
+                                </label>
+                            </div>
+                            {useRewardPoints && (
+                                <div className="form-group">
+                                    <label htmlFor="pointsToUse">Points to use (max {Math.min(rewardPoints, selectedGym.basePrice)})</label>
+                                    <input
+                                        type="number"
+                                        id="pointsToUse"
+                                        value={pointsToUse}
+                                        onChange={(e) => setPointsToUse(parseInt(e.target.value) || 0)}
+                                        min="0"
+                                        max={Math.min(rewardPoints, selectedGym.basePrice)}
+                                    />
+                                </div>
+                            )}
+                        </div>
+                    )}
+
                     <div className="price-summary">
                         <div className="price-row">
                             <span>Session Price:</span>
                             <span>₹{selectedGym.basePrice}</span>
                         </div>
+                        {discountAmount > 0 && (
+                            <div className="price-row discount">
+                                <span>Reward Discount:</span>
+                                <span>-₹{discountAmount}</span>
+                            </div>
+                        )}
                         <div className="price-row total">
                             <span>Total:</span>
-                            <span>₹{selectedGym.basePrice}</span>
+                            <span>₹{selectedGym.basePrice - discountAmount}</span>
                         </div>
                     </div>
 
