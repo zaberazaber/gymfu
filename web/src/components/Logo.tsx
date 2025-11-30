@@ -1,4 +1,3 @@
-import React from 'react';
 import './Logo.css';
 
 interface LogoProps {
@@ -7,7 +6,7 @@ interface LogoProps {
   className?: string;
 }
 
-export default function Logo({ variant = 'vertical', size = 'medium', className = '' }: LogoProps) {
+export default function Logo({ variant: _variant = 'vertical', size = 'medium', className = '' }: LogoProps) {
   const sizeClass = `logo-${size}`;
   
   return (
