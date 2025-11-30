@@ -18,12 +18,42 @@ export default function BookingPage() {
     const [sessionTime, setSessionTime] = useState('10:00');
     const [showConfirmation, setShowConfirmation] = useState(false);
     const [processingPayment, setProcessingPayment] = useState(false);
+    const [rewardPoints, setRewardPoints] = useState(0);
+    const [useRewardPoints, setUseRewardPoints] = useState(false);
+    const [pointsToUse, setPointsToUse] = useState(0);
+    const [discountAmount, setDiscountAmount] = useState(0);
+    
+    // Corporate booking states
+    const [useCorporateCode, setUseCorporateCode] = useState(false);
+    const [corporateAccessCode, setCorporateAccessCode] = useState('');
+    const [validatingCode, setValidatingCode] = useState(false);
+    const [corporateInfo, setCorporateInfo] = useState<any>(null);
+    const [codeValidated, setCodeValidated] = useState(false);
 
     useEffect(() => {
         if (gymId) {
             dispatch(getGymById(parseInt(gymId)));
         }
+        // Fetch reward points balance
+        fetchRewardBalance();
     }, [gymId, dispatch]);
+
+    const fetchRewardBalance = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch('/api/v1/referrals/balance', {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+            const data = await response.json();
+            if (data.success) {
+                setRewardPoints(data.data.rewardPoints);
+            }
+        } catch (error) {
+            console.error('Error fetching reward balance:', error);
+        }
+    };
 
     useEffect(() => {
         // Set default date to tomorrow
@@ -38,18 +68,114 @@ export default function BookingPage() {
         }
     }, [selectedBooking]);
 
+    useEffect(() => {
+        if (useRewardPoints && pointsToUse > 0 && selectedGym) {
+            calculateDiscount();
+        } else {
+            setDiscountAmount(0);
+        }
+    }, [useRewardPoints, pointsToUse, selectedGym]);
+
+    const calculateDiscount = async () => {
+        if (!selectedGym || pointsToUse <= 0) return;
+        
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch('/api/v1/referrals/calculate-discount', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    bookingAmount: selectedGym.basePrice,
+                    pointsToUse: pointsToUse,
+                }),
+            });
+            const data = await response.json();
+            if (data.success && data.data.canApply) {
+                setDiscountAmount(data.data.discountAmount);
+            } else {
+                setDiscountAmount(0);
+                if (!data.data.canApply) {
+                    alert(data.data.message);
+                }
+            }
+        } catch (error) {
+            console.error('Error calculating discount:', error);
+        }
+    };
+
+    const validateCorporateCode = async () => {
+        if (!corporateAccessCode.trim()) {
+            alert('Please enter a corporate access code');
+            return;
+        }
+
+        setValidatingCode(true);
+        try {
+            const response = await fetch('/api/v1/corporate/validate-code', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ accessCode: corporateAccessCode.trim() }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+                setCorporateInfo(data.data);
+                setCodeValidated(true);
+                alert(`Code Validated!\n\nWelcome ${data.data.employee.employeeName}!\nCompany: ${data.data.corporateAccount.companyName}\nRemaining sessions: ${data.data.corporateAccount.remainingSessions}`);
+            } else {
+                alert(data.message || 'The access code is invalid or expired');
+                setCodeValidated(false);
+                setCorporateInfo(null);
+            }
+        } catch (error) {
+            alert('Failed to validate access code. Please try again.');
+            setCodeValidated(false);
+            setCorporateInfo(null);
+        } finally {
+            setValidatingCode(false);
+        }
+    };
+
     const handleBooking = async () => {
         if (!sessionDate || !sessionTime) {
             alert('Please select date and time');
             return;
         }
 
+        // Validate corporate code if enabled
+        if (useCorporateCode && !codeValidated) {
+            alert('Please validate your corporate access code first');
+            return;
+        }
+
         const dateTime = new Date(`${sessionDate}T${sessionTime}:00`);
+
+        // For corporate bookings, skip payment
+        if (useCorporateCode && codeValidated) {
+            const result = await dispatch(createBooking({
+                gymId: parseInt(gymId!),
+                sessionDate: dateTime.toISOString(),
+                corporateAccessCode: corporateAccessCode.trim(),
+            }));
+
+            if (createBooking.fulfilled.match(result)) {
+                setShowConfirmation(true);
+            }
+            return;
+        }
 
         // Step 1: Create booking (status: pending)
         const result = await dispatch(createBooking({
             gymId: parseInt(gymId!),
             sessionDate: dateTime.toISOString(),
+            useRewardPoints: useRewardPoints,
+            pointsToUse: pointsToUse,
         }));
 
         if (createBooking.fulfilled.match(result)) {
@@ -253,14 +379,126 @@ export default function BookingPage() {
                         />
                     </div>
 
+                    {rewardPoints > 0 && !useCorporateCode && (
+                        <div className="reward-points-section">
+                            <div className="reward-header">
+                                <span>💎 You have {rewardPoints} reward points (₹{rewardPoints})</span>
+                            </div>
+                            <div className="form-group">
+                                <label>
+                                    <input
+                                        type="checkbox"
+                                        checked={useRewardPoints}
+                                        onChange={(e) => setUseRewardPoints(e.target.checked)}
+                                    />
+                                    Use reward points for discount
+                                </label>
+                            </div>
+                            {useRewardPoints && (
+                                <div className="form-group">
+                                    <label htmlFor="pointsToUse">Points to use (max {Math.min(rewardPoints, selectedGym.basePrice)})</label>
+                                    <input
+                                        type="number"
+                                        id="pointsToUse"
+                                        value={pointsToUse}
+                                        onChange={(e) => setPointsToUse(parseInt(e.target.value) || 0)}
+                                        min="0"
+                                        max={Math.min(rewardPoints, selectedGym.basePrice)}
+                                    />
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    <div className="corporate-booking-section">
+                        <div className="corporate-header">
+                            <h3>🏢 Corporate Booking</h3>
+                            <label className="toggle-switch">
+                                <input
+                                    type="checkbox"
+                                    checked={useCorporateCode}
+                                    onChange={(e) => {
+                                        setUseCorporateCode(e.target.checked);
+                                        if (!e.target.checked) {
+                                            setCorporateAccessCode('');
+                                            setCodeValidated(false);
+                                            setCorporateInfo(null);
+                                        }
+                                    }}
+                                />
+                                <span className="slider"></span>
+                            </label>
+                        </div>
+
+                        {useCorporateCode && (
+                            <>
+                                <p className="corporate-description">
+                                    Use your company's corporate access code for free booking
+                                </p>
+
+                                <div className="form-group">
+                                    <label htmlFor="corporateCode">Corporate Access Code</label>
+                                    <div className="code-input-group">
+                                        <input
+                                            type="text"
+                                            id="corporateCode"
+                                            value={corporateAccessCode}
+                                            onChange={(e) => {
+                                                setCorporateAccessCode(e.target.value.toUpperCase());
+                                                setCodeValidated(false);
+                                                setCorporateInfo(null);
+                                            }}
+                                            placeholder="Enter 12-character code"
+                                            maxLength={12}
+                                            disabled={codeValidated}
+                                            className="code-input"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={validateCorporateCode}
+                                            disabled={validatingCode || codeValidated}
+                                            className="btn-validate"
+                                        >
+                                            {validatingCode ? 'Validating...' : codeValidated ? '✓ Validated' : 'Validate'}
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {codeValidated && corporateInfo && (
+                                    <div className="corporate-info-box">
+                                        <h4>{corporateInfo.corporateAccount.companyName}</h4>
+                                        <p>Employee: {corporateInfo.employee.employeeName}</p>
+                                        <p>Remaining Sessions: {corporateInfo.corporateAccount.remainingSessions}</p>
+                                        <p className="corporate-success">✓ No payment required</p>
+                                    </div>
+                                )}
+                            </>
+                        )}
+                    </div>
+
                     <div className="price-summary">
                         <div className="price-row">
                             <span>Session Price:</span>
                             <span>₹{selectedGym.basePrice}</span>
                         </div>
+                        {discountAmount > 0 && !useCorporateCode && (
+                            <div className="price-row discount">
+                                <span>Reward Discount:</span>
+                                <span>-₹{discountAmount}</span>
+                            </div>
+                        )}
+                        {useCorporateCode && codeValidated && (
+                            <div className="price-row discount">
+                                <span>Corporate Discount:</span>
+                                <span>-₹{selectedGym.basePrice}</span>
+                            </div>
+                        )}
                         <div className="price-row total">
                             <span>Total:</span>
-                            <span>₹{selectedGym.basePrice}</span>
+                            <span className={useCorporateCode && codeValidated ? 'corporate-price' : ''}>
+                                ₹{useCorporateCode && codeValidated ? 0 : selectedGym.basePrice - discountAmount}
+                                {useCorporateCode && codeValidated && <span className="company-paid"> (Company Paid)</span>}
+                            </span>
                         </div>
                     </div>
 
@@ -276,11 +514,13 @@ export default function BookingPage() {
                         disabled={bookingLoading || processingPayment || !sessionDate || !sessionTime}
                         className="btn-book"
                     >
-                        {processingPayment ? 'Processing Payment...' : bookingLoading ? 'Creating Booking...' : 'Proceed to Payment'}
+                        {processingPayment ? 'Processing Payment...' : bookingLoading ? 'Creating Booking...' : useCorporateCode && codeValidated ? 'Confirm Corporate Booking' : 'Proceed to Payment'}
                     </button>
 
                     <p className="booking-note">
-                        * Payment is required to confirm your booking. You'll receive a QR code after successful payment.
+                        {useCorporateCode && codeValidated 
+                            ? '* Your booking will be confirmed immediately without payment.' 
+                            : '* Payment is required to confirm your booking. You\'ll receive a QR code after successful payment.'}
                     </p>
                 </div>
             </div>

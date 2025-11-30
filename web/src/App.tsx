@@ -18,6 +18,13 @@ import ProductDetailPage from './pages/ProductDetailPage';
 import CartPage from './pages/CartPage';
 import OrderHistoryPage from './pages/OrderHistoryPage';
 import AIChatPage from './pages/AIChatPage';
+import ClassesPage from './pages/ClassesPage';
+import ClassDetailPage from './pages/ClassDetailPage';
+import CorporateRegisterPage from './pages/CorporateRegisterPage';
+import AdminDashboardPage from './pages/AdminDashboardPage';
+import AdminApprovalsPage from './pages/AdminApprovalsPage';
+import AdminUsersPage from './pages/AdminUsersPage';
+import AdminGymsPage from './pages/AdminGymsPage';
 import './App.css';
 import './styles/neumorphic.css';
 
@@ -42,9 +49,17 @@ function App() {
             <Route path="/cart" element={<CartPage />} />
             <Route path="/orders" element={<OrderHistoryPage />} />
             <Route path="/ai-chat" element={<AIChatPage />} />
+            <Route path="/classes" element={<ClassesPage />} />
+            <Route path="/classes/:id" element={<ClassDetailPage />} />
+            <Route path="/corporate/register" element={<CorporateRegisterPage />} />
             <Route path="/partner/dashboard" element={<PartnerDashboardPage />} />
             <Route path="/partner/gym/new" element={<GymEditPage />} />
             <Route path="/partner/gym/edit/:gymId" element={<GymEditPage />} />
+            {/* Admin Routes */}
+            <Route path="/admin" element={<AdminDashboardPage />} />
+            <Route path="/admin/approvals" element={<AdminApprovalsPage />} />
+            <Route path="/admin/users" element={<AdminUsersPage />} />
+            <Route path="/admin/gyms" element={<AdminGymsPage />} />
           </Routes>        </div>
       </Router>
     </Provider>

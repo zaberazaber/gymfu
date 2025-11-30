@@ -8,6 +8,8 @@ import {
   ActivityIndicator,
   Platform,
   Alert,
+  TextInput,
+  Switch,
 } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -16,7 +18,7 @@ import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { getGymById } from '../store/gymSlice';
 import { createBooking, verifyPayment, clearError } from '../store/bookingSlice';
 import { colors, shadows } from '../styles/neumorphic';
-import { RAZORPAY_KEY_ID } from '../utils/api';
+import { API_BASE_URL, RAZORPAY_KEY_ID } from '../utils/api';
 
 export default function BookingScreen() {
   const route = useRoute();
@@ -33,6 +35,13 @@ export default function BookingScreen() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [processingPayment, setProcessingPayment] = useState(false);
+  
+  // Corporate booking states
+  const [useCorporateCode, setUseCorporateCode] = useState(false);
+  const [corporateAccessCode, setCorporateAccessCode] = useState('');
+  const [validatingCode, setValidatingCode] = useState(false);
+  const [corporateInfo, setCorporateInfo] = useState<any>(null);
+  const [codeValidated, setCodeValidated] = useState(false);
 
   useEffect(() => {
     if (gymId) {
@@ -79,10 +88,55 @@ export default function BookingScreen() {
     }
   };
 
+  const validateCorporateCode = async () => {
+    if (!corporateAccessCode.trim()) {
+      Alert.alert('Invalid Code', 'Please enter a corporate access code');
+      return;
+    }
+
+    setValidatingCode(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/corporate/validate-code`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ accessCode: corporateAccessCode.trim() }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setCorporateInfo(data.data);
+        setCodeValidated(true);
+        Alert.alert(
+          'Code Validated',
+          `Welcome ${data.data.employee.employeeName}! You have access to ${data.data.corporateAccount.companyName}'s corporate wellness program.\n\nRemaining sessions: ${data.data.corporateAccount.remainingSessions}`
+        );
+      } else {
+        Alert.alert('Invalid Code', data.message || 'The access code is invalid or expired');
+        setCodeValidated(false);
+        setCorporateInfo(null);
+      }
+    } catch (error) {
+      Alert.alert('Validation Error', 'Failed to validate access code. Please try again.');
+      setCodeValidated(false);
+      setCorporateInfo(null);
+    } finally {
+      setValidatingCode(false);
+    }
+  };
+
   const handleBooking = async () => {
     if (!user) {
       Alert.alert('Authentication Required', 'Please log in to book a session');
       navigation.navigate('Login' as never);
+      return;
+    }
+
+    // Validate corporate code if enabled
+    if (useCorporateCode && !codeValidated) {
+      Alert.alert('Validation Required', 'Please validate your corporate access code first');
       return;
     }
 
@@ -97,6 +151,21 @@ export default function BookingScreen() {
     }
 
     try {
+      // For corporate bookings, skip payment
+      if (useCorporateCode && codeValidated) {
+        // Create booking with corporate code (no payment needed)
+        const result = await dispatch(createBooking({
+          gymId,
+          sessionDate: sessionDateTime.toISOString(),
+          corporateAccessCode: corporateAccessCode.trim(),
+        })).unwrap();
+
+        Alert.alert('Success', 'Your corporate booking is confirmed!');
+        (navigation as any).navigate('QRCode', { booking: result });
+        return;
+      }
+
+      // Regular booking flow with payment
       // Step 1: Create booking (status: pending)
       const result = await dispatch(createBooking({
         gymId,
@@ -279,6 +348,85 @@ export default function BookingScreen() {
           )}
         </View>
 
+        {/* Corporate Access Code */}
+        <View style={styles.section}>
+          <View style={styles.corporateHeader}>
+            <Text style={styles.sectionTitle}>Corporate Booking</Text>
+            <Switch
+              value={useCorporateCode}
+              onValueChange={(value) => {
+                setUseCorporateCode(value);
+                if (!value) {
+                  setCorporateAccessCode('');
+                  setCodeValidated(false);
+                  setCorporateInfo(null);
+                }
+              }}
+              trackColor={{ false: colors.bgSecondary, true: colors.accentPrimary }}
+              thumbColor={useCorporateCode ? '#ffffff' : colors.textSecondary}
+            />
+          </View>
+
+          {useCorporateCode && (
+            <>
+              <Text style={styles.corporateDescription}>
+                Use your company's corporate access code for free booking
+              </Text>
+
+              <View style={styles.codeInputContainer}>
+                <TextInput
+                  style={styles.codeInput}
+                  placeholder="Enter Access Code"
+                  placeholderTextColor={colors.textSecondary}
+                  value={corporateAccessCode}
+                  onChangeText={(text) => {
+                    setCorporateAccessCode(text.toUpperCase());
+                    setCodeValidated(false);
+                    setCorporateInfo(null);
+                  }}
+                  autoCapitalize="characters"
+                  maxLength={12}
+                  editable={!codeValidated}
+                />
+                <TouchableOpacity
+                  style={[
+                    styles.validateButton,
+                    (validatingCode || codeValidated) && styles.validateButtonDisabled,
+                  ]}
+                  onPress={validateCorporateCode}
+                  disabled={validatingCode || codeValidated}
+                  activeOpacity={0.8}
+                >
+                  {validatingCode ? (
+                    <ActivityIndicator size="small" color="#ffffff" />
+                  ) : (
+                    <Text style={styles.validateButtonText}>
+                      {codeValidated ? '✓ Validated' : 'Validate'}
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+
+              {codeValidated && corporateInfo && (
+                <View style={styles.corporateInfoBox}>
+                  <Text style={styles.corporateInfoTitle}>
+                    {corporateInfo.corporateAccount.companyName}
+                  </Text>
+                  <Text style={styles.corporateInfoText}>
+                    Employee: {corporateInfo.employee.employeeName}
+                  </Text>
+                  <Text style={styles.corporateInfoText}>
+                    Remaining Sessions: {corporateInfo.corporateAccount.remainingSessions}
+                  </Text>
+                  <Text style={styles.corporateInfoSuccess}>
+                    ✓ No payment required
+                  </Text>
+                </View>
+              )}
+            </>
+          )}
+        </View>
+
         {/* Booking Summary */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Booking Summary</Text>
@@ -294,8 +442,15 @@ export default function BookingScreen() {
             </Text>
           </View>
           <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Price:</Text>
-            <Text style={styles.summaryValuePrice}>₹{selectedGym.basePrice}</Text>
+            <Text style={styles.summaryLabel}>
+              {useCorporateCode && codeValidated ? 'Corporate Price:' : 'Price:'}
+            </Text>
+            <Text style={[
+              styles.summaryValuePrice,
+              useCorporateCode && codeValidated && styles.corporatePriceStrike,
+            ]}>
+              {useCorporateCode && codeValidated ? '₹0 (Company Paid)' : `₹${selectedGym.basePrice}`}
+            </Text>
           </View>
         </View>
 
@@ -325,7 +480,9 @@ export default function BookingScreen() {
               <Text style={[styles.bookButtonText, { marginLeft: 8 }]}>Creating Booking...</Text>
             </>
           ) : (
-            <Text style={styles.bookButtonText}>Proceed to Payment</Text>
+            <Text style={styles.bookButtonText}>
+              {useCorporateCode && codeValidated ? 'Confirm Corporate Booking' : 'Proceed to Payment'}
+            </Text>
           )}
         </TouchableOpacity>
       </View>
@@ -534,5 +691,76 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.textSecondary,
     marginTop: 12,
+  },
+  corporateHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  corporateDescription: {
+    fontSize: 13,
+    color: colors.textSecondary,
+    marginBottom: 16,
+    lineHeight: 18,
+  },
+  codeInputContainer: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 16,
+  },
+  codeInput: {
+    flex: 1,
+    backgroundColor: colors.bgSecondary,
+    borderRadius: 12,
+    padding: 16,
+    fontSize: 16,
+    color: colors.textPrimary,
+    fontWeight: '600',
+    letterSpacing: 1,
+  },
+  validateButton: {
+    backgroundColor: colors.accentPrimary,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    minWidth: 100,
+  },
+  validateButtonDisabled: {
+    opacity: 0.6,
+  },
+  validateButtonText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  corporateInfoBox: {
+    backgroundColor: '#e8f5e9',
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#4caf50',
+  },
+  corporateInfoTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#2e7d32',
+    marginBottom: 8,
+  },
+  corporateInfoText: {
+    fontSize: 14,
+    color: '#388e3c',
+    marginBottom: 4,
+  },
+  corporateInfoSuccess: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#2e7d32',
+    marginTop: 8,
+  },
+  corporatePriceStrike: {
+    color: '#4caf50',
+    fontWeight: 'bold',
   },
 });

@@ -24,6 +24,13 @@ import ProductDetailScreen from './src/screens/ProductDetailScreen';
 import CartScreen from './src/screens/CartScreen';
 import OrderHistoryScreen from './src/screens/OrderHistoryScreen';
 import AIChatScreen from './src/screens/AIChatScreen';
+import ClassesScreen from './src/screens/ClassesScreen';
+import ClassDetailScreen from './src/screens/ClassDetailScreen';
+import ReferralScreen from './src/screens/ReferralScreen';
+import AdminDashboardScreen from './src/screens/AdminDashboardScreen';
+import AdminApprovalsScreen from './src/screens/AdminApprovalsScreen';
+import AdminUsersScreen from './src/screens/AdminUsersScreen';
+import AdminGymsScreen from './src/screens/AdminGymsScreen';
 
 // Auth Stack (Login/Register)
 export type AuthStackParamList = {
@@ -43,13 +50,20 @@ export type MainStackParamList = {
   Booking: { gymId: number };
   QRCode: { booking: any };
   BookingHistory: undefined;
+  Classes: undefined;
+  ClassDetail: { classId: number };
   Marketplace: undefined;
+  Referrals: undefined;
   ProductDetail: { productId: number };
   Cart: undefined;
   OrderHistory: undefined;
   AIChat: undefined;
   PartnerDashboard: undefined;
   GymCreateEdit: { gymId?: number };
+  AdminDashboard: undefined;
+  AdminApprovals: undefined;
+  AdminUsers: undefined;
+  AdminGyms: undefined;
 };
 
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
@@ -155,6 +169,16 @@ function MainNavigator() {
         options={{ title: 'My Bookings' }}
       />
       <MainStack.Screen
+        name="Classes"
+        component={ClassesScreen}
+        options={{ title: 'Fitness Classes' }}
+      />
+      <MainStack.Screen
+        name="ClassDetail"
+        component={ClassDetailScreen}
+        options={{ title: 'Class Details' }}
+      />
+      <MainStack.Screen
         name="Marketplace"
         component={MarketplaceScreen}
         options={{ title: 'Marketplace' }}
@@ -180,6 +204,11 @@ function MainNavigator() {
         options={{ title: 'AI Fitness Coach' }}
       />
       <MainStack.Screen
+        name="Referrals"
+        component={ReferralScreen}
+        options={{ title: 'Refer & Earn' }}
+      />
+      <MainStack.Screen
         name="PartnerDashboard"
         component={PartnerDashboardScreen}
         options={{ title: 'Partner Dashboard' }}
@@ -190,6 +219,26 @@ function MainNavigator() {
         options={({ route }) => ({
           title: (route.params as any)?.gymId ? 'Edit Gym' : 'Create Gym',
         })}
+      />
+      <MainStack.Screen
+        name="AdminDashboard"
+        component={AdminDashboardScreen}
+        options={{ title: 'Admin Dashboard' }}
+      />
+      <MainStack.Screen
+        name="AdminApprovals"
+        component={AdminApprovalsScreen}
+        options={{ title: 'Pending Approvals' }}
+      />
+      <MainStack.Screen
+        name="AdminUsers"
+        component={AdminUsersScreen}
+        options={{ title: 'User Management' }}
+      />
+      <MainStack.Screen
+        name="AdminGyms"
+        component={AdminGymsScreen}
+        options={{ title: 'Gym Management' }}
       />
     </MainStack.Navigator>
   );

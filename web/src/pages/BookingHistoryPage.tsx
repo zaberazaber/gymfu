@@ -147,11 +147,23 @@ export default function BookingHistoryPage() {
               <div key={booking.id} className="booking-card">
                 <div className="booking-header">
                   <div className="gym-info">
-                    <h3>{booking.gym?.name || 'Unknown Gym'}</h3>
-                    <p className="gym-address">{booking.gym?.address}</p>
-                    <p className="gym-city">{booking.gym?.city}, {booking.gym?.pincode}</p>
+                    <h3>{booking.gymName || 'Unknown Gym'}</h3>
+                    {booking.sessionType === 'class' && booking.className && (
+                      <div className="class-info-badge">
+                        <span className="class-icon">🧘</span>
+                        <span className="class-name">{booking.className}</span>
+                        {booking.instructorName && (
+                          <span className="instructor-name">with {booking.instructorName}</span>
+                        )}
+                      </div>
+                    )}
+                    <p className="gym-address">{booking.gymAddress}</p>
+                    <p className="gym-city">{booking.gymCity}, {booking.gymPincode}</p>
                   </div>
                   <div className="booking-status">
+                    <div className="session-type-badge">
+                      {booking.sessionType === 'class' ? '🧘 Class' : '🏋️ Gym'}
+                    </div>
                     {getStatusBadge(booking.status)}
                   </div>
                 </div>
@@ -185,11 +197,11 @@ export default function BookingHistoryPage() {
                     </div>
                   )}
 
-                  {booking.gym?.amenities && booking.gym.amenities.length > 0 && (
+                  {booking.gymAmenities && booking.gymAmenities.length > 0 && (
                     <div className="detail-item">
                       <span className="label">Amenities:</span>
                       <div className="amenities-list">
-                        {booking.gym.amenities.map((amenity, index) => (
+                        {booking.gymAmenities.map((amenity: string, index: number) => (
                           <span key={index} className="amenity-tag">{amenity}</span>
                         ))}
                       </div>

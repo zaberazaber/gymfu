@@ -342,3 +342,213 @@
   color: var(--text-primary);
   font-size: 1.125rem;
 }
+
+/* Reward Points Section */
+.reward-points-section {
+  background: linear-gradient(135deg, #f0f8ff 0%, #e6f3ff 100%);
+  border: 2px solid #667eea;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.reward-header {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #667eea;
+  margin-bottom: 1rem;
+}
+
+.reward-points-section .form-group {
+  margin-bottom: 1rem;
+}
+
+.reward-points-section label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.reward-points-section input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.reward-points-section input[type="number"] {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid #667eea;
+  border-radius: 8px;
+  font-size: 1rem;
+  margin-top: 0.5rem;
+}
+
+.price-row.discount {
+  color: #10b981;
+  font-weight: 600;
+}
+
+.price-row.discount span:last-child {
+  color: #10b981;
+}
+
+/* Corporate Booking Section */
+.corporate-booking-section {
+  background: var(--bg-secondary);
+  padding: 1.5rem;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+}
+
+.corporate-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.corporate-header h3 {
+  color: var(--text-primary);
+  margin: 0;
+  font-size: 1.125rem;
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+  border-radius: 24px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: var(--accent-primary);
+}
+
+input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
+.corporate-description {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.code-input-group {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.code-input {
+  flex: 1;
+  padding: 0.75rem;
+  border: 2px solid var(--bg-secondary);
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.code-input:disabled {
+  background: var(--bg-secondary);
+  opacity: 0.7;
+}
+
+.btn-validate {
+  background: var(--accent-primary);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.3s ease;
+}
+
+.btn-validate:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-medium);
+}
+
+.btn-validate:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.corporate-info-box {
+  background: #e8f5e9;
+  border: 2px solid #4caf50;
+  border-radius: 12px;
+  padding: 1rem;
+  margin-top: 1rem;
+}
+
+.corporate-info-box h4 {
+  color: #2e7d32;
+  margin: 0 0 0.5rem 0;
+  font-size: 1.125rem;
+}
+
+.corporate-info-box p {
+  color: #388e3c;
+  margin: 0.25rem 0;
+  font-size: 0.875rem;
+}
+
+.corporate-success {
+  font-weight: 600;
+  color: #2e7d32 !important;
+  margin-top: 0.5rem !important;
+}
+
+.corporate-price {
+  color: #4caf50 !important;
+  font-weight: 700;
+}
+
+.company-paid {
+  font-size: 0.875rem;
+  color: #4caf50;
+  font-weight: 600;
+  margin-left: 0.5rem;
+}
+
+.capacity-full {
+  color: var(--error);
+  font-weight: 600;
+}

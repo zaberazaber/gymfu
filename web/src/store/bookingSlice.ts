@@ -28,8 +28,24 @@ interface Booking {
   qrCode: string | null;
   qrCodeExpiry: string | null;
   checkInTime: string | null;
+  sessionType: 'gym' | 'class';
+  classId?: number | null;
   qrCodeImage?: string;
   gym?: Gym;
+  // Fields from joined query
+  gymName?: string;
+  gymAddress?: string;
+  gymCity?: string;
+  gymPincode?: string;
+  gymLatitude?: string;
+  gymLongitude?: string;
+  gymAmenities?: string[];
+  gymImages?: string[];
+  gymRating?: number;
+  gymIsVerified?: boolean;
+  className?: string;
+  classType?: string;
+  instructorName?: string;
   createdAt: string;
   updatedAt?: string;
 }
@@ -59,7 +75,13 @@ const initialState: BookingState = {
 // Async thunks
 export const createBooking = createAsyncThunk(
   'booking/create',
-  async (data: { gymId: number; sessionDate: string }, { rejectWithValue }) => {
+  async (data: { 
+    gymId: number; 
+    sessionDate: string;
+    corporateAccessCode?: string;
+    useRewardPoints?: boolean;
+    pointsToUse?: number;
+  }, { rejectWithValue }) => {
     try {
       const response = await api.post('/bookings', data);
       return response.data.data;

@@ -20,6 +20,11 @@ export interface User {
   fitnessGoals?: string[];
   profileImage?: string;
   isPartner?: boolean;
+  isAdmin?: boolean;
+  role?: string;
+  referralCode?: string;
+  referredBy?: number;
+  rewardPoints?: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -113,6 +118,8 @@ export class UserModel {
         fitness_goals as "fitnessGoals",
         profile_image as "profileImage",
         is_partner as "isPartner",
+        COALESCE(is_admin, false) as "isAdmin",
+        COALESCE(role, 'user') as role,
         created_at as "createdAt", 
         updated_at as "updatedAt"
       FROM users
