@@ -88,6 +88,14 @@ function HomePage() {
                   Partner Dashboard
                 </button>
               )}
+              {(user as any).isAdmin && (
+                <button
+                  onClick={() => navigate('/admin')}
+                  className="neu-btn neu-btn-admin"
+                >
+                  🛡️ Admin Dashboard
+                </button>
+              )}
               <button
                 onClick={() => dispatch(logout())}
                 className="neu-btn neu-btn-danger"

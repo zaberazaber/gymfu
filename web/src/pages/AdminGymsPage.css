@@ -1,0 +1,229 @@
+.admin-gyms {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  color: #fff;
+}
+
+.page-header {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.page-header h1 {
+  margin: 0.5rem 0 0;
+  font-size: 1.8rem;
+}
+
+.back-btn {
+  background: none;
+  border: none;
+  color: #667eea;
+  cursor: pointer;
+  font-size: 0.95rem;
+  padding: 0;
+}
+
+.back-btn:hover {
+  text-decoration: underline;
+}
+
+.gyms-content {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.filter-bar {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.filter-btn {
+  padding: 0.6rem 1.2rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.filter-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.filter-btn.active {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+  border-color: transparent;
+}
+
+.gyms-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
+}
+
+.gym-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.gym-card:hover {
+  transform: translateY(-3px);
+}
+
+.gym-card.verified {
+  border-left: 4px solid #4ade80;
+}
+
+.gym-card.pending {
+  border-left: 4px solid #fbbf24;
+}
+
+.gym-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.gym-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  flex: 1;
+}
+
+.status-badge {
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.status-badge.verified {
+  background: rgba(74, 222, 128, 0.2);
+  color: #4ade80;
+}
+
+.status-badge.pending {
+  background: rgba(251, 191, 36, 0.2);
+  color: #fbbf24;
+}
+
+.gym-info {
+  margin-bottom: 1rem;
+}
+
+.gym-info p {
+  margin: 0.5rem 0;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.gym-info p span {
+  width: 20px;
+}
+
+.gym-actions {
+  display: flex;
+  gap: 0.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.view-btn, .approve-btn {
+  flex: 1;
+  padding: 0.6rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.view-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.view-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.approve-btn {
+  background: linear-gradient(135deg, #4ade80, #22c55e);
+  color: #fff;
+}
+
+.approve-btn:hover {
+  transform: translateY(-2px);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.pagination button {
+  padding: 0.5rem 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  cursor: pointer;
+}
+
+.pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagination span {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.loading {
+  text-align: center;
+  padding: 3rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.error-message {
+  text-align: center;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  background: rgba(239, 68, 68, 0.2);
+  border-radius: 8px;
+  color: #f87171;
+}
+
+@media (max-width: 768px) {
+  .gyms-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-bar {
+    flex-wrap: wrap;
+  }
+}

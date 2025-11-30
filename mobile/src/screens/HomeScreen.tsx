@@ -112,6 +112,16 @@ export default function HomeScreen() {
               </TouchableOpacity>
             )}
 
+            {(user as any).isAdmin && (
+              <TouchableOpacity
+                style={styles.buttonAdmin}
+                onPress={() => (navigation as any).navigate('AdminDashboard')}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.buttonTextPrimary}>🛡️ Admin Dashboard</Text>
+              </TouchableOpacity>
+            )}
+
             <TouchableOpacity
               style={styles.buttonDanger}
               onPress={() => dispatch(logout())}
@@ -308,6 +318,14 @@ const styles = StyleSheet.create({
   },
   buttonDanger: {
     backgroundColor: colors.error,
+    borderRadius: 16,
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    alignItems: 'center',
+    ...shadows.medium,
+  },
+  buttonAdmin: {
+    backgroundColor: '#f093fb',
     borderRadius: 16,
     paddingVertical: 16,
     paddingHorizontal: 32,

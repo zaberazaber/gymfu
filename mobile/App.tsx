@@ -27,6 +27,10 @@ import AIChatScreen from './src/screens/AIChatScreen';
 import ClassesScreen from './src/screens/ClassesScreen';
 import ClassDetailScreen from './src/screens/ClassDetailScreen';
 import ReferralScreen from './src/screens/ReferralScreen';
+import AdminDashboardScreen from './src/screens/AdminDashboardScreen';
+import AdminApprovalsScreen from './src/screens/AdminApprovalsScreen';
+import AdminUsersScreen from './src/screens/AdminUsersScreen';
+import AdminGymsScreen from './src/screens/AdminGymsScreen';
 
 // Auth Stack (Login/Register)
 export type AuthStackParamList = {
@@ -56,6 +60,10 @@ export type MainStackParamList = {
   AIChat: undefined;
   PartnerDashboard: undefined;
   GymCreateEdit: { gymId?: number };
+  AdminDashboard: undefined;
+  AdminApprovals: undefined;
+  AdminUsers: undefined;
+  AdminGyms: undefined;
 };
 
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
@@ -211,6 +219,26 @@ function MainNavigator() {
         options={({ route }) => ({
           title: (route.params as any)?.gymId ? 'Edit Gym' : 'Create Gym',
         })}
+      />
+      <MainStack.Screen
+        name="AdminDashboard"
+        component={AdminDashboardScreen}
+        options={{ title: 'Admin Dashboard' }}
+      />
+      <MainStack.Screen
+        name="AdminApprovals"
+        component={AdminApprovalsScreen}
+        options={{ title: 'Pending Approvals' }}
+      />
+      <MainStack.Screen
+        name="AdminUsers"
+        component={AdminUsersScreen}
+        options={{ title: 'User Management' }}
+      />
+      <MainStack.Screen
+        name="AdminGyms"
+        component={AdminGymsScreen}
+        options={{ title: 'Gym Management' }}
       />
     </MainStack.Navigator>
   );

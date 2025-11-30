@@ -1,0 +1,267 @@
+.admin-approvals {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  color: #fff;
+}
+
+.page-header {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.page-header h1 {
+  margin: 0.5rem 0;
+  font-size: 1.8rem;
+}
+
+.page-header p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.back-btn {
+  background: none;
+  border: none;
+  color: #667eea;
+  cursor: pointer;
+  font-size: 0.95rem;
+  padding: 0;
+  margin-bottom: 0.5rem;
+}
+
+.back-btn:hover {
+  text-decoration: underline;
+}
+
+.approvals-content {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.empty-icon {
+  font-size: 4rem;
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.empty-state h2 {
+  margin: 0 0 0.5rem;
+  color: #4ade80;
+}
+
+.empty-state p {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.gyms-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.gym-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.gym-card:hover {
+  transform: translateY(-3px);
+}
+
+.gym-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.gym-header h3 {
+  margin: 0;
+  font-size: 1.3rem;
+}
+
+.pending-badge {
+  background: linear-gradient(135deg, #f093fb, #f5576c);
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.gym-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.detail-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.detail-row .label {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.detail-row span:last-child {
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.gym-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.approve-btn, .reject-btn {
+  flex: 1;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.approve-btn {
+  background: linear-gradient(135deg, #4ade80, #22c55e);
+  color: #fff;
+}
+
+.approve-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 20px rgba(74, 222, 128, 0.3);
+}
+
+.reject-btn {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.reject-btn:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.3);
+}
+
+.approve-btn:disabled, .reject-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: #1a1a2e;
+  border-radius: 16px;
+  padding: 2rem;
+  max-width: 500px;
+  width: 90%;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal h2 {
+  margin: 0 0 1rem;
+  color: #f87171;
+}
+
+.modal p {
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 1rem;
+}
+
+.modal textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  font-size: 0.95rem;
+  resize: vertical;
+  margin-bottom: 1.5rem;
+}
+
+.modal textarea:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.cancel-btn {
+  flex: 1;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  cursor: pointer;
+}
+
+.confirm-reject-btn {
+  flex: 1;
+  padding: 0.75rem;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  cursor: pointer;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  font-size: 1.2rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.error-message {
+  text-align: center;
+  padding: 1rem;
+  margin: 1rem 2rem;
+  background: rgba(239, 68, 68, 0.2);
+  border-radius: 8px;
+  color: #f87171;
+}
+
+@media (max-width: 768px) {
+  .gym-actions {
+    flex-direction: column;
+  }
+}

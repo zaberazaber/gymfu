@@ -21,6 +21,10 @@ import AIChatPage from './pages/AIChatPage';
 import ClassesPage from './pages/ClassesPage';
 import ClassDetailPage from './pages/ClassDetailPage';
 import CorporateRegisterPage from './pages/CorporateRegisterPage';
+import AdminDashboardPage from './pages/AdminDashboardPage';
+import AdminApprovalsPage from './pages/AdminApprovalsPage';
+import AdminUsersPage from './pages/AdminUsersPage';
+import AdminGymsPage from './pages/AdminGymsPage';
 import './App.css';
 import './styles/neumorphic.css';
 
@@ -51,6 +55,11 @@ function App() {
             <Route path="/partner/dashboard" element={<PartnerDashboardPage />} />
             <Route path="/partner/gym/new" element={<GymEditPage />} />
             <Route path="/partner/gym/edit/:gymId" element={<GymEditPage />} />
+            {/* Admin Routes */}
+            <Route path="/admin" element={<AdminDashboardPage />} />
+            <Route path="/admin/approvals" element={<AdminApprovalsPage />} />
+            <Route path="/admin/users" element={<AdminUsersPage />} />
+            <Route path="/admin/gyms" element={<AdminGymsPage />} />
           </Routes>        </div>
       </Router>
     </Provider>

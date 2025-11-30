@@ -21,6 +21,8 @@ interface User {
     fitnessGoals?: string[];
     profileImage?: string;
     isPartner?: boolean;
+    isAdmin?: boolean;
+    role?: string;
     createdAt: string;
     updatedAt?: string;
 }

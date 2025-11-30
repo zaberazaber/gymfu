@@ -2,7 +2,7 @@
 
 ## 1. Project Setup and Infrastructure
 
-- [ ] 1.1 Initialize backend with basic Express server
+- [x] 1.1 Initialize backend with basic Express server
   - Create /backend directory with package.json
   - Install Express, TypeScript, and essential dependencies
   - Set up TypeScript configuration (tsconfig.json)
@@ -11,7 +11,7 @@
   - **Test**: Run `npm run dev` and verify server starts on http://localhost:3000, test /health endpoint returns 200 OK
   - _Requirements: 13.3, 15.1_
 
-- [ ] 1.2 Set up database connections and initial schema
+- [x] 1.2 Set up database connections and initial schema
   - Install pg, mongoose, and redis client libraries
   - Configure PostgreSQL connection with connection pooling
   - Configure MongoDB connection for analytics
@@ -21,7 +21,7 @@
   - **Test**: Run server and verify all database connections succeed, test /health/db endpoint
   - _Requirements: 15.1, 15.2_
 
-- [ ] 1.3 Set up React web app with basic routing
+- [x] 1.3 Set up React web app with basic routing
   - Create /web directory and initialize React with Vite and TypeScript
   - Install React Router and configure basic routing
   - Create HomePage component with "GYMFU" header
@@ -30,7 +30,7 @@
   - **Test**: Run `npm run dev` and verify app loads at http://localhost:5173, shows homepage
   - _Requirements: 14.1, 14.3_
 
-- [ ] 1.4 Set up React Native mobile app with basic navigation
+- [x] 1.4 Set up React Native mobile app with basic navigation
   - Create /mobile directory and initialize React Native with TypeScript
   - Install and configure React Navigation
   - Create basic HomeScreen component
@@ -39,7 +39,7 @@
   - **Test**: Run `npm run android` or `npm run ios` and verify app launches with home screen
   - _Requirements: 1.4, 14.1_
 
-- [ ] 1.5 Configure environment variables and shared utilities
+- [x] 1.5 Configure environment variables and shared utilities
   - Create .env files for backend, web, and mobile
   - Set up dotenv for environment variable management
   - Create /shared directory for common types and utilities
@@ -48,7 +48,7 @@
   - **Test**: Verify all apps start with correct environment variables loaded
   - _Requirements: 13.3, 15.1_
 
-- [ ] 1.6 Set up error handling and logging middleware
+- [x] 1.6 Set up error handling and logging middleware
   - Create centralized error handling middleware for backend
   - Install and configure Winston for logging
   - Add request logging middleware
@@ -57,7 +57,7 @@
   - **Test**: Trigger an error and verify proper error response and logging
   - _Requirements: 13.3_
 
-- [ ]* 1.7 Set up basic testing infrastructure
+- [x]* 1.7 Set up basic testing infrastructure
   - Install Jest and React Testing Library
   - Configure test scripts for backend and frontend
   - Create sample unit tests for health check endpoint
@@ -67,7 +67,7 @@
 
 ## 2. Authentication and User Management (User Service)
 
-- [ ] 2.1 Create User model and registration endpoint
+- [x] 2.1 Create User model and registration endpoint
   - Create User table in PostgreSQL with schema: id, phoneNumber, email, name, password, createdAt, updatedAt
   - Create User model/repository with basic CRUD operations
   - Implement POST /api/v1/auth/register endpoint accepting phone/email and password
@@ -77,7 +77,7 @@
   - **Test**: Use Postman to register a new user, verify user is created in database
   - _Requirements: 1.1, 1.3_
 
-- [ ] 2.2 Implement OTP generation and storage
+- [x] 2.2 Implement OTP generation and storage
   - Install Redis client and configure connection
   - Create OTP generation utility (6-digit random number)
   - Store OTP in Redis with phone/email as key and 10-minute expiry
@@ -86,7 +86,7 @@
   - **Test**: Register user and verify OTP is generated and stored in Redis, check console for OTP
   - _Requirements: 1.1, 1.3_
 
-- [ ] 2.3 Implement OTP verification and JWT authentication
+- [x] 2.3 Implement OTP verification and JWT authentication
   - Install jsonwebtoken library
   - Create POST /api/v1/auth/verify-otp endpoint accepting phone/email and OTP
   - Verify OTP from Redis storage
@@ -95,7 +95,7 @@
   - **Test**: Verify OTP using Postman, confirm JWT token is returned
   - _Requirements: 1.1, 15.4_
 
-- [ ] 2.4 Create JWT authentication middleware
+- [x] 2.4 Create JWT authentication middleware
   - Create JWT verification middleware
   - Add middleware to protect routes requiring authentication
   - Create GET /api/v1/users/me endpoint (protected) returning current user
@@ -103,7 +103,7 @@
   - **Test**: Call /api/v1/users/me with and without token, verify authentication works
   - _Requirements: 1.1, 15.4_
 
-- [ ] 2.5 Implement user login endpoint
+- [x] 2.5 Implement user login endpoint
   - Create POST /api/v1/auth/login endpoint accepting phone/email
   - Generate and store OTP in Redis
   - Return success response indicating OTP sent
@@ -111,7 +111,7 @@
   - **Test**: Login with existing user, verify OTP, confirm token received
   - _Requirements: 1.1_
 
-- [ ] 2.6 Build registration UI for web
+- [x] 2.6 Build registration UI for web
   - Install Redux Toolkit and configure store
   - Create RegisterPage with phone/email input form
   - Create OTPVerificationPage with 6-digit input
@@ -122,7 +122,7 @@
   - **Test**: Complete registration flow in browser, verify user can register and login
   - _Requirements: 1.1, 1.4_
 
-- [ ] 2.7 Build registration UI for mobile
+- [x] 2.7 Build registration UI for mobile
   - Configure Redux Toolkit store (shared structure with web)
   - Create RegisterScreen with phone/email input
   - Create OTPVerificationScreen with 6-digit input
@@ -132,7 +132,7 @@
   - **Test**: Complete registration flow on mobile device/emulator
   - _Requirements: 1.1, 1.4_
 
-- [ ] 2.8 Implement profile management endpoints
+- [x] 2.8 Implement profile management endpoints
   - Add fields to User table: age, gender, location (jsonb), fitnessGoals (array), profileImage
   - Create PUT /api/v1/users/profile endpoint for profile updates
   - Create GET /api/v1/users/profile endpoint for profile retrieval
@@ -140,7 +140,7 @@
   - **Test**: Update and retrieve user profile using Postman
   - _Requirements: 1.2, 14.2_
 
-- [ ] 2.9 Build profile screens (web and mobile)
+- [x] 2.9 Build profile screens (web and mobile)
   - Create ProfilePage/ProfileScreen showing user information
   - Create EditProfilePage/EditProfileScreen with form for updates
   - Add profile image upload (store as base64 or local file for now)
@@ -151,7 +151,7 @@
 
 ## 3. Gym Discovery and Management (Gym Service)
 
-- [ ] 3.1 Create Gym model and registration endpoint
+- [x] 3.1 Create Gym model and registration endpoint
   - Create Gym table in PostgreSQL with schema: id, name, ownerId, address, latitude, longitude, city, pincode, amenities (array), basePrice, capacity, rating, isVerified, createdAt
   - Create Gym model/repository with CRUD operations
   - Implement POST /api/v1/gyms/register endpoint (protected, requires auth)
@@ -160,14 +160,14 @@
   - **Test**: Register a gym using Postman with auth token, verify gym created in database
   - _Requirements: 7.1, 7.2_
 
-- [ ] 3.2 Implement gym listing endpoint
+- [x] 3.2 Implement gym listing endpoint
   - Create GET /api/v1/gyms endpoint returning all gyms
   - Add pagination (limit, offset)
   - Return gym list with basic details
   - **Test**: Call endpoint and verify gym list is returned
   - _Requirements: 2.1_
 
-- [ ] 3.3 Implement nearby gyms search with geospatial queries
+- [x] 3.3 Implement nearby gyms search with geospatial queries
   - Install PostGIS extension for PostgreSQL
   - Add geography column to Gym table for location
   - Create GET /api/v1/gyms/nearby endpoint accepting lat, lng, radius parameters
@@ -176,21 +176,21 @@
   - **Test**: Search for nearby gyms with test coordinates, verify results are within radius
   - _Requirements: 2.1, 2.2_
 
-- [ ] 3.4 Add gym filtering and search
+- [x] 3.4 Add gym filtering and search
   - Add query parameters to /api/v1/gyms/nearby for amenities and price range
   - Implement filtering logic for amenities (cardio, weights, shower, parking)
   - Add price range filtering (minPrice, maxPrice)
   - **Test**: Search with various filters and verify results match criteria
   - _Requirements: 2.2, 2.3_
 
-- [ ] 3.5 Implement gym details endpoint
+- [x] 3.5 Implement gym details endpoint
   - Create GET /api/v1/gyms/{gymId} endpoint
   - Return full gym details including all fields
   - Add operating hours field to Gym table (jsonb)
   - **Test**: Get gym details by ID and verify all information is returned
   - _Requirements: 2.5_
 
-- [ ] 3.6 Build gym discovery UI for web
+- [x] 3.6 Build gym discovery UI for web
   - Create GymListPage showing nearby gyms
   - Add filter controls for amenities and price range
   - Display gym cards with name, address, price, rating
@@ -199,7 +199,7 @@
   - **Test**: Browse gyms, apply filters, verify UI updates correctly
   - _Requirements: 2.1, 2.2, 2.3_
 
-- [ ] 3.7 Build gym discovery UI for mobile
+- [x] 3.7 Build gym discovery UI for mobile
   - Create GymListScreen with gym cards
   - Add filter modal for amenities and price
   - Implement pull-to-refresh
@@ -207,7 +207,7 @@
   - **Test**: Browse gyms on mobile, apply filters, verify functionality
   - _Requirements: 2.1, 2.2, 2.3_
 
-- [ ] 3.8 Build gym detail screen (web and mobile)
+- [x] 3.8 Build gym detail screen (web and mobile)
   - Create GymDetailPage/GymDetailScreen
   - Display gym images (placeholder for now), name, address, amenities
   - Show operating hours and pricing
@@ -215,7 +215,7 @@
   - **Test**: Navigate to gym details and verify all information displays correctly
   - _Requirements: 2.5_
 
-- [ ] 3.9 Implement gym partner dashboard basics (web)
+- [x] 3.9 Implement gym partner dashboard basics (web)
   - Create PartnerDashboardPage (protected route)
   - Display gym owner's gym information
   - Create GymEditPage for updating gym details
@@ -223,7 +223,7 @@
   - **Test**: Login as gym owner, view and edit gym details
   - _Requirements: 7.2, 7.3_
 
-- [ ] 3.10 Add gym images upload
+- [x] 3.10 Add gym images upload
   - Add images field to Gym table (array of URLs)
   - Create POST /api/v1/gyms/{gymId}/images endpoint
   - Implement image upload to local storage or S3 (if configured)
@@ -233,7 +233,7 @@
 
 ## 4. Booking and QR Code System (Booking Service)
 
-- [ ] 4.1 Create Booking model and basic booking endpoint
+- [x] 4.1 Create Booking model and basic booking endpoint
   - Create Booking table in PostgreSQL: id, userId, gymId, sessionDate, price, status, qrCode, createdAt
   - Create Booking model/repository with CRUD operations
   - Implement POST /api/v1/bookings endpoint (protected)
@@ -243,7 +243,7 @@
   - **Test**: Create a booking using Postman, verify booking is created in database
   - _Requirements: 3.1, 3.3_
 
-- [ ] 4.2 Generate QR code for bookings
+- [x] 4.2 Generate QR code for bookings
   - Install qrcode library
   - Generate unique QR code string (booking ID + timestamp)
   - Store QR code string in booking record
@@ -252,14 +252,14 @@
   - **Test**: Create booking and retrieve QR code, verify QR code image is returned
   - _Requirements: 4.1, 4.2_
 
-- [ ] 4.3 Implement booking confirmation (skip payment for now)
+- [x] 4.3 Implement booking confirmation (skip payment for now)
   - Update POST /api/v1/bookings to set status to 'confirmed' immediately
   - Add qrCodeExpiry field (24 hours from booking)
   - Return booking with QR code in response
   - **Test**: Create booking and verify status is 'confirmed' with QR code
   - _Requirements: 3.1, 4.1_
 
-- [ ] 4.4 Implement check-in endpoint
+- [x] 4.4 Implement check-in endpoint
   - Create POST /api/v1/bookings/{bookingId}/checkin endpoint
   - Verify booking exists and status is 'confirmed'
   - Check QR code is not expired
@@ -267,7 +267,7 @@
   - **Test**: Check-in with valid booking ID, verify status updates to 'checked_in'
   - _Requirements: 4.2, 4.3, 4.4_
 
-- [ ] 4.5 Implement booking history endpoint
+- [x] 4.5 Implement booking history endpoint
   - Create GET /api/v1/bookings/user endpoint (protected, uses JWT user ID)
   - Return user's bookings sorted by date (newest first)
   - Include gym details in response (join with Gym table)
@@ -326,7 +326,7 @@
   - **Test**: Initiate payment using Postman, verify Razorpay order is created
   - _Requirements: 3.2_
 
-- [ ] 5.3 Implement payment verification
+- [x] 5.3 Implement payment verification
   - Create POST /api/v1/payments/verify endpoint
   - Verify Razorpay payment signature using crypto
   - Update payment status to 'success' on verification
@@ -334,14 +334,14 @@
   - **Test**: Complete payment flow with Razorpay test cards, verify payment and booking status
   - _Requirements: 3.4, 3.5_
 
-- [ ] 5.4 Update booking flow to require payment
+- [x] 5.4 Update booking flow to require payment
   - Modify POST /api/v1/bookings to create booking with status 'pending'
   - Automatically initiate payment after booking creation
   - Only confirm booking after successful payment verification
   - **Test**: Create booking and complete payment, verify booking is confirmed only after payment
   - _Requirements: 3.1, 3.2_
 
-- [ ] 5.5 Build payment UI for web
+- [x] 5.5 Build payment UI for web
   - Install Razorpay checkout library
   - Update BookingPage to show payment modal after booking creation
   - Integrate Razorpay checkout with payment initiation
@@ -350,7 +350,7 @@
   - **Test**: Complete end-to-end booking with payment on web
   - _Requirements: 3.2, 3.4_
 
-- [ ] 5.6 Build payment UI for mobile
+- [x] 5.6 Build payment UI for mobile
   - Install Razorpay React Native SDK
   - Update BookingScreen to trigger payment after booking
   - Integrate Razorpay checkout
@@ -359,7 +359,7 @@
   - **Test**: Complete end-to-end booking with payment on mobile
   - _Requirements: 3.2, 3.4_
 
-- [ ] 5.7 Implement refund for cancellations
+- [x] 5.7 Implement refund for cancellations
   - Create POST /api/v1/payments/refund endpoint
   - Integrate Razorpay refund API
   - Update booking cancellation to trigger refund
@@ -367,7 +367,7 @@
   - **Test**: Cancel a paid booking and verify refund is processed
   - _Requirements: 3.4_
 
-- [ ] 5.8 Create gym partner earnings dashboard
+- [x] 5.8 Create gym partner earnings dashboard
   - Create GET /api/v1/payments/gym/{gymId}/earnings endpoint
   - Calculate total earnings, pending settlements
   - Add earnings display to partner dashboard
@@ -538,7 +538,7 @@
   - **Test**: Create class booking and verify it's stored correctly
   - _Requirements: 10.2_
 
-- [ ] 8.4 Build classes UI (web and mobile)
+- [x] 8.4 Build classes UI (web and mobile)
   - Create ClassesPage/Screen with class list
   - Display class cards with type, instructor, schedule, price
   - Add filter by class type
@@ -547,7 +547,7 @@
   - **Test**: Browse classes and book a class
   - _Requirements: 10.1, 10.2_
 
-- [ ] 8.5 Add class bookings to history
+- [x] 8.5 Add class bookings to history
   - Update booking history to show both gym and class bookings
   - Display class name and instructor for class bookings
   - **Test**: View booking history and verify class bookings appear
@@ -655,7 +655,7 @@
 
 ## 12. Admin Platform
 
-- [ ] 12.1 Create admin user and authentication
+- [x] 12.1 Create admin user and authentication
   - Add isAdmin field to User table
   - Create admin seed script (admin user with credentials)
   - Update JWT middleware to check admin role
@@ -663,21 +663,21 @@
   - **Test**: Login as admin and verify admin access
   - _Requirements: 13.1_
 
-- [ ] 12.2 Implement admin dashboard endpoint
+- [x] 12.2 Implement admin dashboard endpoint
   - Create GET /api/v1/admin/dashboard endpoint (admin only)
   - Calculate total users, gyms, bookings, revenue
   - Return platform-wide metrics
   - **Test**: Get admin dashboard metrics using Postman
   - _Requirements: 13.1_
 
-- [ ] 12.3 Build admin dashboard UI (web only)
+- [x] 12.3 Build admin dashboard UI (web and mobile)
   - Create AdminDashboardPage with metrics cards
   - Display total users, gyms, bookings, revenue
   - Show recent activity (new users, bookings)
   - **Test**: View admin dashboard in browser
   - _Requirements: 13.1, 13.3_
 
-- [ ] 12.4 Implement gym approval workflow
+- [x] 12.4 Implement gym approval workflow
   - Add isVerified field to Gym table (default false)
   - Create GET /api/v1/admin/gyms/pending endpoint
   - Create PUT /api/v1/admin/gyms/{gymId}/approve endpoint
@@ -685,7 +685,7 @@
   - **Test**: Approve gym from admin panel, verify it appears in search
   - _Requirements: 13.5_
 
-- [ ] 12.5 Build gym approval UI
+- [x] 12.5 Build gym approval UI
   - Create GymApprovalPage showing pending gyms
   - Add approve/reject buttons
   - Display gym details for review
